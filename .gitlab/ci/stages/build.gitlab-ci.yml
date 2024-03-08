@@ -1,0 +1,15 @@
+Build:
+  stage: build
+  rules:
+    - !reference [.only-tag, rules]
+  before_script:
+    - TAG_NAME=$(cat VERSION)
+    - docker version
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - echo "Building image for version $TAG_NAME on $CI_COMMIT_BRANCH..."
+    - docker pull $CI_REGISTRY_IMAGE:latest || true
+    - docker build --cache-from $CI_REGISTRY_IMAGE --tag $CI_REGISTRY_IMAGE:$TAG_NAME .
+    - docker tag $CI_REGISTRY_IMAGE:$TAG_NAME $CI_REGISTRY_IMAGE:latest
+    - docker push $CI_REGISTRY_IMAGE:$TAG_NAME
+    - docker push $CI_REGISTRY_IMAGE:latest
