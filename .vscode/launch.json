@@ -1,0 +1,24 @@
+// Configuration Flavros for VS Code IDE
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Development",
+      "request": "launch",
+      "type": "dart",
+      "args": ["--dart-define-from-file=lib/env/development.json"]
+    },
+    {
+      "name": "Staging",
+      "request": "launch",
+      "type": "dart",
+      "args": ["--dart-define-from-file=lib/env/staging.json"]
+    },
+    {
+      "name": "Production",
+      "request": "launch",
+      "type": "dart",
+      "args": ["--dart-define-from-file=lib/env/production.json"]
+    }
+  ]
+}

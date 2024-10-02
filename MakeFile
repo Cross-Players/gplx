@@ -1,0 +1,67 @@
+# Add fvm before if project use fvm to manage flutter project
+
+.PHONY: setup
+pub-get:
+	flutter pub get
+
+.PHONY: dependencies
+dependencies:
+	flutter pub get
+
+.PHONY: analyze
+analyze:
+	flutter analyze
+
+.PHONY: format 
+format:
+	flutter format lib/
+
+.PHONY: format-analyze
+format-analyze:
+	flutter format --dry-run lib/
+	flutter analyze
+
+.PHONY: build-runner
+build-runner:
+	dart pub pub run build_runner build --delete-conflicting-outputs
+
+.PHONY: assets-gen
+assets-gen:
+	fluttergen -c pubspec.yaml
+
+.PHONY: launcher-gen
+launcher-gen:
+	flutter pub run flutter_launcher_icons
+
+ENV?=development
+# staging
+# production
+
+MODE?=debug
+# release
+# profile
+
+.PHONY: run
+run:
+	flutter run --$(MODE) --dart-define-from-file=env/$(ENV).json
+
+.PHONY: build-android-apk
+build-android-apk:
+	flutter build apk --$(MODE) --dart-define-from-file=env/$(ENV).json
+
+.PHONY: build-android-bundle
+build-android-bundle:
+	flutter build appbundle --$(MODE) --dart-define-from-file=env/$(ENV).json
+
+.PHONY: build-ios
+build-ios:
+	cd ios/ && pod repo update && pod install && cd ..
+	flutter build ios --$(MODE) --no-codesign --dart-define-from-file=env/$(ENV).json
+
+.PHONY: auto-test
+auto-test:
+	flutter test test/
+
+.PHONY: codecov
+codecov:
+	sh coverage.sh
