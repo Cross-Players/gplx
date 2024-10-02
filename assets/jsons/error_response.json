@@ -1,0 +1,9 @@
+{
+    "code": 400,
+    "status": "success",
+    "data": null,
+    "error": {
+        "code": 6969,
+        "message": "This is custom error message"
+    }
+}

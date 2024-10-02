@@ -1,0 +1,55 @@
+{
+  "git.autofetch": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit",
+    "source.dcm.fixAll": "explicit"
+  },
+  "[plist]": {
+    "editor.formatOnSave": true
+  },
+  // https://dartcode.org/docs/recommended-settings/
+  "debug.internalConsoleOptions": "openOnSessionStart",
+  "dart.previewFlutterUiGuidesCustomTracking": true,
+  "dart.previewFlutterUiGuides": true,
+  // "dart.devToolsLocation": "external",
+  // "dart.runPubGetOnPubspecChanges": "prompt",
+  // "dart.flutterSdkPath": ".fvm/flutter_sdk",
+  // "dart.sdkPath": ".fvm/flutter_sdk/bin/dart",
+  "[dart]": {
+    "editor.formatOnType": true,
+    "editor.formatOnSave": true,
+    "editor.rulers": [80],
+    "editor.selectionHighlight": false,
+    "editor.suggest.snippetsPreventQuickSuggestions": false,
+    "editor.suggestSelection": "first",
+    "editor.tabCompletion": "onlySnippets",
+    "editor.wordBasedSuggestions": "off",
+    "editor.guides.indentation": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "always"
+    }
+  },
+  // Remove .fvm files from search
+  "search.exclude": {
+    "**/.fvm": true
+  },
+  // Remove from file watching
+  "files.watcherExclude": {
+    "**/.fvm": true
+  },
+  // Hide the file from explorer
+  "files.exclude": {
+    "**/*.freezed.dart": true,
+    "**/*.g.dart": true,
+    "**/*.gr.dart": true
+  },
+  "[csv]": {
+    "files.eol": "\r\n"
+  },
+  "flutter-coverage.coverageFileNames": [
+    "lcov.info",
+    "cov.xml",
+    "coverage.xml",
+    "jacoco.xml"
+  ]
+}

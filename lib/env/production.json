@@ -1,0 +1,10 @@
+{
+    "APP_NAME": "Base",
+    "APP_SUFFIX": "",
+    "API_END_POINT": "https://api.equateur.prod.bfast-vn.net/api",
+    "REALTIME_API_END_POINT": "wss://warehouse-service-app.prod.bfast-vn.net/graphql",
+    "API_VERSION": "v1",
+    "CONNECT_TIME_OUT": 10,
+    "RECEIVE_TIME_OUT": 10,
+    "LOGGING_INTERCEPTOR_ENABLED": false
+}
