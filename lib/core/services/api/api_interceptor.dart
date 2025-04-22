@@ -1,13 +1,13 @@
 import 'dart:io';
 
-import 'package:gh247_user/core/data/local_storage.dart';
-import 'package:gh247_user/core/services/api/api_response.dart';
-import 'package:gh247_user/core/services/api/api_service.dart';
-import 'package:gh247_user/core/services/api/errors/api_error.dart';
-import 'package:gh247_user/core/services/api/errors/api_exceptions.dart';
-import 'package:gh247_user/core/services/api/errors/error_code.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gplx/core/data/local_storage.dart';
+import 'package:gplx/core/services/api/api_response.dart';
+import 'package:gplx/core/services/api/api_service.dart';
+import 'package:gplx/core/services/api/errors/api_error.dart';
+import 'package:gplx/core/services/api/errors/api_exceptions.dart';
+import 'package:gplx/core/services/api/errors/error_code.dart';
 
 class ApiInterceptor extends InterceptorsWrapper {
   ApiInterceptor({
@@ -39,7 +39,7 @@ class ApiInterceptor extends InterceptorsWrapper {
 
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
-    // Deserialize the gh247_user response from the JSON if needed
+    // Deserialize the gplx response from the JSON if needed
     try {
       // final baseResponse =
       //     ApiResponse.fromJson(response.data as Map<String, dynamic>);

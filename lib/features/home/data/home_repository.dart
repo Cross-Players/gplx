@@ -1,11 +1,11 @@
 import 'dart:convert';
 
-import 'package:gh247_user/core/services/api/api_endpoints.dart';
-import 'package:gh247_user/core/services/api/api_response.dart';
-import 'package:gh247_user/core/services/api/api_service.dart';
-import 'package:gh247_user/core/services/api/errors/api_exceptions.dart';
-import 'package:gh247_user/features/home/models/post.dart';
 import 'package:flutter/services.dart';
+import 'package:gplx/core/services/api/api_endpoints.dart';
+import 'package:gplx/core/services/api/api_response.dart';
+import 'package:gplx/core/services/api/api_service.dart';
+import 'package:gplx/core/services/api/errors/api_exceptions.dart';
+import 'package:gplx/features/home/models/post.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'home_repository.g.dart';

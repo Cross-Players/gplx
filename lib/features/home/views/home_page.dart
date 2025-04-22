@@ -1,7 +1,7 @@
-import 'package:gh247_user/features/home/controllers/mixin_home.dart';
-import 'package:gh247_user/features/home/views/components/post_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gplx/features/home/controllers/mixin_home.dart';
+import 'package:gplx/features/home/views/components/post_list.dart';
 
 class HomePage extends ConsumerWidget with MixinHome {
   const HomePage({super.key});

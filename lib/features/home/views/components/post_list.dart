@@ -1,9 +1,9 @@
 import 'dart:developer';
 
-import 'package:gh247_user/core/widgets/common_alert.dart';
-import 'package:gh247_user/features/home/controllers/mixin_home.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gplx/core/widgets/common_alert.dart';
+import 'package:gplx/features/home/controllers/mixin_home.dart';
 
 class PostList extends ConsumerWidget with MixinHome {
   const PostList({super.key});

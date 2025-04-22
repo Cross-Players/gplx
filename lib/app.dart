@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:gh247_user/core/constants/app_keys.dart';
-import 'package:gh247_user/core/router/routes.dart';
+import 'package:gplx/core/routes/app_routes.dart';
 
 /// Define routers, themes
 class App extends StatelessWidget {
@@ -10,16 +9,12 @@ class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Giao hang 247 User',
-      navigatorKey: AppKeys.navigatorKey,
-      scaffoldMessengerKey: AppKeys.snackBarKey,
-      routes: Routes.routes,
-      initialRoute: Routes.home,
-      themeMode: ThemeMode.system,
+      title: 'Ôn thi GPLX B2',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
+      onGenerateRoute: AppRoutes.onGenerateRoute,
     );
   }
 }

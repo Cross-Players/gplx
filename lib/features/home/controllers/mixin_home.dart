@@ -1,6 +1,6 @@
-import 'package:gh247_user/features/home/controllers/home_controller.dart';
-import 'package:gh247_user/features/home/models/post.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gplx/features/home/controllers/home_controller.dart';
+import 'package:gplx/features/home/models/post.dart';
 
 mixin MixinHome {
   HomeController _homeCtrl(WidgetRef ref) =>

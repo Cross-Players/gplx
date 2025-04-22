@@ -1,6 +1,6 @@
-import 'package:gh247_user/core/data/local_storage.dart';
-import 'package:gh247_user/core/services/api/api_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gplx/core/data/local_storage.dart';
+import 'package:gplx/core/services/api/api_service.dart';
 
 class AuthRepository {
   // ignore: unused_field

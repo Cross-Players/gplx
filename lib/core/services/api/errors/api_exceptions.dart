@@ -1,4 +1,4 @@
-import 'package:gh247_user/core/services/api/errors/api_error.dart';
+import 'package:gplx/core/services/api/errors/api_error.dart';
 
 enum ApiErrorType {
   network,

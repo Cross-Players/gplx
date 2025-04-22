@@ -1,5 +1,5 @@
-import 'package:gh247_user/features/home/models/post.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:gplx/features/home/models/post.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'home_state.freezed.dart';

@@ -1,11 +1,10 @@
 # Add fvm before if project use fvm to manage flutter project
 
-.PHONY: setup
-pub-get:
-	flutter pub get
+.PHONY: init
+init: pub-get assets-gen build-runner 
 
-.PHONY: dependencies
-dependencies:
+.PHONY: pub-get 
+pub-get:
 	flutter pub get
 
 .PHONY: analyze
@@ -23,7 +22,11 @@ format-analyze:
 
 .PHONY: build-runner
 build-runner:
-	dart pub pub run build_runner build --delete-conflicting-outputs
+	dart pub run build_runner build --delete-conflicting-outputs
+
+.PHONY: build-clean
+build-clean:
+	dart pub run build_runner clean
 
 .PHONY: assets-gen
 assets-gen:
@@ -43,20 +46,25 @@ MODE?=debug
 
 .PHONY: run
 run:
-	flutter run --$(MODE) --dart-define-from-file=env/$(ENV).json
+	flutter run --$(MODE) --dart-define-from-file=lib/env/$(ENV).json
 
 .PHONY: build-android-apk
 build-android-apk:
-	flutter build apk --$(MODE) --dart-define-from-file=env/$(ENV).json
+	flutter build apk --$(MODE) --dart-define-from-file=lib/env/$(ENV).json
 
 .PHONY: build-android-bundle
 build-android-bundle:
-	flutter build appbundle --$(MODE) --dart-define-from-file=env/$(ENV).json
+	flutter build appbundle --$(MODE) --dart-define-from-file=lib/env/$(ENV).json
 
 .PHONY: build-ios
 build-ios:
 	cd ios/ && pod repo update && pod install && cd ..
-	flutter build ios --$(MODE) --no-codesign --dart-define-from-file=env/$(ENV).json
+	flutter build ios --$(MODE) --no-codesign --dart-define-from-file=lib/env/$(ENV).json
+
+.PHONY: build-ipa
+build-ipa:
+	cd ios/ && pod repo update && pod install && cd ..
+	flutter build ipa --dart-define-from-file=lib/env/production.json
 
 .PHONY: auto-test
 auto-test:
@@ -65,3 +73,9 @@ auto-test:
 .PHONY: codecov
 codecov:
 	sh coverage.sh
+
+# Automatic bump version and create release branch
+VERSION?=
+
+release:
+	sh releases.sh $(VERSION)

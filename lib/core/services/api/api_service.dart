@@ -1,10 +1,10 @@
 import 'package:awesome_dio_interceptor/awesome_dio_interceptor.dart';
-import 'package:gh247_user/core/constants/app_configs.dart';
-import 'package:gh247_user/core/services/api/api_interceptor.dart';
 import 'package:curl_logger_dio_interceptor/curl_logger_dio_interceptor.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gplx/core/constants/app_configs.dart';
+import 'package:gplx/core/services/api/api_interceptor.dart';
 
 // Provides the ApiService instance
 final apiServiceProvider = Provider<ApiService>((ref) => ApiService(ref));

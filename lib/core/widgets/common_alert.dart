@@ -1,8 +1,8 @@
 import 'dart:developer';
 
-import 'package:gh247_user/core/services/api/errors/api_exceptions.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:gplx/core/services/api/errors/api_exceptions.dart';
 
 class CommonAlert extends StatelessWidget {
   const CommonAlert({super.key, required this.exception, this.onRetry});

@@ -1,5 +1,5 @@
-import 'package:gh247_user/core/services/api/errors/api_error.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:gplx/core/services/api/errors/api_error.dart';
 
 part 'api_response.freezed.dart';
 part 'api_response.g.dart';

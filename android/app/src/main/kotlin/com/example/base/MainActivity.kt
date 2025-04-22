@@ -1,4 +1,4 @@
-package com.example.gh247_user
+package com.example.gplx
 
 import io.flutter.embedding.android.FlutterActivity
 

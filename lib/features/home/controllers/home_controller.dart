@@ -1,5 +1,5 @@
-import 'package:gh247_user/features/home/controllers/home_state.dart';
-import 'package:gh247_user/features/home/data/home_repository.dart';
+import 'package:gplx/features/home/controllers/home_state.dart';
+import 'package:gplx/features/home/data/home_repository.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'home_controller.g.dart';

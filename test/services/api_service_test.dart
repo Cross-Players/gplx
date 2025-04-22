@@ -1,14 +1,14 @@
-// import 'package:gh247_user/core/services/api/api_service.dart';
+// import 'package:gplx/core/services/api/api_service.dart';
 // import 'package:dio/dio.dart';
 // import 'package:flutter_test/flutter_test.dart';
 // import 'package:mockito/mockito.dart';
 
 // ignore_for_file: unused_local_variable
 
-// // Tạo mock cho Dio
-import 'package:gh247_user/core/services/api/api_service.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
+// // Tạo mock cho Dio
+import 'package:gplx/core/services/api/api_service.dart';
 import 'package:mockito/mockito.dart';
 
 // TODO(anyone): implement test case
