@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gplx/features/home/controllers/mixin_home.dart';
 import 'package:gplx/features/home/views/components/post_list.dart';
+import 'package:gplx/features/test/presentation/screens/firestore_questions_screen.dart';
 
 class HomePage extends ConsumerWidget with MixinHome {
   const HomePage({super.key});
@@ -20,6 +21,28 @@ class HomePage extends ConsumerWidget with MixinHome {
                 '$counter',
                 style: const TextStyle(fontWeight: FontWeight.bold),
               )),
+              // Add a navigation button to Firestore Questions Screen
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const FirestoreQuestionsScreen(),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 12, horizontal: 24),
+                  ),
+                  child: const Text(
+                    'Xem câu hỏi Firestore',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                ),
+              ),
               const PostList(),
             ],
           ),

@@ -5,13 +5,16 @@ class AppStyles {
   AppStyles._();
 
   // color
-  static const primaryColor = Color(0xff68A596);
+  // static const primaryColor = Color(0xff68A596);
+  static const primaryColor = Color.fromRGBO(60, 134, 197, 1);
   static final secondaryColor = Colors.grey[700];
   static const bgDarkModeColor = Colors.black;
   static const bgLightModeColor = Color(0xffF6F6F6);
   static const iconDarkModeColor = Color(0xffF6F6F6);
   static const iconLightModeColor = Colors.black;
   static const errorColor = Color(0xffED5B5B);
+  static const buttonColor = Color.fromRGBO(0, 122, 255, 1);
+  static const fontSecondaryColor = Color.fromRGBO(82, 82, 82, 1);
 
   // font
   static const String notoSansJP = 'NotoSansJP';
