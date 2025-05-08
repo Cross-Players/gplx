@@ -25,11 +25,11 @@ class FirestoreQuestionsRepository {
   }
 
   /// Get a specific question set by ID or name
-  Future<List<Question>> getQuestionsBySet(String setId) async {
+  Future<List<Question>> getQuestionsBySet(String quizId) async {
     try {
       final querySnapshot = await _firestore
           .collection('questions')
-          .where('setId', isEqualTo: setId)
+          .where('quizId', isEqualTo: quizId)
           .get();
 
       return querySnapshot.docs
@@ -39,7 +39,7 @@ class FirestoreQuestionsRepository {
               }))
           .toList();
     } catch (e) {
-      debugPrint('Error fetching question set: $e');
+      debugPrint('Error fetching questions for quiz $quizId: $e');
       rethrow;
     }
   }
@@ -75,6 +75,50 @@ class FirestoreQuestionsRepository {
     } catch (e) {
       debugPrint('Error fetching random questions: $e');
       rethrow;
+    }
+  }
+
+  /// Add a question to Firestore
+  Future<void> addQuestion(Question question) async {
+    try {
+      await _firestore
+          .collection('questions')
+          .doc(question.id)
+          .set(question.toJson());
+    } catch (e) {
+      debugPrint('Error adding question: $e');
+      rethrow;
+    }
+  }
+
+  /// Get the next available question ID
+  Future<int> getNextQuestionId() async {
+    try {
+      // Get the last question to determine the next ID
+      final querySnapshot = await _firestore
+          .collection('questions')
+          .orderBy('id', descending: true)
+          .limit(1)
+          .get();
+
+      if (querySnapshot.docs.isEmpty) {
+        return 1; // Start with ID 1 if no questions exist
+      }
+
+      // Get the highest ID and increment by 1
+      final lastQuestionId = querySnapshot.docs.first.id;
+
+      // Try to parse the ID as int, default to 1 if parsing fails
+      try {
+        final idNumber = int.parse(lastQuestionId);
+        return idNumber + 1;
+      } catch (e) {
+        debugPrint('Error parsing question ID: $e');
+        return 1;
+      }
+    } catch (e) {
+      debugPrint('Error getting next question ID: $e');
+      return 1; // Default to 1 in case of errors
     }
   }
 }

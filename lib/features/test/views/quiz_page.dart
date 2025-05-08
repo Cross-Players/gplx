@@ -1,5 +1,3 @@
-// ignore_for_file: deprecated_member_use
-
 import 'dart:async';
 import 'dart:convert';
 
@@ -8,13 +6,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gplx/core/constants/app_styles.dart';
 import 'package:gplx/core/routes/app_routes.dart';
 import 'package:gplx/core/widgets/countdown_timer.dart';
-import 'package:gplx/features/test/models/quiz_result.dart';
-import 'package:gplx/features/test/views/quiz_result_summary.dart';
 import 'package:gplx/features/test/models/question.dart';
 import 'package:gplx/features/test/models/quiz.dart';
+import 'package:gplx/features/test/models/quiz_result.dart';
 import 'package:gplx/features/test/providers/firestore_providers.dart';
+import 'package:gplx/features/test/views/quiz_result_summary.dart';
 import 'package:gplx/features/test_sets/controllers/test_results_provider.dart';
-import 'package:gplx/features/test_sets/controllers/test_results_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// A dedicated page for taking a specific quiz from Firebase
@@ -39,6 +36,9 @@ class _QuizPageState extends ConsumerState<QuizPage>
   // Timer state
   int _remainingTimeInSeconds = 20 * 60; // Default 20 minutes
   Timer? _timer;
+
+  // Track quiz start time to calculate duration
+  DateTime? _startTime;
 
   // Tab controller for question navigation
   late TabController _tabController;
@@ -77,7 +77,7 @@ class _QuizPageState extends ConsumerState<QuizPage>
 
       // Load the quiz details first
       final quizAsync = await ref
-          .read(firestoreRepositoryProvider)
+          .read(firestoreQuizzesRepositoryProvider)
           .getQuizById(widget.quizId);
       if (!mounted) return;
 
@@ -188,6 +188,9 @@ class _QuizPageState extends ConsumerState<QuizPage>
   void _startTimer() {
     // Cancel any existing timer
     _timer?.cancel();
+
+    // Set the start time of the quiz
+    _startTime ??= DateTime.now();
 
     // Create a new timer that ticks every second
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -339,12 +342,32 @@ class _QuizPageState extends ConsumerState<QuizPage>
 
   // Complete the quiz and show results
   void _completeQuiz() {
+    // Calculate the time taken to complete the quiz
+    final Duration timeTaken;
+    if (_startTime != null) {
+      // Calculate as quiz time limit minus remaining time
+      int totalSeconds = (_quiz?.timeLimit ?? 20) * 60; // Default 20 minutes
+      int elapsedSeconds = totalSeconds - _remainingTimeInSeconds;
+      timeTaken = Duration(seconds: elapsedSeconds);
+    } else {
+      timeTaken = Duration.zero;
+    }
+
     setState(() {
+      // Track if any critical questions were answered incorrectly
+      bool failedCriticalQuestion = false;
+
       // Auto-evaluate any selected but unchecked questions
       _selectedAnswers.forEach((questionIndex, selectedAnswerIndex) {
         if (!(_checkedQuestions[questionIndex] ?? false)) {
           _checkedQuestions[questionIndex] = true;
           final isCorrect = _isAnswerCorrect(questionIndex);
+          final isCritical = _questions[questionIndex].isCritical ?? false;
+
+          // Check if this is a critical question that was answered incorrectly
+          if (isCritical && !isCorrect) {
+            failedCriticalQuestion = true;
+          }
 
           if (isCorrect) {
             _quizResult = _quizResult.copyWith(
@@ -357,6 +380,40 @@ class _QuizPageState extends ConsumerState<QuizPage>
           }
         }
       });
+
+      // Check if any already-checked critical questions were failed
+      for (int i = 0; i < _questions.length; i++) {
+        final question = _questions[i];
+        final isChecked = _checkedQuestions[i] ?? false;
+
+        if (isChecked && (question.isCritical ?? false)) {
+          final isCorrect = _isAnswerCorrect(i);
+          if (!isCorrect) {
+            failedCriticalQuestion = true;
+            break;
+          }
+        }
+      }
+
+      // NEW CODE: Check if any critical questions were skipped (not answered at all)
+      for (int i = 0; i < _questions.length; i++) {
+        final question = _questions[i];
+        final isCritical = question.isCritical ?? false;
+        final isAnswered = _selectedAnswers.containsKey(i);
+
+        // If a critical question wasn't answered at all, fail the test
+        if (isCritical && !isAnswered) {
+          failedCriticalQuestion = true;
+          break;
+        }
+      }
+
+      // Store the calculated time taken and critical question status in the state
+      _quizResult = _quizResult.copyWith(
+        timeTaken: timeTaken,
+        attemptDate: DateTime.now(), // Update to current time
+        failedCriticalQuestion: failedCriticalQuestion,
+      );
 
       // Mark quiz as completed
       _quizCompleted = true;
@@ -372,19 +429,28 @@ class _QuizPageState extends ConsumerState<QuizPage>
     });
   }
 
-  // Save the test result to the repository
+  // Save the test result to the repository and Riverpod state
   Future<void> _saveTestResult() async {
     try {
-      // Update the QuizResult with the current time and pass status
-      final bool isPassed = _quizResult.correctAnswers >=
-          (_questions.length * 0.8).round(); // 80% to pass
+      final percentCorrect = _quizResult.totalQuestions > 0
+          ? (_quizResult.correctAnswers / _quizResult.totalQuestions) * 100
+          : 0.0;
+      final bool passedCriticalQuestions =
+          _quizResult.failedCriticalQuestion != true;
+      final bool passedScoreThreshold = percentCorrect >= 84;
+
+      final isPassed = passedCriticalQuestions && passedScoreThreshold;
       final updatedQuizResult = _quizResult.copyWith(
         attemptDate: DateTime.now(), // Update to current time
+        isPassed: isPassed,
       );
 
-      // Save to repository
-      final repository = TestResultsRepository();
-      await repository.saveTestResult(updatedQuizResult);
+      // Save to Riverpod state first (this will update the UI immediately)
+      await ref
+          .read(testResultsNotifierProvider.notifier)
+          .addResult(updatedQuizResult);
+
+      // No need to save to repository separately since the notifier already does that
     } catch (e) {
       print('Error saving test result: $e');
     }
@@ -461,9 +527,10 @@ class _QuizPageState extends ConsumerState<QuizPage>
           quizResult: _quizResult,
           questions: _questions,
           selectedAnswers: _selectedAnswers,
+          timeTaken: _quizResult.timeTaken ?? Duration.zero,
           onBackPressed: () {
             // Refresh the test results provider before navigating back
-            ref.refresh(testResultsProvider);
+            final _ = ref.refresh(testResultsProvider);
 
             // Instead of simple pop, navigate back to the test-sets screen with replacement
             // This ensures a fresh instance of TestSetsScreen with updated data
@@ -483,7 +550,8 @@ class _QuizPageState extends ConsumerState<QuizPage>
                 attemptDate: DateTime.now(),
               );
 
-              // Reset timer
+              // Reset timer and start time
+              _startTime = DateTime.now();
               _remainingTimeInSeconds =
                   _quiz?.timeLimit != null ? _quiz!.timeLimit * 60 : 20 * 60;
               _startTimer();

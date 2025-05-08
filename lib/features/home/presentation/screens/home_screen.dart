@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gplx/features/settings/providers/selected_category_provider.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final selectedCategory = ref.watch(selectedCategoryProvider);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Ôn thi GPLX B2'),
+        title: Text('Hạng ${selectedCategory.name} - GPLX 2025'),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),

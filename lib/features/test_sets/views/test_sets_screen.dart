@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gplx/core/constants/app_styles.dart';
 import 'package:gplx/core/routes/app_routes.dart';
+import 'package:gplx/features/settings/providers/selected_category_provider.dart';
 import 'package:gplx/features/test/models/quiz.dart';
 import 'package:gplx/features/test/providers/firestore_providers.dart';
 import 'package:gplx/features/test_sets/controllers/test_results_provider.dart';
@@ -11,10 +12,15 @@ class TestSetsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Get all test results from local storage
-    final testResultsAsyncValue = ref.watch(testResultsProvider);
+    // Get test results from Riverpod state instead of directly from SharedPreferences
+    final testResults = ref.watch(testResultsNotifierProvider);
+
     // Fetch quizzes from Firestore using the notifier provider
     final quizzesAsyncValue = ref.watch(quizzesNotifierProvider);
+    // Get the selected category from settings (guaranteed to be non-null now)
+    final selectedCategory = ref.watch(selectedCategoryProvider);
+    // Get the selected category ID from settings
+    final selectedCategoryId = ref.watch(selectedCategoryIdProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -22,7 +28,7 @@ class TestSetsScreen extends ConsumerWidget {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('Các đề thi Bằng B2'),
+        title: Text('Đề thi hạng ${selectedCategory.name}'),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -60,14 +66,44 @@ class TestSetsScreen extends ConsumerWidget {
           ),
         ),
         data: (quizzes) {
-          if (quizzes.isEmpty) {
+          // Filter quizzes by the selected category
+          final filteredQuizzes = selectedCategoryId != null
+              ? quizzes
+                  .where((quiz) => quiz.categoryID == selectedCategoryId)
+                  .toList()
+              : quizzes;
+
+          if (selectedCategoryId == null) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Text(
-                    'Không có đề thi nào',
+                    'Vui lòng chọn một loại bằng lái tại mục Thiết lập',
                     style: TextStyle(fontSize: 18),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, AppRoutes.settings);
+                    },
+                    child: const Text('Đi tới Thiết lập'),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          if (filteredQuizzes.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    'Không có đề thi nào cho loại bằng được chọn',
+                    style: TextStyle(fontSize: 18),
+                    textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 16),
                   ElevatedButton(
@@ -83,67 +119,60 @@ class TestSetsScreen extends ConsumerWidget {
             );
           }
 
-          return testResultsAsyncValue.when(
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (error, stackTrace) => Center(
-              child: Text('Lỗi tải kết quả: $error'),
+          // Directly use the test results from the notifier
+          return GridView.builder(
+            padding: const EdgeInsets.all(16),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              mainAxisSpacing: 16,
+              crossAxisSpacing: 16,
+              childAspectRatio: 1.5,
             ),
-            data: (savedResults) {
-              return GridView.builder(
-                padding: const EdgeInsets.all(16),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  mainAxisSpacing: 16,
-                  crossAxisSpacing: 16,
-                  childAspectRatio: 1.5,
-                ),
-                itemCount: quizzes.length,
-                itemBuilder: (context, index) {
-                  final quiz = quizzes[index];
-                  final testNumber = index + 1;
+            itemCount: filteredQuizzes.length,
+            itemBuilder: (context, index) {
+              final quiz = filteredQuizzes[index];
+              final testNumber = index + 1;
 
-                  // Extract test number from quiz ID or title for matching
-                  int quizTestNumber = _extractTestNumber(quiz.id, quiz.title);
+              // Extract test number from quiz ID or title for matching
+              int quizTestNumber = _extractTestNumber(quiz.id, quiz.title);
 
-                  // Find the result for this quiz if it exists by matching quizId
-                  final quizResult = savedResults.isNotEmpty
-                      ? savedResults
-                              .where((result) =>
-                                  result.quizId == quiz.id ||
-                                  _extractTestNumber(
-                                          result.quizId, result.quizTitle) ==
-                                      quizTestNumber)
-                              .isEmpty
-                          ? null
-                          : savedResults.firstWhere((result) =>
+              // Find the result for this quiz if it exists by matching quizId
+              final quizResult = testResults.isNotEmpty
+                  ? testResults
+                          .where((result) =>
                               result.quizId == quiz.id ||
                               _extractTestNumber(
                                       result.quizId, result.quizTitle) ==
                                   quizTestNumber)
-                      : null;
+                          .isEmpty
+                      ? null
+                      : testResults.firstWhere((result) =>
+                          result.quizId == quiz.id ||
+                          _extractTestNumber(result.quizId, result.quizTitle) ==
+                              quizTestNumber)
+                  : null;
 
-                  // Use saved result data if available, otherwise use default values
-                  final isCompleted = quizResult != null;
-                  final correct = isCompleted ? quizResult.correctAnswers : 0;
-                  final wrong = isCompleted ? quizResult.wrongAnswers : 0;
+              // Use saved result data if available, otherwise use default values
+              final isCompleted = quizResult != null;
+              final correct = isCompleted ? quizResult.correctAnswers : 0;
+              final wrong = isCompleted ? quizResult.wrongAnswers : 0;
 
-                  return _TestSetCard(
-                    quiz: quiz,
-                    testNumber: testNumber,
-                    correct: correct,
-                    wrong: wrong,
-                    isCompleted: isCompleted,
-                    onTap: () {
-                      _showStartQuizDialog(context, quiz, testNumber, () {
-                        // Navigate to the new dedicated QuizPage instead of TestQuestionScreen
-                        Navigator.pushNamed(
-                          context,
-                          AppRoutes.quiz,
-                          arguments: {'quizId': quiz.id},
-                        );
-                      });
-                    },
-                  );
+              return _TestSetCard(
+                quiz: quiz,
+                testNumber: testNumber,
+                correct: correct,
+                wrong: wrong,
+                isCompleted: isCompleted,
+                isPassed: quizResult?.isPassed,
+                onTap: () {
+                  _showStartQuizDialog(context, quiz, testNumber, () {
+                    // Navigate to the new dedicated QuizPage instead of TestQuestionScreen
+                    Navigator.pushNamed(
+                      context,
+                      AppRoutes.quiz,
+                      arguments: {'quizId': quiz.id},
+                    );
+                  });
                 },
               );
             },
@@ -231,13 +260,11 @@ class TestSetsScreen extends ConsumerWidget {
           ),
           TextButton(
             onPressed: () {
-              // Clear all saved test results
+              // Clear all saved test results using the notifier
               ref
-                  .read(testResultsRepositoryProvider)
+                  .read(testResultsNotifierProvider.notifier)
                   .clearAllResults()
                   .then((_) {
-                // Refresh the provider to reload the data
-                ref.refresh(testResultsProvider);
                 Navigator.pop(context);
               });
             },
@@ -266,6 +293,7 @@ class _TestSetCard extends StatelessWidget {
   final int correct;
   final int wrong;
   final bool isCompleted;
+  final bool? isPassed;
   final VoidCallback onTap;
 
   const _TestSetCard({
@@ -275,12 +303,13 @@ class _TestSetCard extends StatelessWidget {
     required this.wrong,
     required this.isCompleted,
     required this.onTap,
+    required this.isPassed,
   });
 
   @override
   Widget build(BuildContext context) {
     final backgroundColor = isCompleted
-        ? (wrong > 5 ? AppStyles.errorColor : Colors.green[700])
+        ? (isPassed == false ? AppStyles.errorColor : Colors.green[700])
         : Colors.grey[200];
 
     return Material(

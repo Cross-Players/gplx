@@ -1,23 +1,49 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gplx/features/test/data/firestore_repository.dart';
+import 'package:gplx/features/test/data/firestore_categories_repository.dart';
+import 'package:gplx/features/test/data/firestore_questions_repository.dart';
+import 'package:gplx/features/test/data/firestore_quizzes_repository.dart';
+import 'package:gplx/features/test/models/category.dart';
 import 'package:gplx/features/test/models/question.dart';
 import 'package:gplx/features/test/models/quiz.dart';
 
-// Provider for the repository
-final firestoreRepositoryProvider = Provider<FirestoreRepository>(
-  (ref) => FirestoreRepository(),
+// Providers for repositories
+final firestoreCategoriesRepositoryProvider =
+    Provider<FirestoreCategoriesRepository>(
+  (ref) => FirestoreCategoriesRepository(),
+);
+
+final firestoreQuestionsRepositoryProvider =
+    Provider<FirestoreQuestionsRepository>(
+  (ref) => FirestoreQuestionsRepository(),
+);
+
+final firestoreQuizzesRepositoryProvider = Provider<FirestoreQuizzesRepository>(
+  (ref) => FirestoreQuizzesRepository(),
 );
 
 // Provider for quizzes
 final quizzesProvider = FutureProvider<List<Quiz>>((ref) async {
-  final repository = ref.read(firestoreRepositoryProvider);
+  final repository = ref.read(firestoreQuizzesRepositoryProvider);
   return repository.getAllQuizzes();
 });
 
 // Provider for a specific quiz by ID
 final quizProvider = FutureProvider.family<Quiz?, String>((ref, quizId) async {
-  final repository = ref.read(firestoreRepositoryProvider);
+  final repository = ref.read(firestoreQuizzesRepositoryProvider);
   return repository.getQuizById(quizId);
+});
+
+// Provider for categories
+final categoriesProvider = FutureProvider<List<Category>>((ref) async {
+  final repository = ref.read(firestoreCategoriesRepositoryProvider);
+  return repository.getAllCategories();
+});
+
+// Provider for quizzes by category
+final quizzesByCategoryProvider =
+    FutureProvider.family<List<Quiz>, String>((ref, categoryId) async {
+  final repository = ref.read(firestoreCategoriesRepositoryProvider);
+  return repository.getQuizzesByCategory(categoryId);
 });
 
 // AsyncNotifier to manage question state
@@ -31,7 +57,7 @@ class QuestionsNotifier extends AsyncNotifier<List<Question>> {
   Future<void> fetchAllQuestions() async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
-      final repository = ref.read(firestoreRepositoryProvider);
+      final repository = ref.read(firestoreQuestionsRepositoryProvider);
       return repository.getAllQuestions();
     });
   }
@@ -39,28 +65,28 @@ class QuestionsNotifier extends AsyncNotifier<List<Question>> {
   Future<void> fetchQuestionsByQuizId(String quizId) async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
-      final repository = ref.read(firestoreRepositoryProvider);
-      return repository.getQuestionsByQuizId(quizId);
+      final repository = ref.read(firestoreQuestionsRepositoryProvider);
+      return repository.getQuestionsBySet(quizId);
     });
   }
 
   Future<void> fetchRandomQuestions(int count) async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
-      final repository = ref.read(firestoreRepositoryProvider);
+      final repository = ref.read(firestoreQuestionsRepositoryProvider);
       return repository.getRandomQuestions(count);
     });
   }
 
   Future<int> getNextQuestionId() async {
-    final repository = ref.read(firestoreRepositoryProvider);
+    final repository = ref.read(firestoreQuestionsRepositoryProvider);
     return repository.getNextQuestionId();
   }
 
   Future<void> addQuestion(Question question) async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
-      final repository = ref.read(firestoreRepositoryProvider);
+      final repository = ref.read(firestoreQuestionsRepositoryProvider);
       await repository.addQuestion(question);
       return [...state.value ?? [], question];
     });
@@ -77,14 +103,14 @@ final questionsProvider =
 class QuizzesNotifier extends AsyncNotifier<List<Quiz>> {
   @override
   Future<List<Quiz>> build() async {
-    final repository = ref.read(firestoreRepositoryProvider);
+    final repository = ref.read(firestoreQuizzesRepositoryProvider);
     return repository.getAllQuizzes();
   }
 
   Future<void> addQuiz(Quiz quiz) async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
-      final repository = ref.read(firestoreRepositoryProvider);
+      final repository = ref.read(firestoreQuizzesRepositoryProvider);
       await repository.addQuiz(quiz);
       return [...state.value ?? [], quiz];
     });
@@ -93,7 +119,7 @@ class QuizzesNotifier extends AsyncNotifier<List<Quiz>> {
   Future<void> refreshQuizzes() async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
-      final repository = ref.read(firestoreRepositoryProvider);
+      final repository = ref.read(firestoreQuizzesRepositoryProvider);
       return repository.getAllQuizzes();
     });
   }
@@ -103,4 +129,36 @@ class QuizzesNotifier extends AsyncNotifier<List<Quiz>> {
 final quizzesNotifierProvider =
     AsyncNotifierProvider<QuizzesNotifier, List<Quiz>>(
   () => QuizzesNotifier(),
+);
+
+// AsyncNotifier to manage category state
+class CategoriesNotifier extends AsyncNotifier<List<Category>> {
+  @override
+  Future<List<Category>> build() async {
+    final repository = ref.read(firestoreCategoriesRepositoryProvider);
+    return repository.getAllCategories();
+  }
+
+  Future<void> refreshCategories() async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      final repository = ref.read(firestoreCategoriesRepositoryProvider);
+      return repository.getAllCategories();
+    });
+  }
+
+  Future<void> addCategory(Category category) async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      final repository = ref.read(firestoreCategoriesRepositoryProvider);
+      await repository.addCategory(category);
+      return [...state.value ?? [], category];
+    });
+  }
+}
+
+// Provider for categories using the notifier
+final categoriesNotifierProvider =
+    AsyncNotifierProvider<CategoriesNotifier, List<Category>>(
+  () => CategoriesNotifier(),
 );

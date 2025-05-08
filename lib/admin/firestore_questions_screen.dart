@@ -1,14 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gplx/admin/add_question_screen.dart';
+import 'package:gplx/admin/add_quiz_screen.dart';
 import 'package:gplx/core/constants/app_styles.dart';
 import 'package:gplx/features/test/models/question.dart';
 import 'package:gplx/features/test/models/quiz.dart';
-import 'package:gplx/features/test/presentation/screens/add_question_screen.dart';
-import 'package:gplx/features/test/presentation/screens/add_quiz_screen.dart';
 import 'package:gplx/features/test/providers/firestore_providers.dart';
 
 class FirestoreQuestionsScreen extends ConsumerStatefulWidget {
-  const FirestoreQuestionsScreen({super.key});
+  final String? categoryId;
+  final String? categoryName;
+
+  const FirestoreQuestionsScreen({
+    super.key,
+    this.categoryId,
+    this.categoryName,
+  });
 
   @override
   ConsumerState<FirestoreQuestionsScreen> createState() =>
@@ -24,9 +31,15 @@ class _FirestoreQuestionsScreenState
   @override
   void initState() {
     super.initState();
-    // Fetch all quizzes when the screen loads instead of all questions
+    // Initialize with category specific quizzes if categoryId is provided
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(quizzesNotifierProvider.notifier).refreshQuizzes();
+      if (widget.categoryId != null) {
+        // Refresh quizzes filtered by category
+        ref.invalidate(quizzesByCategoryProvider(widget.categoryId!));
+      } else {
+        // Otherwise load all quizzes
+        ref.read(quizzesNotifierProvider.notifier).refreshQuizzes();
+      }
     });
   }
 
@@ -49,13 +62,20 @@ class _FirestoreQuestionsScreenState
 
   @override
   Widget build(BuildContext context) {
-    final quizzesAsync = ref.watch(quizzesNotifierProvider);
+    // Use category-filtered quizzes if categoryId is provided, otherwise use all quizzes
+    final quizzesAsync = widget.categoryId != null
+        ? ref.watch(quizzesByCategoryProvider(widget.categoryId!))
+        : ref.watch(quizzesNotifierProvider);
+
     final questionsAsync = ref.watch(questionsProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-            showingQuestions ? 'Câu hỏi trong bài quiz' : 'Danh sách bài quiz'),
+        title: Text(showingQuestions
+            ? 'Câu hỏi trong bài quiz'
+            : widget.categoryName != null
+                ? 'Bài quiz trong ${widget.categoryName}'
+                : 'Danh sách bài quiz'),
         backgroundColor: AppStyles.primaryColor,
         foregroundColor: Colors.white,
         actions: [
@@ -74,7 +94,11 @@ class _FirestoreQuestionsScreenState
                     .fetchQuestionsByQuizId(selectedQuizId!);
               } else if (showingRandomQuestions) {
                 ref.read(questionsProvider.notifier).fetchRandomQuestions(10);
+              } else if (widget.categoryId != null) {
+                // Refresh category-specific quizzes
+                ref.invalidate(quizzesByCategoryProvider(widget.categoryId!));
               } else {
+                // Refresh all quizzes
                 ref.read(quizzesNotifierProvider.notifier).refreshQuizzes();
               }
             },
@@ -95,11 +119,17 @@ class _FirestoreQuestionsScreenState
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const AddQuizScreen(),
+                  builder: (context) => AddQuizScreen(
+                    initialCategoryId: widget.categoryId,
+                  ),
                 ),
               ).then((_) {
-                // Refresh quizzes when returning from add quiz screen
-                ref.read(quizzesNotifierProvider.notifier).refreshQuizzes();
+                // Refresh the appropriate quiz list when returning
+                if (widget.categoryId != null) {
+                  ref.invalidate(quizzesByCategoryProvider(widget.categoryId!));
+                } else {
+                  ref.read(quizzesNotifierProvider.notifier).refreshQuizzes();
+                }
               });
             },
             heroTag: 'addQuiz',
@@ -114,7 +144,10 @@ class _FirestoreQuestionsScreenState
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const AddQuestionScreen(),
+                  builder: (context) => AddQuestionScreen(
+                    categoryId: widget.categoryId,
+                    categoryName: widget.categoryName,
+                  ),
                 ),
               ).then((_) {
                 // Refresh questions if we're showing questions

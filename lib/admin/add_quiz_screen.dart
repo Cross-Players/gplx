@@ -6,7 +6,12 @@ import 'package:gplx/features/test/models/quiz.dart';
 import 'package:gplx/features/test/providers/firestore_providers.dart';
 
 class AddQuizScreen extends ConsumerStatefulWidget {
-  const AddQuizScreen({super.key});
+  final String? initialCategoryId;
+
+  const AddQuizScreen({
+    super.key,
+    this.initialCategoryId,
+  });
 
   @override
   ConsumerState<AddQuizScreen> createState() => _AddQuizScreenState();
@@ -20,6 +25,15 @@ class _AddQuizScreenState extends ConsumerState<AddQuizScreen> {
   final _titleController = TextEditingController();
 
   bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Pre-fill category ID if provided
+    if (widget.initialCategoryId != null) {
+      _categoryIDController.text = widget.initialCategoryId!;
+    }
+  }
 
   @override
   void dispose() {
@@ -51,8 +65,11 @@ class _AddQuizScreenState extends ConsumerState<AddQuizScreen> {
         // Save to Firestore
         await ref.read(quizzesNotifierProvider.notifier).addQuiz(quiz);
 
-        // Refresh the quizzes list
+        // Refresh the quizzes list and category-specific quizzes if needed
         await ref.read(quizzesNotifierProvider.notifier).refreshQuizzes();
+        if (widget.initialCategoryId != null) {
+          ref.invalidate(quizzesByCategoryProvider(widget.initialCategoryId!));
+        }
 
         // Show success message
         if (mounted) {
@@ -60,12 +77,8 @@ class _AddQuizScreenState extends ConsumerState<AddQuizScreen> {
             const SnackBar(content: Text('Bài quiz đã được lưu thành công')),
           );
 
-          // Reset the form
-          _formKey.currentState!.reset();
-          _idController.clear();
-          _categoryIDController.clear();
-          _timeLimitController.clear();
-          _titleController.clear();
+          // Reset the form or navigate back
+          Navigator.pop(context);
         }
       } catch (e) {
         if (mounted) {

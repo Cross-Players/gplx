@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gplx/features/home/controllers/mixin_home.dart';
 import 'package:gplx/features/home/views/components/post_list.dart';
-import 'package:gplx/features/test/presentation/screens/firestore_questions_screen.dart';
+import 'package:gplx/admin/firestore_questions_screen.dart';
 
 class HomePage extends ConsumerWidget with MixinHome {
   const HomePage({super.key});

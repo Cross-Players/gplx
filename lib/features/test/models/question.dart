@@ -12,6 +12,7 @@ class Question with _$Question {
     required int correctOptionIndex,
     String? imageUrl,
     String? quizId,
+    bool? isCritical,
   }) = _Question;
 
   factory Question.fromJson(Map<String, dynamic> json) =>

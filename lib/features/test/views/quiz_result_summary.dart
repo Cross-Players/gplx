@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gplx/core/constants/app_styles.dart';
-import 'package:gplx/features/test/models/quiz_result.dart';
 import 'package:gplx/features/test/models/question.dart';
-import 'package:intl/intl.dart';
+import 'package:gplx/features/test/models/quiz_result.dart';
 
 /// Filter enum for question filtering
 enum QuestionFilter {
@@ -19,6 +18,7 @@ class QuizResultSummary extends StatefulWidget {
   final Map<int, int> selectedAnswers;
   final VoidCallback onBackPressed;
   final VoidCallback onRetakeQuiz;
+  final Duration timeTaken; // New parameter to store the time taken
 
   const QuizResultSummary({
     required this.quizResult,
@@ -26,6 +26,7 @@ class QuizResultSummary extends StatefulWidget {
     required this.selectedAnswers,
     required this.onBackPressed,
     required this.onRetakeQuiz,
+    required this.timeTaken, // Required parameter
     super.key,
   });
 
@@ -43,8 +44,11 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
                 widget.quizResult.totalQuestions) *
             100
         : 0.0;
+    final bool passedCriticalQuestions =
+        widget.quizResult.failedCriticalQuestion != true;
+    final bool passedScoreThreshold = percentCorrect >= 84;
 
-    final isPassed = percentCorrect >= 80; // 80% to pass
+    final isPassed = passedCriticalQuestions && passedScoreThreshold;
 
     return Scaffold(
       body: SingleChildScrollView(
@@ -91,8 +95,19 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
 
   // Red or green banner showing pass/fail status
   Widget _buildStatusBanner(bool isPassed) {
-    final String message =
-        isPassed ? 'ĐẠT: Chúc mừng bạn!' : 'KHÔNG ĐẠT: Số câu đúng không đủ!';
+    // Determine the exact reason for failing if not passed
+    String message;
+
+    if (isPassed) {
+      message = 'ĐẠT: Chúc mừng bạn!';
+    } else {
+      if (widget.quizResult.failedCriticalQuestion == true) {
+        message = 'KHÔNG ĐẠT: Câu điểm liệt sai!';
+      } else {
+        // If not critical question failure, then it's due to not meeting the 84% threshold
+        message = 'KHÔNG ĐẠT: Không đủ số lượng câu đúng.';
+      }
+    }
 
     return Container(
       width: double.infinity,
@@ -112,12 +127,10 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
 
   // Row with timer icon, time taken, and score
   Widget _buildTimerAndScoreRow() {
-    // If we have actual time data, we could use it here
-    final timeString = DateFormat('mm:ss').format(
-      DateTime.fromMillisecondsSinceEpoch(
-        widget.quizResult.attemptDate.millisecond,
-      ),
-    );
+    // Format the duration to show minutes and seconds
+    final minutes = widget.timeTaken.inMinutes;
+    final seconds = widget.timeTaken.inSeconds % 60;
+    final timeString = '$minutes:${seconds.toString().padLeft(2, '0')}';
 
     return Padding(
       padding: const EdgeInsets.all(16.0),
@@ -272,14 +285,14 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
             children: [
               Row(
                 children: [
-                  Icon(icon, color: color.withOpacity(opacity)),
+                  Icon(icon, color: color.withValues(alpha: opacity)),
                   const SizedBox(width: 4),
                   Text(
                     count,
                     style: TextStyle(
                       fontSize: 22,
                       fontWeight: isActive ? FontWeight.w900 : FontWeight.bold,
-                      color: color.withOpacity(opacity),
+                      color: color.withValues(alpha: opacity),
                     ),
                   ),
                 ],
@@ -290,7 +303,7 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
                 width: 60,
                 height: isActive ? 8 : 5,
                 decoration: BoxDecoration(
-                  color: color.withOpacity(isActive ? 0.7 : 0.3),
+                  color: color.withValues(alpha: isActive ? 0.7 : 0.3),
                   borderRadius: isActive ? BorderRadius.circular(4) : null,
                 ),
               ),
@@ -459,6 +472,18 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
                         left: 0,
                         child: Center(child: icon),
                       ),
+
+                      // Star icon for critical questions
+                      if (widget.questions[questionIndex].isCritical == true)
+                        const Positioned(
+                          top: 4,
+                          right: 4,
+                          child: Icon(
+                            Icons.star,
+                            color: Colors.amber,
+                            size: 16,
+                          ),
+                        ),
                     ],
                   ),
                 ),
@@ -522,28 +547,56 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                    decoration: BoxDecoration(
-                      color: isAnswered
-                          ? (isCorrect
-                              ? Colors.green.shade100
-                              : Colors.red.shade100)
-                          : Colors.grey.shade100,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      'Câu ${questionIndex + 1}',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: isAnswered
-                            ? (isCorrect
-                                ? Colors.green.shade800
-                                : Colors.red.shade800)
-                            : Colors.grey.shade800,
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: isAnswered
+                              ? (isCorrect
+                                  ? Colors.green.shade100
+                                  : Colors.red.shade100)
+                              : Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          'Câu ${questionIndex + 1}',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: isAnswered
+                                ? (isCorrect
+                                    ? Colors.green.shade800
+                                    : Colors.red.shade800)
+                                : Colors.grey.shade800,
+                          ),
+                        ),
                       ),
-                    ),
+
+                      // Star icon for critical questions in detail view
+                      if (question.isCritical == true)
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8.0),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.star,
+                                color: Colors.amber,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Câu điểm liệt',
+                                style: TextStyle(
+                                  color: Colors.amber[800],
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                    ],
                   ),
                   IconButton(
                     icon: const Icon(Icons.close),

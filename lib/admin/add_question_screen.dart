@@ -5,7 +5,14 @@ import 'package:gplx/features/test/models/question.dart';
 import 'package:gplx/features/test/providers/firestore_providers.dart';
 
 class AddQuestionScreen extends ConsumerStatefulWidget {
-  const AddQuestionScreen({super.key});
+  final String? categoryId;
+  final String? categoryName;
+
+  const AddQuestionScreen({
+    super.key,
+    this.categoryId,
+    this.categoryName,
+  });
 
   @override
   ConsumerState<AddQuestionScreen> createState() => _AddQuestionScreenState();
@@ -26,6 +33,7 @@ class _AddQuestionScreenState extends ConsumerState<AddQuestionScreen> {
   int _correctOptionIndex = 0;
   bool _isLoading = false;
   String? _selectedQuizId;
+  bool isCritical = false;
 
   @override
   void dispose() {
@@ -92,6 +100,7 @@ class _AddQuestionScreenState extends ConsumerState<AddQuestionScreen> {
               ? null
               : _imageUrlController.text.trim(),
           quizId: _selectedQuizId,
+          isCritical: isCritical,
         );
 
         // Save to Firestore
@@ -133,11 +142,16 @@ class _AddQuestionScreenState extends ConsumerState<AddQuestionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final quizzesAsync = ref.watch(quizzesNotifierProvider);
+    // Use category-filtered quizzes if categoryId is provided, otherwise use all quizzes
+    final quizzesAsync = widget.categoryId != null
+        ? ref.watch(quizzesByCategoryProvider(widget.categoryId!))
+        : ref.watch(quizzesNotifierProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Thêm câu hỏi mới'),
+        title: Text(widget.categoryName != null
+            ? 'Thêm câu hỏi: ${widget.categoryName}'
+            : 'Thêm câu hỏi mới'),
         backgroundColor: AppStyles.primaryColor,
         foregroundColor: Colors.white,
       ),
@@ -173,54 +187,84 @@ class _AddQuestionScreenState extends ConsumerState<AddQuestionScreen> {
                     const SizedBox(height: 16),
 
                     // Quiz ID Dropdown
-                    quizzesAsync.when(
-                      loading: () => const Center(
-                        child: CircularProgressIndicator(),
-                      ),
-                      error: (error, stackTrace) => Text(
-                        'Lỗi tải danh sách quiz: $error',
-                        style: const TextStyle(color: Colors.red),
-                      ),
-                      data: (quizzes) {
-                        if (quizzes.isEmpty) {
-                          return const Text(
-                            'Không có quiz nào. Vui lòng tạo quiz trước.',
-                            style: TextStyle(fontStyle: FontStyle.italic),
-                          );
-                        }
-
-                        return DropdownButtonFormField<String>(
-                          value: _selectedQuizId,
-                          decoration: InputDecoration(
-                            labelText: 'Chọn Quiz',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
+                    Row(
+                      children: [
+                        Expanded(
+                          flex: 1,
+                          child: quizzesAsync.when(
+                            loading: () => const Center(
+                              child: CircularProgressIndicator(),
                             ),
-                            filled: true,
-                            fillColor: Colors.white,
+                            error: (error, stackTrace) => Text(
+                              'Lỗi tải danh sách quiz: $error',
+                              style: const TextStyle(color: Colors.red),
+                            ),
+                            data: (quizzes) {
+                              if (quizzes.isEmpty) {
+                                return const Text(
+                                  'Không có quiz nào. Vui lòng tạo quiz trước.',
+                                  style: TextStyle(fontStyle: FontStyle.italic),
+                                );
+                              }
+
+                              return DropdownButtonFormField<String>(
+                                value: _selectedQuizId,
+                                decoration: InputDecoration(
+                                  labelText: 'Chọn Quiz',
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  filled: true,
+                                  fillColor: Colors.white,
+                                ),
+                                items: quizzes.map((quiz) {
+                                  return DropdownMenuItem<String>(
+                                    value: quiz.id,
+                                    child: Text(
+                                      'Quiz ${quiz.title} (${quiz.categoryID})',
+                                    ),
+                                  );
+                                }).toList(),
+                                onChanged: (value) {
+                                  setState(() {
+                                    _selectedQuizId = value;
+                                  });
+                                },
+                                validator: (value) {
+                                  if (value == null) {
+                                    return 'Vui lòng chọn một quiz';
+                                  }
+                                  return null;
+                                },
+                              );
+                            },
                           ),
-                          items: quizzes.map((quiz) {
-                            return DropdownMenuItem<String>(
-                              value: quiz.id,
-                              child: Text(
-                                'Quiz ${quiz.title} (${quiz.categoryID})',
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          flex: 0,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              const Text(
+                                'Câu liệt',
+                                style: TextStyle(fontWeight: FontWeight.bold),
                               ),
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            setState(() {
-                              _selectedQuizId = value;
-                            });
-                          },
-                          validator: (value) {
-                            if (value == null) {
-                              return 'Vui lòng chọn một quiz';
-                            }
-                            return null;
-                          },
-                        );
-                      },
+                              const SizedBox(width: 10),
+                              Switch(
+                                value: isCritical,
+                                onChanged: (value) {
+                                  setState(() {
+                                    isCritical = value;
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
+
                     const SizedBox(height: 16),
 
                     // Image URL
