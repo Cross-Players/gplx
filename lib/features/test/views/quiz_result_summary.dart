@@ -3,7 +3,6 @@ import 'package:gplx/core/constants/app_styles.dart';
 import 'package:gplx/features/test/models/question.dart';
 import 'package:gplx/features/test/models/quiz_result.dart';
 
-/// Filter enum for question filtering
 enum QuestionFilter {
   all,
   correct,
@@ -11,14 +10,13 @@ enum QuestionFilter {
   skipped,
 }
 
-/// A widget to display the summary of a completed quiz
 class QuizResultSummary extends StatefulWidget {
   final QuizResult quizResult;
   final List<Question> questions;
   final Map<int, int> selectedAnswers;
   final VoidCallback onBackPressed;
   final VoidCallback onRetakeQuiz;
-  final Duration timeTaken; // New parameter to store the time taken
+  final Duration timeTaken;
 
   const QuizResultSummary({
     required this.quizResult,
@@ -26,7 +24,7 @@ class QuizResultSummary extends StatefulWidget {
     required this.selectedAnswers,
     required this.onBackPressed,
     required this.onRetakeQuiz,
-    required this.timeTaken, // Required parameter
+    required this.timeTaken,
     super.key,
   });
 
@@ -54,19 +52,10 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Status banner (pass/fail)
             _buildStatusBanner(isPassed),
-
-            // Timer and score display
             _buildTimerAndScoreRow(),
-
-            // Stats summary
             _buildStatsSummary(),
-
-            // Question grid
             _buildQuestionGrid(),
-
-            // Action buttons
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: ElevatedButton.icon(
@@ -93,9 +82,7 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
     );
   }
 
-  // Red or green banner showing pass/fail status
   Widget _buildStatusBanner(bool isPassed) {
-    // Determine the exact reason for failing if not passed
     String message;
 
     if (isPassed) {
@@ -104,7 +91,6 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
       if (widget.quizResult.failedCriticalQuestion == true) {
         message = 'KHÔNG ĐẠT: Câu điểm liệt sai!';
       } else {
-        // If not critical question failure, then it's due to not meeting the 84% threshold
         message = 'KHÔNG ĐẠT: Không đủ số lượng câu đúng.';
       }
     }
@@ -125,9 +111,7 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
     );
   }
 
-  // Row with timer icon, time taken, and score
   Widget _buildTimerAndScoreRow() {
-    // Format the duration to show minutes and seconds
     final minutes = widget.timeTaken.inMinutes;
     final seconds = widget.timeTaken.inSeconds % 60;
     final timeString = '$minutes:${seconds.toString().padLeft(2, '0')}';
@@ -137,7 +121,6 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Timer section
           Row(
             children: [
               Container(
@@ -159,8 +142,6 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
               ),
             ],
           ),
-
-          // Score section
           Row(
             children: [
               Container(
@@ -182,8 +163,6 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
               ),
             ],
           ),
-
-          // Percentage indicator
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
@@ -204,7 +183,6 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
     );
   }
 
-  // Stats summary showing total, correct, wrong, and skipped questions
   Widget _buildStatsSummary() {
     final skippedCount = widget.quizResult.totalQuestions -
         widget.quizResult.correctAnswers -
@@ -215,7 +193,6 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          // Total questions
           _buildStatItem(
             '∑ ${widget.quizResult.totalQuestions}',
             Colors.blue,
@@ -224,8 +201,6 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
             QuestionFilter.all,
             widget.quizResult.totalQuestions > 0,
           ),
-
-          // Correct answers
           _buildStatItem(
             '${widget.quizResult.correctAnswers}',
             Colors.green,
@@ -234,8 +209,6 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
             QuestionFilter.correct,
             widget.quizResult.correctAnswers > 0,
           ),
-
-          // Wrong answers
           _buildStatItem(
             '${widget.quizResult.wrongAnswers}',
             Colors.red,
@@ -244,8 +217,6 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
             QuestionFilter.wrong,
             widget.quizResult.wrongAnswers > 0,
           ),
-
-          // Skipped questions
           _buildStatItem(
             '$skippedCount',
             Colors.orange,
@@ -259,13 +230,10 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
     );
   }
 
-  // Individual stat item with icon and count
   Widget _buildStatItem(String count, Color color, IconData icon,
       String tooltip, QuestionFilter filter, bool isEnabled) {
-    // Check if this filter is currently active
     final bool isActive = activeFilter == filter;
 
-    // Make the item look disabled if it's not clickable (e.g., no items in that category)
     final opacity = isEnabled ? 1.0 : 0.5;
 
     return InkWell(
@@ -298,7 +266,6 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
                 ],
               ),
               const SizedBox(height: 4),
-              // Highlight the active filter with a thicker line
               Container(
                 width: 60,
                 height: isActive ? 8 : 5,
@@ -314,45 +281,38 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
     );
   }
 
-  // Grid of question buttons
   Widget _buildQuestionGrid() {
-    // Map the selected answers to a question results map similar to TestResultScreen
     final Map<int, bool> questionResults = {};
     for (int i = 0; i < widget.questions.length; i++) {
       final selectedAnswerIndex = widget.selectedAnswers[i];
       if (selectedAnswerIndex != null) {
-        final isCorrect =
-            selectedAnswerIndex == widget.questions[i].correctOptionIndex;
+        final isCorrect = selectedAnswerIndex >= 0 &&
+            selectedAnswerIndex < widget.questions[i].answers.length &&
+            widget.questions[i].answers[selectedAnswerIndex].isCorrect;
         questionResults[i] = isCorrect;
       }
     }
 
-    // Get all question indices based on the filter
     final List<int> questionsToShow = [];
 
-    // Apply filtering based on the active filter
     switch (activeFilter) {
       case QuestionFilter.all:
-        // Show all questions
         questionsToShow
             .addAll(List.generate(widget.questions.length, (index) => index));
         break;
       case QuestionFilter.correct:
-        // Show only correctly answered questions
         questionsToShow.addAll(questionResults.entries
             .where((entry) => entry.value == true)
             .map((entry) => entry.key)
             .toList());
         break;
       case QuestionFilter.wrong:
-        // Show only incorrectly answered questions
         questionsToShow.addAll(questionResults.entries
             .where((entry) => entry.value == false)
             .map((entry) => entry.key)
             .toList());
         break;
       case QuestionFilter.skipped:
-        // Show only skipped questions (not in questionResults)
         for (int i = 0; i < widget.questions.length; i++) {
           if (!questionResults.containsKey(i)) {
             questionsToShow.add(i);
@@ -361,7 +321,6 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
         break;
     }
 
-    // Handle empty state
     if (questionsToShow.isEmpty) {
       return Center(
         child: Padding(
@@ -389,7 +348,6 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Filter indicator
           Padding(
             padding: const EdgeInsets.only(bottom: 8.0),
             child: Text(
@@ -400,7 +358,6 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
               ),
             ),
           ),
-          // Question grid
           GridView.builder(
             physics: const NeverScrollableScrollPhysics(),
             shrinkWrap: true,
@@ -423,16 +380,13 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
 
               if (isAnswered) {
                 if (isCorrect) {
-                  // Correct answer - green
                   backgroundColor = Colors.green[200]!;
                   icon = const Icon(Icons.check, color: Colors.green, size: 18);
                 } else {
-                  // Wrong answer - red
                   backgroundColor = Colors.red[200]!;
                   icon = const Icon(Icons.close, color: Colors.red, size: 18);
                 }
               } else {
-                // Unanswered/skipped question - gray/blue
                 backgroundColor = Colors.blue[50]!;
                 icon = const Icon(Icons.help_outline,
                     color: Colors.orange, size: 18);
@@ -449,7 +403,6 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
                   ),
                   child: Stack(
                     children: [
-                      // Question number
                       Center(
                         child: Text(
                           'Câu ${questionIndex + 1}',
@@ -464,17 +417,13 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
                           ),
                         ),
                       ),
-
-                      // Result icon at bottom
                       Positioned(
                         bottom: 4,
                         right: 0,
                         left: 0,
                         child: Center(child: icon),
                       ),
-
-                      // Star icon for critical questions
-                      if (widget.questions[questionIndex].isCritical == true)
+                      if (widget.questions[questionIndex].isDeadPoint == true)
                         const Positioned(
                           top: 4,
                           right: 4,
@@ -495,7 +444,6 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
     );
   }
 
-  // Helper method to get filter title
   String _getFilterTitle() {
     switch (activeFilter) {
       case QuestionFilter.all:
@@ -509,7 +457,6 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
     }
   }
 
-  // Helper method to get empty state message
   String _getEmptyStateMessage() {
     switch (activeFilter) {
       case QuestionFilter.all:
@@ -527,8 +474,11 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
     final question = widget.questions[questionIndex];
     final selectedAnswerIndex = widget.selectedAnswers[questionIndex];
     final isAnswered = selectedAnswerIndex != null;
-    final isCorrect =
-        isAnswered && selectedAnswerIndex == question.correctOptionIndex;
+
+    final isCorrect = isAnswered &&
+        selectedAnswerIndex >= 0 &&
+        selectedAnswerIndex < question.answers.length &&
+        question.answers[selectedAnswerIndex].isCorrect;
 
     showModalBottomSheet(
       context: context,
@@ -572,9 +522,7 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
                           ),
                         ),
                       ),
-
-                      // Star icon for critical questions in detail view
-                      if (question.isCritical == true)
+                      if (question.isDeadPoint == true)
                         Padding(
                           padding: const EdgeInsets.only(left: 8.0),
                           child: Row(
@@ -606,7 +554,7 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
               ),
               const SizedBox(height: 20),
               Text(
-                question.questionTitle,
+                question.content,
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -634,10 +582,10 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
                 ),
               Expanded(
                 child: ListView.builder(
-                  itemCount: question.options.length,
+                  itemCount: question.answers.length,
                   itemBuilder: (context, index) {
                     final bool isCorrectOption =
-                        index == question.correctOptionIndex;
+                        question.answers[index].isCorrect;
                     final bool isSelected = selectedAnswerIndex == index;
 
                     return Container(
@@ -674,7 +622,7 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
                           const SizedBox(width: 15),
                           Expanded(
                             child: Text(
-                              question.options[index],
+                              question.answers[index].answerContent,
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: isSelected || isCorrectOption
@@ -701,7 +649,6 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
     );
   }
 
-  // Helper methods for question detail styling
   Color _getAnswerBackgroundColor(bool isSelected, bool isCorrect) {
     if (isCorrect) {
       return Colors.green.shade50;

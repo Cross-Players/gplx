@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gplx/features/home/presentation/screens/home_screen.dart';
-import 'package:gplx/features/settings/presentation/screens/settings_screen.dart';
 import 'package:gplx/features/signs/presentation/screens/traffic_signs_screen.dart';
 import 'package:gplx/features/test/views/quiz_page.dart';
-import 'package:gplx/features/test_sets/views/test_sets_screen.dart';
 
 class AppRoutes {
   static const String home = '/';
@@ -19,26 +17,26 @@ class AppRoutes {
         return MaterialPageRoute(
           builder: (_) => const HomeScreen(),
         );
-      case settings:
-        return MaterialPageRoute(
-          builder: (_) => const SettingsScreen(),
-        );
+      // case settings:
+      //   return MaterialPageRoute(
+      //     builder: (_) => const SettingsScreen(),
+      //   );
       case testSets:
         return MaterialPageRoute(
-          builder: (_) => const TestSetsScreen(),
+          builder: (_) => const QuizPage(),
         );
       case signs:
         return MaterialPageRoute(
           builder: (_) => const TrafficSignsScreen(),
         );
-      case quiz:
-        // Extract the quiz ID from route arguments
-        final args = route.arguments as Map<String, dynamic>?;
-        final quizId = args?['quizId'] as String? ?? 'default';
+      // case quiz:
+      //   // Extract the quiz ID from route arguments
+      //   final args = route.arguments as Map<String, dynamic>?;
+      //   final quizId = args?['quizId'] as String? ?? 'default';
 
-        return MaterialPageRoute(
-          builder: (_) => QuizPage(quizId: quizId),
-        );
+      //   return MaterialPageRoute(
+      //     builder: (_) => QuizPage(quizId: quizId),
+      //   );
       default:
         return MaterialPageRoute(
           builder: (_) => const HomeScreen(),

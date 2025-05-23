@@ -1,18 +1,19 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+import 'answer.dart';
+
 part 'question.freezed.dart';
 part 'question.g.dart';
 
 @freezed
-class Question with _$Question {
-  const factory Question({
-    String? id,
-    required String questionTitle,
-    required List<String> options,
-    required int correctOptionIndex,
+sealed class Question with _$Question {
+  factory Question({
+    required String content,
+    required String explanation,
+    required int number,
+    required List<Answer> answers,
     String? imageUrl,
-    String? quizId,
-    bool? isCritical,
+    bool? isDeadPoint,
   }) = _Question;
 
   factory Question.fromJson(Map<String, dynamic> json) =>
