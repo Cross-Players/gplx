@@ -7,30 +7,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gplx/core/constants/app_styles.dart';
 import 'package:gplx/core/widgets/countdown_timer.dart';
 import 'package:gplx/features/test/controllers/exam_set_repository.dart';
-import 'package:gplx/features/test/data/realtime_questions_repository.dart';
-import 'package:gplx/features/test_sets/models/exam_set.dart';
 import 'package:gplx/features/test/models/question.dart';
 import 'package:gplx/features/test/models/quiz_result.dart';
+import 'package:gplx/features/test/providers/quiz_providers.dart';
 import 'package:gplx/features/test/views/quiz_result_summary.dart';
 import 'package:gplx/features/test_sets/controllers/test_results_provider.dart';
+import 'package:gplx/features/test_sets/models/exam_set.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-// Provider để lấy câu hỏi dựa trên examSetId
-final quizQuestionsProvider = FutureProvider.family<List<Question>, String>((
-  ref,
-  examSetId,
-) async {
-  // Lấy thông tin examSet
-  final examSet = await ref.watch(examSetByIdProvider(examSetId).future);
-
-  if (examSet == null) {
-    throw Exception('Không tìm thấy bộ đề $examSetId');
-  }
-
-  // Lấy danh sách câu hỏi từ repository
-  final questionRepo = ref.read(questionRepositoryProvider);
-  return questionRepo.fetchQuestionsByNumbers(examSet.questionNumbers);
-});
 
 class QuizScreen extends ConsumerStatefulWidget {
   final String examSetId;
@@ -112,6 +95,10 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
 
       if (!mounted) return;
 
+      // Reset timer và start time mỗi khi load lại
+      _remainingTimeInSeconds = 20 * 60; // Reset về 20 phút
+      _startTime = DateTime.now(); // Reset start time
+
       setState(() {
         _questions = questions;
         _tabController.dispose();
@@ -141,7 +128,8 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
   void _startTimer() {
     _timer?.cancel();
 
-    _startTime ??= DateTime.now();
+    // Luôn reset start time mỗi khi bắt đầu timer
+    _startTime = DateTime.now();
 
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
@@ -200,10 +188,6 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
             isPassed: quizResultMap['isPassed'] as bool?,
           );
         }
-
-        if (savedData.containsKey('remainingTime')) {
-          _remainingTimeInSeconds = savedData['remainingTime'] as int;
-        }
       }
     } catch (e) {
       print('Error loading saved quiz progress: $e');
@@ -228,7 +212,8 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
         'selectedAnswers': selectedAnswersMap,
         'checkedQuestions': checkedQuestionsMap,
         'quizResult': _quizResult.toJson(),
-        'remainingTime': _remainingTimeInSeconds,
+        // Không lưu thời gian còn lại để đảm bảo mỗi lần mở lại đều có thời gian đủ
+        // 'remainingTime': _remainingTimeInSeconds,
         'lastSaved': DateTime.now().toIso8601String(),
       };
 

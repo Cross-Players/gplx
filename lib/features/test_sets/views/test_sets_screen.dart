@@ -4,9 +4,9 @@ import 'package:gplx/core/constants/app_styles.dart';
 import 'package:gplx/features/test/controllers/class_data_repository.dart';
 import 'package:gplx/features/test/controllers/exam_set_repository.dart';
 import 'package:gplx/features/test/models/class_data.dart';
-import 'package:gplx/features/test_sets/models/exam_set.dart';
 import 'package:gplx/features/test/views/quiz_screen.dart';
 import 'package:gplx/features/test_sets/controllers/test_results_provider.dart';
+import 'package:gplx/features/test_sets/models/exam_set.dart';
 
 // Provider để lưu trữ các đề thi đã được generate
 final generatedExamSetsProvider = StateProvider<List<List<int>>>((ref) => []);
@@ -32,37 +32,50 @@ class _TestSetsScreenState extends ConsumerState<TestSetsScreen> {
   }
 
   Future<void> generateExamSets() async {
-    // Lấy danh sách câu hỏi từ ClassDataRepository
-    final examSets = ClassDataRepository.generateMultipleRandomExamSets(
+    final repository = ref.read(examSetRepositoryProvider);
+
+    // Thử tải các ExamSets đã lưu từ repository
+    final savedExamSets = await repository.getExamSets(
       widget.classData.classType,
-      numberOfSets,
     );
 
-    // Lưu vào state provider (cho ListView hiển thị)
-    ref.read(generatedExamSetsProvider.notifier).state = examSets;
-
-    // Chuyển đổi List<List<int>> thành List<ExamSet> với ID định dạng
-    final examSetModels = <ExamSet>[];
-    for (int i = 0; i < examSets.length; i++) {
-      final formattedIndex = (i + 1).toString().padLeft(2, '0');
-      final id = '$formattedIndex-${widget.classData.classType}';
-
-      examSetModels.add(
-        ExamSet(
-          id: id,
-          title: 'Đề số ${i + 1}',
-          classType: widget.classData.classType,
-          questionNumbers: examSets[i],
-          createdAt: DateTime.now(),
-          description:
-              'Bộ đề thi thử ${widget.classData.classType} với ${examSets[i].length} câu hỏi',
-        ),
+    if (savedExamSets.isNotEmpty) {
+      // Nếu đã có đề thi được lưu, sử dụng chúng
+      final questionsList =
+          savedExamSets.map((examSet) => examSet.questionNumbers).toList();
+      ref.read(generatedExamSetsProvider.notifier).state = questionsList;
+    } else {
+      // Nếu chưa có, tạo mới và lưu trữ
+      final questionsList = ClassDataRepository.generateMultipleRandomExamSets(
+        widget.classData.classType,
+        numberOfSets,
       );
-    }
 
-    // Lưu danh sách ExamSets vào repository
-    final repository = ref.read(examSetRepositoryProvider);
-    await repository.saveExamSets(widget.classData.classType, examSetModels);
+      // Lưu vào state provider (cho ListView hiển thị)
+      ref.read(generatedExamSetsProvider.notifier).state = questionsList;
+
+      // Chuyển đổi List<List<int>> thành List<ExamSet> với ID định dạng
+      final examSets = <ExamSet>[];
+      for (int i = 0; i < questionsList.length; i++) {
+        final formattedIndex = (i + 1).toString().padLeft(2, '0');
+        final id = '$formattedIndex-${widget.classData.classType}';
+
+        examSets.add(
+          ExamSet(
+            id: id,
+            title: 'Đề số ${i + 1}',
+            classType: widget.classData.classType,
+            questionNumbers: questionsList[i],
+            createdAt: DateTime.now(),
+            description:
+                'Bộ đề thi thử ${widget.classData.classType} với ${questionsList[i].length} câu hỏi',
+          ),
+        );
+      }
+
+      // Lưu danh sách ExamSets vào repository
+      await repository.saveExamSets(widget.classData.classType, examSets);
+    }
   }
 
   @override
@@ -83,8 +96,93 @@ class _TestSetsScreenState extends ConsumerState<TestSetsScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: () async {
-              await generateExamSets(); // Regenerate exam sets
+            onPressed: () {
+              // Hiển thị hộp thoại xác nhận trước khi tạo bộ đề mới
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('Tạo bộ đề mới?'),
+                  content: const Text(
+                    'Bạn có chắc chắn muốn tạo bộ đề thi mới? Các đề thi hiện tại sẽ bị thay thế.',
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('HỦY'),
+                    ),
+                    TextButton(
+                      onPressed: () async {
+                        Navigator.pop(context);
+
+                        // Hiển thị loading indicator
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Đang tạo bộ đề mới...'),
+                            duration: Duration(seconds: 1),
+                          ),
+                        );
+
+                        // Tạo các đề thi mới
+                        final repository = ref.read(
+                          examSetRepositoryProvider,
+                        );
+                        final questionsList =
+                            ClassDataRepository.generateMultipleRandomExamSets(
+                          widget.classData.classType,
+                          numberOfSets,
+                        );
+
+                        // Lưu vào state provider
+                        ref.read(generatedExamSetsProvider.notifier).state =
+                            questionsList;
+
+                        // Chuyển đổi thành danh sách ExamSet
+                        final examSets = <ExamSet>[];
+                        for (int i = 0; i < questionsList.length; i++) {
+                          final formattedIndex = (i + 1).toString().padLeft(
+                                2,
+                                '0',
+                              );
+                          final id =
+                              '$formattedIndex-${widget.classData.classType}';
+
+                          examSets.add(
+                            ExamSet(
+                              id: id,
+                              title: 'Đề số ${i + 1}',
+                              classType: widget.classData.classType,
+                              questionNumbers: questionsList[i],
+                              createdAt: DateTime.now(),
+                              description:
+                                  'Bộ đề thi thử ${widget.classData.classType} với ${questionsList[i].length} câu hỏi',
+                            ),
+                          );
+                        }
+
+                        // Lưu danh sách mới vào repository
+                        await repository.saveExamSets(
+                          widget.classData.classType,
+                          examSets,
+                        );
+
+                        // Thông báo thành công
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Đã tạo bộ đề mới thành công!'),
+                              duration: Duration(seconds: 2),
+                            ),
+                          );
+                        }
+                      },
+                      child: const Text(
+                        'TẠO MỚI',
+                        style: TextStyle(color: Colors.red),
+                      ),
+                    ),
+                  ],
+                ),
+              );
             },
           ),
           IconButton(
@@ -106,70 +204,146 @@ class _TestSetsScreenState extends ConsumerState<TestSetsScreen> {
                 ],
               ),
             )
-          : GridView.builder(
-              padding: const EdgeInsets.all(16),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                mainAxisSpacing: 16,
-                crossAxisSpacing: 16,
-                childAspectRatio: 1.5,
-              ),
-              itemCount: examSets.length,
-              itemBuilder: (context, index) {
-                final examSet = examSets[index]; // List of question numbers
-                final testNumber = index + 1;
+          : Column(
+              children: [
+                // Nút làm đề ngẫu nhiên
+                // Padding(
+                //   padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                //   child: ElevatedButton.icon(
+                //     icon: const Icon(Icons.shuffle),
+                //     label: const Text('LÀM ĐỀ NGẪU NHIÊN'),
+                //     style: ElevatedButton.styleFrom(
+                //       backgroundColor: Colors.green,
+                //       foregroundColor: Colors.white,
+                //       minimumSize: const Size.fromHeight(45),
+                //     ),
+                //     onPressed: () async {
+                //       // Lấy repository
+                //       final repository = ref.read(examSetRepositoryProvider);
 
-                // Format ID theo dạng: Số thứ tự đề - Tên hạng xe (ví dụ: 01-A1)
-                final formattedIndex = (index + 1).toString().padLeft(2, '0');
-                final examSetId =
-                    '$formattedIndex-${widget.classData.classType}';
+                //       // Tạo ID cho đề ngẫu nhiên
+                //       final examSetId = '00-${widget.classData.classType}';
 
-                // Để tương thích với ID cũ cho việc tìm kiếm kết quả
-                final quizId = 'test_${widget.classData.classType}_$testNumber';
+                //       // Kiểm tra xem đã có đề ngẫu nhiên này chưa
+                //       final existingExamSet = await repository.getExamSetById(
+                //         examSetId,
+                //       );
 
-                // Find the result for this quiz if it exists
-                final quizResult = testResults.results
-                    .where((result) =>
-                        result.quizId == quizId ||
-                        _extractTestNumber(result.quizId, result.quizTitle) ==
-                            testNumber)
-                    .firstOrNull;
+                //       if (existingExamSet == null) {
+                //         // Nếu chưa có, tạo mới đề ngẫu nhiên
+                //         final questionNumbers =
+                //             ClassDataRepository.generateRandomExamSet(
+                //               widget.classData.classType,
+                //             );
 
-                // Use saved result data if available, otherwise use default values
-                final isCompleted = quizResult != null;
-                final correct = isCompleted ? quizResult.correctAnswers : 0;
-                final wrong = isCompleted ? quizResult.wrongAnswers : 0;
+                //         // Tạo ExamSet mới
+                //         final randomExamSet = ExamSet(
+                //           id: examSetId,
+                //           title: 'Đề ngẫu nhiên',
+                //           classType: widget.classData.classType,
+                //           questionNumbers: questionNumbers,
+                //           createdAt: DateTime.now(),
+                //           description:
+                //               'Bộ đề thi thử ${widget.classData.classType} ngẫu nhiên với ${questionNumbers.length} câu hỏi',
+                //         );
 
-                return _TestSetCard(
-                  testNumber: testNumber,
-                  questionCount: examSet.length,
-                  correct: correct,
-                  wrong: wrong,
-                  isCompleted: isCompleted,
-                  isPassed: quizResult?.isPassed,
-                  onTap: () {
-                    _showStartQuizDialog(context, testNumber, examSet.length,
-                        () {
-                      // Navigate to QuizPage with the generated question numbers
-                      // Navigator.pushNamed(
-                      //   context,
-                      //   AppRoutes.quiz,
-                      //   arguments: {
-                      //     'quizId': quizId,
-                      //     'questionNumbers': examSet,
-                      //     'classType': widget.classData.classType,
-                      //   },
-                      // );
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                QuizScreen(examSetId: examSetId),
-                          ));
-                    });
-                  },
-                );
-              },
+                //         // Lưu ExamSet vào SharedPreferences
+                //         await repository.saveExamSets('random', [
+                //           randomExamSet,
+                //         ]);
+                //       }
+
+                //       // Hiển thị dialog xác nhận
+                //       _showStartQuizDialog(context, 0, 25, () {
+                //         // Chuyển đến màn hình quiz với ID đề thi
+                //         Navigator.push(
+                //           context,
+                //           MaterialPageRoute(
+                //             builder:
+                //                 (context) => QuizScreen(examSetId: examSetId),
+                //           ),
+                //         );
+                //       });
+                //     },
+                //   ),
+                // ),
+
+                // GridView hiển thị các đề thi
+                Expanded(
+                  child: GridView.builder(
+                    padding: const EdgeInsets.all(16),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      mainAxisSpacing: 16,
+                      crossAxisSpacing: 16,
+                      childAspectRatio: 1.5,
+                    ),
+                    itemCount: examSets.length,
+                    itemBuilder: (context, index) {
+                      final examSet =
+                          examSets[index]; // List of question numbers
+                      final testNumber = index + 1;
+
+                      // Format ID theo dạng: Số thứ tự đề - Tên hạng xe (ví dụ: 01-A1)
+                      final formattedIndex = (index + 1).toString().padLeft(
+                            2,
+                            '0',
+                          );
+                      final examSetId =
+                          '$formattedIndex-${widget.classData.classType}';
+
+                      // Để tương thích với ID cũ cho việc tìm kiếm kết quả
+                      final quizId =
+                          'test_${widget.classData.classType}_$testNumber';
+
+                      // Find the result for this quiz if it exists
+                      final quizResult = testResults.results
+                          .where(
+                            (result) =>
+                                result.quizId == quizId ||
+                                _extractTestNumber(
+                                      result.quizId,
+                                      result.quizTitle,
+                                    ) ==
+                                    testNumber,
+                          )
+                          .firstOrNull;
+
+                      // Use saved result data if available, otherwise use default values
+                      final isCompleted = quizResult != null;
+                      final correct =
+                          isCompleted ? quizResult.correctAnswers : 0;
+                      final wrong = isCompleted ? quizResult.wrongAnswers : 0;
+
+                      return _TestSetCard(
+                        testNumber: testNumber,
+                        questionCount: examSet.length,
+                        correct: correct,
+                        wrong: wrong,
+                        isCompleted: isCompleted,
+                        isPassed: quizResult?.isPassed,
+                        onTap: () {
+                          _showStartQuizDialog(
+                            context,
+                            testNumber,
+                            examSet.length,
+                            () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      QuizScreen(examSetId: examSetId),
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
     );
   }
@@ -254,7 +428,8 @@ class _TestSetsScreenState extends ConsumerState<TestSetsScreen> {
       builder: (context) => AlertDialog(
         title: const Text('Xóa tất cả kết quả?'),
         content: const Text(
-            'Bạn có chắc chắn muốn xóa tất cả kết quả bài thi không?'),
+          'Bạn có chắc chắn muốn xóa tất cả kết quả bài thi không?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -270,10 +445,7 @@ class _TestSetsScreenState extends ConsumerState<TestSetsScreen> {
                 Navigator.pop(context);
               });
             },
-            child: const Text(
-              'XÓA',
-              style: TextStyle(color: Colors.red),
-            ),
+            child: const Text('XÓA', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -342,9 +514,7 @@ class _TestSetCard extends StatelessWidget {
               const SizedBox(height: 8),
               Container(
                 decoration: BoxDecoration(color: Colors.grey[300]),
-                padding: const EdgeInsets.symmetric(
-                  vertical: 12,
-                ),
+                padding: const EdgeInsets.symmetric(vertical: 12),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
