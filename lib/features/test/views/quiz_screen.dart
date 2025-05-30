@@ -5,31 +5,50 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gplx/core/constants/app_styles.dart';
-import 'package:gplx/core/routes/app_routes.dart';
 import 'package:gplx/core/widgets/countdown_timer.dart';
+import 'package:gplx/features/test/controllers/exam_set_repository.dart';
 import 'package:gplx/features/test/data/realtime_questions_repository.dart';
+import 'package:gplx/features/test_sets/models/exam_set.dart';
 import 'package:gplx/features/test/models/question.dart';
-import 'package:gplx/features/test/models/quiz.dart';
 import 'package:gplx/features/test/models/quiz_result.dart';
 import 'package:gplx/features/test/views/quiz_result_summary.dart';
 import 'package:gplx/features/test_sets/controllers/test_results_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class QuizPage extends ConsumerStatefulWidget {
-  const QuizPage({super.key});
+// Provider để lấy câu hỏi dựa trên examSetId
+final quizQuestionsProvider = FutureProvider.family<List<Question>, String>((
+  ref,
+  examSetId,
+) async {
+  // Lấy thông tin examSet
+  final examSet = await ref.watch(examSetByIdProvider(examSetId).future);
+
+  if (examSet == null) {
+    throw Exception('Không tìm thấy bộ đề $examSetId');
+  }
+
+  // Lấy danh sách câu hỏi từ repository
+  final questionRepo = ref.read(questionRepositoryProvider);
+  return questionRepo.fetchQuestionsByNumbers(examSet.questionNumbers);
+});
+
+class QuizScreen extends ConsumerStatefulWidget {
+  final String examSetId;
+
+  const QuizScreen({required this.examSetId, super.key});
 
   @override
-  ConsumerState<QuizPage> createState() => _QuizPageState();
+  ConsumerState<QuizScreen> createState() => _QuizScreenState();
 }
 
-class _QuizPageState extends ConsumerState<QuizPage>
+class _QuizScreenState extends ConsumerState<QuizScreen>
     with TickerProviderStateMixin {
-  Quiz? _quiz;
-  final List<Question> _questions = [];
+  List<Question> _questions = [];
   bool _isLoading = true;
   bool _quizCompleted = false;
+  ExamSet? _examSet;
 
-  int _remainingTimeInSeconds = 20 * 60;
+  int _remainingTimeInSeconds = 20 * 60; // 20 minutes by default
   Timer? _timer;
 
   DateTime? _startTime;
@@ -43,7 +62,7 @@ class _QuizPageState extends ConsumerState<QuizPage>
 
   int currentIndex = 0;
   int? selectedAnswer;
-  final bool _questionsLoaded = false;
+  bool _questionsLoaded = false;
 
   late QuizResult _quizResult;
 
@@ -52,8 +71,8 @@ class _QuizPageState extends ConsumerState<QuizPage>
     super.initState();
     _tabController = TabController(length: 0, vsync: this);
     _quizResult = QuizResult(
-      quizId: '',
-      quizTitle: 'Quiz',
+      quizId: widget.examSetId,
+      quizTitle: 'Đang tải...',
       totalQuestions: 0,
       correctAnswers: 0,
       wrongAnswers: 0,
@@ -61,11 +80,11 @@ class _QuizPageState extends ConsumerState<QuizPage>
     );
 
     SchedulerBinding.instance.addPostFrameCallback((_) {
-      fetchQuestions();
+      _loadExamSetAndQuestions();
     });
   }
 
-  Future<void> fetchQuestions() async {
+  Future<void> _loadExamSetAndQuestions() async {
     if (_isLoading && _questionsLoaded) return;
 
     setState(() {
@@ -73,14 +92,28 @@ class _QuizPageState extends ConsumerState<QuizPage>
     });
 
     try {
-      final questions =
-          await ref.read(questionRepositoryProvider).fetchQuestions();
+      // Lấy thông tin examSet
+      _examSet = await ref.read(examSetByIdProvider(widget.examSetId).future);
+
+      if (_examSet == null) {
+        setState(() {
+          _isLoading = false;
+        });
+        return;
+      }
+
+      // Cập nhật thông tin cho quiz result
+      _quizResult = _quizResult.copyWith(quizTitle: _examSet!.title);
+
+      // Lấy danh sách câu hỏi
+      final questions = await ref.read(
+        quizQuestionsProvider(widget.examSetId).future,
+      );
 
       if (!mounted) return;
 
       setState(() {
-        _questions.clear();
-        _questions.addAll(questions);
+        _questions = questions;
         _tabController.dispose();
         _tabController = TabController(length: questions.length, vsync: this);
         _tabController.addListener(() {
@@ -90,8 +123,8 @@ class _QuizPageState extends ConsumerState<QuizPage>
             });
           }
         });
-
         _isLoading = false;
+        _questionsLoaded = true; // Mark as loaded
         _startTimer();
         _loadSavedProgress();
       });
@@ -101,7 +134,7 @@ class _QuizPageState extends ConsumerState<QuizPage>
       setState(() {
         _isLoading = false;
       });
-      print('Error fetching questions: $e');
+      print('Error loading exam set and questions: $e');
     }
   }
 
@@ -125,7 +158,9 @@ class _QuizPageState extends ConsumerState<QuizPage>
   Future<void> _loadSavedProgress() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final savedQuizJson = prefs.getString('quiz_progress');
+      final savedQuizJson = prefs.getString(
+        'quiz_progress_${widget.examSetId}',
+      );
 
       if (savedQuizJson != null) {
         final savedData = jsonDecode(savedQuizJson) as Map<String, dynamic>;
@@ -157,6 +192,12 @@ class _QuizPageState extends ConsumerState<QuizPage>
             correctAnswers: quizResultMap['correctAnswers'] as int,
             wrongAnswers: quizResultMap['wrongAnswers'] as int,
             attemptDate: DateTime.parse(quizResultMap['attemptDate'] as String),
+            failedCriticalQuestion:
+                quizResultMap['failedCriticalQuestion'] as bool?,
+            timeTaken: quizResultMap['timeTaken'] != null
+                ? Duration(seconds: quizResultMap['timeTaken'] as int)
+                : null,
+            isPassed: quizResultMap['isPassed'] as bool?,
           );
         }
 
@@ -191,7 +232,10 @@ class _QuizPageState extends ConsumerState<QuizPage>
         'lastSaved': DateTime.now().toIso8601String(),
       };
 
-      await prefs.setString('quiz_progress', jsonEncode(savedData));
+      await prefs.setString(
+        'quiz_progress_${widget.examSetId}',
+        jsonEncode(savedData),
+      );
     } catch (e) {
       print('Error saving quiz progress: $e');
     }
@@ -200,7 +244,7 @@ class _QuizPageState extends ConsumerState<QuizPage>
   Future<void> _clearSavedProgress() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.remove('quiz_progress');
+      await prefs.remove('quiz_progress_${widget.examSetId}');
     } catch (e) {
       print('Error clearing saved quiz progress: $e');
     }
@@ -250,7 +294,7 @@ class _QuizPageState extends ConsumerState<QuizPage>
   void _completeQuiz() {
     final Duration timeTaken;
     if (_startTime != null) {
-      int totalSeconds = (_quiz?.timeLimit ?? 20) * 60;
+      int totalSeconds = 20 * 60; // 20 minutes in seconds
       int elapsedSeconds = totalSeconds - _remainingTimeInSeconds;
       timeTaken = Duration(seconds: elapsedSeconds);
     } else {
@@ -355,16 +399,14 @@ class _QuizPageState extends ConsumerState<QuizPage>
           backgroundColor: AppStyles.primaryColor,
           foregroundColor: Colors.white,
         ),
-        body: const Center(
-          child: CircularProgressIndicator(),
-        ),
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
 
-    if (_questions.isEmpty) {
+    if (_examSet == null || _questions.isEmpty) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Quiz '),
+          title: const Text('Quiz'),
           backgroundColor: AppStyles.primaryColor,
           foregroundColor: Colors.white,
         ),
@@ -378,7 +420,6 @@ class _QuizPageState extends ConsumerState<QuizPage>
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 20),
-              const SizedBox(height: 10),
               TextButton(
                 onPressed: () {
                   Navigator.pop(context);
@@ -394,14 +435,11 @@ class _QuizPageState extends ConsumerState<QuizPage>
     if (_quizCompleted) {
       return Scaffold(
         appBar: AppBar(
-          title: Text('Kết quả - ${_quiz?.title ?? "Quiz"}'),
+          title: Text('Kết quả - ${_examSet!.title}'),
           backgroundColor: AppStyles.primaryColor,
           foregroundColor: Colors.white,
           actions: [
-            IconButton(
-              icon: const Icon(Icons.share),
-              onPressed: () {},
-            ),
+            IconButton(icon: const Icon(Icons.share), onPressed: () {}),
           ],
         ),
         body: QuizResultSummary(
@@ -411,8 +449,7 @@ class _QuizPageState extends ConsumerState<QuizPage>
           timeTaken: _quizResult.timeTaken ?? Duration.zero,
           onBackPressed: () {
             final _ = ref.refresh(testResultsProvider);
-
-            Navigator.pushReplacementNamed(context, AppRoutes.testSets);
+            Navigator.pop(context);
           },
           onRetakeQuiz: () {
             setState(() {
@@ -420,8 +457,8 @@ class _QuizPageState extends ConsumerState<QuizPage>
               _checkedQuestions.clear();
               _quizCompleted = false;
               _quizResult = QuizResult(
-                quizId: '',
-                quizTitle: _quiz?.title ?? 'Quiz',
+                quizId: widget.examSetId,
+                quizTitle: _examSet!.title,
                 totalQuestions: _questions.length,
                 correctAnswers: 0,
                 wrongAnswers: 0,
@@ -429,8 +466,7 @@ class _QuizPageState extends ConsumerState<QuizPage>
               );
 
               _startTime = DateTime.now();
-              _remainingTimeInSeconds =
-                  _quiz?.timeLimit != null ? _quiz!.timeLimit * 60 : 20 * 60;
+              _remainingTimeInSeconds = 20 * 60;
               _tabController.index = 0;
               _startTimer();
             });
@@ -505,8 +541,10 @@ class _QuizPageState extends ConsumerState<QuizPage>
 
               return Tab(
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: backgroundColor,
                     borderRadius: BorderRadius.circular(16),
@@ -621,11 +659,22 @@ class _QuizPageState extends ConsumerState<QuizPage>
                                       ),
                                     ),
                                     Text(
-                                      'Đáp án đúng: ${question.answers[question.answers.indexWhere((answer) => answer.isCorrect)].answerContent}',
+                                      'Đáp án đúng: '
+                                      '${question.answers.firstWhere((a) => a.isCorrect, orElse: () => question.answers.first).answerContent}',
                                       style: const TextStyle(
                                         fontWeight: FontWeight.w500,
                                       ),
                                     ),
+                                    if (question.explanation.isNotEmpty)
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 8),
+                                        child: Text(
+                                          'Giải thích: ${question.explanation}',
+                                          style: const TextStyle(
+                                            fontStyle: FontStyle.italic,
+                                          ),
+                                        ),
+                                      ),
                                   ],
                                 ),
                               ),
@@ -663,8 +712,9 @@ class _QuizPageState extends ConsumerState<QuizPage>
                     IconButton(
                       onPressed: _tabController.index > 0
                           ? () {
-                              _tabController
-                                  .animateTo(_tabController.index - 1);
+                              _tabController.animateTo(
+                                _tabController.index - 1,
+                              );
                             }
                           : null,
                       icon: const Icon(
@@ -711,23 +761,22 @@ class _QuizPageState extends ConsumerState<QuizPage>
 
   GestureDetector _buildCheckAnswerButton(int questionIndex) {
     return GestureDetector(
-        onTap: () {
-          setState(() {
-            _checkedQuestions[questionIndex] = true;
-            _updateQuizResult(questionIndex, _isAnswerCorrect(questionIndex));
-          });
-        },
-        child: Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-              border: Border.all(color: Colors.white, width: 3),
-              color: Colors.green,
-              borderRadius: BorderRadius.circular(100)),
-          child: const Icon(
-            Icons.check,
-            color: Colors.white,
-          ),
-        ));
+      onTap: () {
+        setState(() {
+          _checkedQuestions[questionIndex] = true;
+          _updateQuizResult(questionIndex, _isAnswerCorrect(questionIndex));
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.white, width: 3),
+          color: Colors.green,
+          borderRadius: BorderRadius.circular(100),
+        ),
+        child: const Icon(Icons.check, color: Colors.white),
+      ),
+    );
   }
 
   Future<dynamic> _showQuestionIndex(BuildContext context) {
@@ -777,6 +826,9 @@ class _QuizPageState extends ConsumerState<QuizPage>
                 child: Container(
                   decoration: BoxDecoration(
                     color: backgroundColor,
+                    borderRadius: BorderRadius.circular(
+                      8,
+                    ), // Add rounded corners
                   ),
                   child: Center(
                     child: Text(

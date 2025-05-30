@@ -1,114 +1,104 @@
+import 'dart:convert';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gplx/features/test/models/quiz_result.dart';
-import 'package:gplx/features/test_sets/controllers/test_results_repository.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-// Repository provider
-final testResultsRepositoryProvider = Provider<TestResultsRepository>((ref) {
-  return TestResultsRepository();
+// Provider for the list of test results
+final testResultsProvider = FutureProvider<List<QuizResult>>((ref) async {
+  final notifier = ref.read(testResultsNotifierProvider.notifier);
+  return notifier.getResults();
 });
 
-// StateNotifier to manage quiz results in memory
-class TestResultsNotifier extends StateNotifier<List<QuizResult>> {
-  final TestResultsRepository _repository;
+// Provider for the test results notifier
+final testResultsNotifierProvider =
+    StateNotifierProvider<TestResultsNotifier, TestResultsState>((ref) {
+  return TestResultsNotifier();
+});
 
-  TestResultsNotifier(this._repository) : super([]) {
-    // Initialize from SharedPreferences on creation
-    _loadFromStorage();
-  }
+// State class for test results
+class TestResultsState {
+  final List<QuizResult> results;
+  final bool isLoading;
+  final String? error;
 
-  // Load initial data from SharedPreferences
-  Future<void> _loadFromStorage() async {
-    final results = await _repository.getTestResults();
-    state = results;
-  }
+  TestResultsState({
+    this.results = const [],
+    this.isLoading = false,
+    this.error,
+  });
 
-  // Add a new quiz result
-  Future<void> addResult(QuizResult result) async {
-    // Extract test number from quiz ID or title
-    int testNumber = _extractTestNumber(result.quizId, result.quizTitle);
-
-    // Remove any existing result for this test number
-    final filteredResults = state
-        .where((item) =>
-            _extractTestNumber(item.quizId, item.quizTitle) != testNumber)
-        .toList();
-
-    // Add the new result
-    final newResults = [...filteredResults, result];
-
-    // Update state
-    state = newResults;
-
-    // Also save to SharedPreferences for persistence
-    await _repository.saveTestResult(result);
-  }
-
-  // Clear all results
-  Future<void> clearAllResults() async {
-    state = [];
-    await _repository.clearAllResults();
-  }
-
-  // Helper method to extract test number from quiz ID or title
-  int _extractTestNumber(String quizId, String quizTitle) {
-    // Try to extract from quizId first
-    if (quizId.contains('_')) {
-      final parts = quizId.split('_');
-      final parsed = int.tryParse(parts.last);
-      if (parsed != null) return parsed;
-    }
-
-    // Try to extract from quizTitle
-    final regExp = RegExp(r'\d+');
-    final match = regExp.firstMatch(quizTitle);
-    if (match != null) {
-      return int.tryParse(match.group(0) ?? '0') ?? 0;
-    }
-
-    return 0;
+  TestResultsState copyWith({
+    List<QuizResult>? results,
+    bool? isLoading,
+    String? error,
+  }) {
+    return TestResultsState(
+      results: results ?? this.results,
+      isLoading: isLoading ?? this.isLoading,
+      error: error,
+    );
   }
 }
 
-// StateNotifierProvider for quiz results
-final testResultsNotifierProvider =
-    StateNotifierProvider<TestResultsNotifier, List<QuizResult>>((ref) {
-  final repository = ref.watch(testResultsRepositoryProvider);
-  return TestResultsNotifier(repository);
-});
-
-// Legacy FutureProvider for backward compatibility
-final testResultsProvider = FutureProvider<List<QuizResult>>((ref) async {
-  // Just return the current state from the StateNotifierProvider
-  return ref.watch(testResultsNotifierProvider);
-});
-
-// Provider for specific test result by number
-final testResultProvider = Provider.family<QuizResult?, int>((ref, testNumber) {
-  final results = ref.watch(testResultsNotifierProvider);
-  try {
-    return results.firstWhere((result) =>
-        _extractTestNumber(result.quizId, result.quizTitle) == testNumber);
-  } catch (e) {
-    // Return null if not found
-    return null;
-  }
-});
-
-// Helper method to extract test number (same as in the notifier)
-int _extractTestNumber(String quizId, String quizTitle) {
-  // Try to extract from quizId first
-  if (quizId.contains('_')) {
-    final parts = quizId.split('_');
-    final parsed = int.tryParse(parts.last);
-    if (parsed != null) return parsed;
+// Notifier for managing test results
+class TestResultsNotifier extends StateNotifier<TestResultsState> {
+  TestResultsNotifier() : super(TestResultsState()) {
+    _loadResults();
   }
 
-  // Try to extract from quizTitle
-  final regExp = RegExp(r'\d+');
-  final match = regExp.firstMatch(quizTitle);
-  if (match != null) {
-    return int.tryParse(match.group(0) ?? '0') ?? 0;
+  // Load results from SharedPreferences
+  Future<void> _loadResults() async {
+    state = state.copyWith(isLoading: true);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final resultsJson = prefs.getString('test_results');
+      if (resultsJson != null) {
+        final List<dynamic> resultsData = jsonDecode(resultsJson);
+        final results =
+            resultsData.map((data) => QuizResult.fromJson(data)).toList();
+        state = state.copyWith(results: results, isLoading: false);
+      } else {
+        state = state.copyWith(results: [], isLoading: false);
+      }
+    } catch (e) {
+      state = state.copyWith(error: e.toString(), isLoading: false);
+    }
   }
 
-  return 0;
+  // Add a new result
+  Future<void> addResult(QuizResult result) async {
+    final updatedResults = [...state.results, result];
+    state = state.copyWith(results: updatedResults);
+    await _saveResults();
+  }
+
+  // Get all results
+  Future<List<QuizResult>> getResults() async {
+    if (state.isLoading) {
+      // Wait for loading to complete
+      await Future.delayed(const Duration(milliseconds: 100));
+      return getResults();
+    }
+    return state.results;
+  }
+
+  // Save results to SharedPreferences
+  Future<void> _saveResults() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final resultsJson = jsonEncode(
+        state.results.map((result) => result.toJson()).toList(),
+      );
+      await prefs.setString('test_results', resultsJson);
+    } catch (e) {
+      state = state.copyWith(error: e.toString());
+    }
+  }
+
+  // Clear all results
+  Future<void> clearResults() async {
+    state = state.copyWith(results: []);
+    await _saveResults();
+  }
 }

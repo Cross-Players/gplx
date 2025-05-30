@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gplx/features/test/controllers/class_data_repository.dart';
+import 'package:gplx/features/test_sets/views/test_sets_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // final selectedCategory = ref.watch(selectedCategoryProvider);
+    final classType = ref.watch(selectedClassTypeProvider);
+    print(classType.classType);
+    final classTotalQuestions =
+        ClassDataRepository.getTotalQuestions(classType.classType);
 
     return Scaffold(
       appBar: AppBar(
-        // title: Text('Hạng ${selectedCategory.name} - GPLX 2025'),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
@@ -19,6 +23,8 @@ class HomeScreen extends ConsumerWidget {
             },
           ),
         ],
+        title:
+            Text('Hạng ${classType.classType} - $classTotalQuestions câu 2025'),
       ),
       body: GridView.count(
         padding: const EdgeInsets.all(16),
@@ -38,7 +44,14 @@ class HomeScreen extends ConsumerWidget {
             icon: Icons.assignment,
             label: 'Thi theo bộ đề',
             color: Colors.red,
-            onTap: () => Navigator.pushNamed(context, '/test-sets'),
+            // onTap: () => Navigator.pushNamed(context, '/test-sets'),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => TestSetsScreen(classData: classType)),
+              );
+            },
           ),
           _buildFeatureButton(
             context,
@@ -68,13 +81,22 @@ class HomeScreen extends ConsumerWidget {
             color: Colors.purple,
             onTap: () {},
           ),
-          _buildFeatureButton(
-            context,
-            icon: Icons.timer,
-            label: 'Thi sa hình',
-            color: Colors.brown,
-            onTap: () {},
-          ),
+          // _buildFeatureButton(
+          //   context,
+          //   icon: Icons.timer,
+          //   label: 'Câu điểm liệt',
+          //   color: Colors.brown,
+          //   onTap: () => Navigator.push(
+          //     context,
+          //     MaterialPageRoute(
+          //       builder: (context) => QuizScreen(
+          //         questionsData: ref
+          //             .read(questionRepositoryProvider)
+          //             .fetchDeadPointQuestions(classType: classType),
+          //       ),
+          //     ),
+          //   ),
+          // ),
           _buildFeatureButton(
             context,
             icon: Icons.star,
