@@ -1,31 +1,24 @@
 import 'dart:math';
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gplx/features/test/data/class_data.dart';
-import 'package:gplx/features/test/models/class_data.dart';
+import 'package:gplx/features/test/data/vehicle_data.dart';
+import 'package:gplx/features/test/models/vehicle.dart';
 
-final classDataRepositoryProvider = Provider<ClassDataRepository>(
-  (ref) => ClassDataRepository(),
-);
-
-final selectedClassTypeProvider = StateProvider<ClassData>((ref) => a1);
-
-class ClassDataRepository {
-  List<ClassData> getAllClassData() {
-    return ClassDataRepository.allClassData();
+class VehicleRepository {
+  List<Vehicle> getAllVehicle() {
+    return VehicleRepository.allVehicle();
   }
 
-  List<String> getAllClassTypes() {
-    return ClassDataRepository.getAllAvailableClassTypes();
+  List<String> getAllvehicleTypes() {
+    return VehicleRepository.getAllAvailablevehicleTypes();
   }
 
-  ClassData findClassData(String classType) {
-    return ClassDataRepository.getClassData(classType);
+  Vehicle findVehicle(String vehicleType) {
+    return VehicleRepository.getVehicle(vehicleType);
   }
 
-  List<int> generateExamQuestions(String classType) {
+  List<int> generateExamQuestions(String vehicleType) {
     final random = Random();
-    final classData = findClassData(classType);
+    final vehicle = findVehicle(vehicleType);
     final result = <int>[];
     final allSelectedQuestions = <int>{};
 
@@ -40,18 +33,19 @@ class ClassDataRepository {
       'chapter7': 7,
     };
 
-    _getQuestionsForExam(result, allSelectedQuestions, classData, distribution);
+    _getQuestionsForExam(result, allSelectedQuestions, vehicle, distribution);
 
-    _fillUpToRequiredQuestionCount(result, allSelectedQuestions, classData, 25);
+    _fillUpToRequiredQuestionCount(result, allSelectedQuestions, vehicle, 25);
 
     result.shuffle(random);
     return result;
   }
 
-  List<List<int>> generateMultipleExamSets(String classType, int numberOfSets) {
+  List<List<int>> generateMultipleExamSets(
+      String vehicleType, int numberOfSets) {
     final result = <List<int>>[];
     for (int i = 0; i < numberOfSets; i++) {
-      result.add(generateExamQuestions(classType));
+      result.add(generateExamQuestions(vehicleType));
     }
     return result;
   }
@@ -59,13 +53,13 @@ class ClassDataRepository {
   void _getQuestionsForExam(
     List<int> result,
     Set<int> allSelectedQuestions,
-    ClassData classData,
+    Vehicle vehicle,
     Map<String, int> distribution,
   ) {
     if (distribution.containsKey('deadPoint')) {
       final deadPointCount = distribution['deadPoint'] ?? 0;
       final deadPointQuestions = _getRandomQuestions(
-        classData.deadPointQuestions,
+        vehicle.deadPointQuestions,
         deadPointCount,
         allSelectedQuestions,
       );
@@ -73,7 +67,7 @@ class ClassDataRepository {
       allSelectedQuestions.addAll(deadPointQuestions);
     }
 
-    final chapter1 = classData.chapters['chapter 1'];
+    final chapter1 = vehicle.chapters['chapter 1'];
     if (chapter1 != null && chapter1.subChapters != null) {
       _getQuestionsFromSubChapter(
         result,
@@ -103,7 +97,7 @@ class ClassDataRepository {
     _getQuestionsFromChapter(
       result,
       allSelectedQuestions,
-      classData,
+      vehicle,
       'chapter 3',
       distribution['chapter3'] ?? 0,
     );
@@ -111,7 +105,7 @@ class ClassDataRepository {
     _getQuestionsFromChapter(
       result,
       allSelectedQuestions,
-      classData,
+      vehicle,
       'chapter 4',
       distribution['chapter4'] ?? 0,
     );
@@ -119,7 +113,7 @@ class ClassDataRepository {
     _getQuestionsFromChapter(
       result,
       allSelectedQuestions,
-      classData,
+      vehicle,
       'chapter 5',
       distribution['chapter5'] ?? 0,
     );
@@ -127,7 +121,7 @@ class ClassDataRepository {
     _getQuestionsFromChapter(
       result,
       allSelectedQuestions,
-      classData,
+      vehicle,
       'chapter 6',
       distribution['chapter6'] ?? 0,
     );
@@ -135,7 +129,7 @@ class ClassDataRepository {
     _getQuestionsFromChapter(
       result,
       allSelectedQuestions,
-      classData,
+      vehicle,
       'chapter 7',
       distribution['chapter7'] ?? 0,
     );
@@ -163,13 +157,13 @@ class ClassDataRepository {
   void _getQuestionsFromChapter(
     List<int> result,
     Set<int> allSelectedQuestions,
-    ClassData classData,
+    Vehicle vehicle,
     String chapterKey,
     int count,
   ) {
     if (count <= 0) return;
 
-    final chapter = classData.chapters[chapterKey];
+    final chapter = vehicle.chapters[chapterKey];
     if (chapter != null) {
       final questions = chapter.getAllQuestionNumbers();
       final selected = _getRandomQuestions(
@@ -185,11 +179,11 @@ class ClassDataRepository {
   void _fillUpToRequiredQuestionCount(
     List<int> result,
     Set<int> allSelectedQuestions,
-    ClassData classData,
+    Vehicle vehicle,
     int requiredCount,
   ) {
     if (result.length < requiredCount) {
-      final allQuestions = classData.getAllQuestionNumbers();
+      final allQuestions = vehicle.getAllQuestionNumbers();
       allQuestions.removeWhere((q) => allSelectedQuestions.contains(q));
 
       allQuestions.shuffle(Random());
@@ -224,55 +218,59 @@ class ClassDataRepository {
     return selected;
   }
 
-  static List<ClassData> allClassData() {
+  static List<Vehicle> allVehicle() {
     return [a1, a2];
   }
 
-  static ClassData? getClassDataByType(String classType) {
+  static Vehicle? getVehicleByType(String vehicleType) {
     try {
-      return allClassData().firstWhere(
-        (classData) =>
-            classData.classType.toUpperCase() == classType.toUpperCase(),
+      return allVehicle().firstWhere(
+        (vehicle) =>
+            vehicle.vehicleType.toUpperCase() == vehicleType.toUpperCase(),
       );
     } catch (e) {
       return null;
     }
   }
 
-  static List<String> getAllAvailableClassTypes() {
-    return allClassData().map((classData) => classData.classType).toList();
+  static List<String> getAllAvailablevehicleTypes() {
+    return allVehicle().map((vehicle) => vehicle.vehicleType).toList();
   }
 
-  static ClassData getClassData(String classType) {
-    final classData = getClassDataByType(classType);
-    if (classData != null) {
-      return classData;
+  static Vehicle getVehicle(String vehicleType) {
+    final vehicle = getVehicleByType(vehicleType);
+    if (vehicle != null) {
+      return vehicle;
     }
-    throw ArgumentError('Unknown class type: $classType');
+    throw ArgumentError('Unknown class type: $vehicleType');
   }
 
-  static List<int> getDeadPointQuestions(String classType) {
-    return getClassData(classType).deadPointQuestions;
+  static List<int> getDeadPointQuestions(String vehicleType) {
+    return getVehicle(vehicleType).deadPointQuestions;
   }
 
-  static int getTotalQuestions(String classType) {
-    return getClassData(classType).getAllQuestionNumbers().length;
+  static int getTotalQuestions(String vehicleType) {
+    return getVehicle(vehicleType).getAllQuestionNumbers().length;
   }
 
-  static List<int> getAllQuestions(String classType) {
-    return getClassData(classType).getAllQuestionNumbers();
+  static List<int> getDeadPointQuestionsList(String vehicleType) {
+    return getVehicle(vehicleType).deadPointQuestions;
   }
 
-  static List<int> generateRandomExamSet(String classType) {
-    return ClassDataRepository().generateExamQuestions(classType);
+  static List<int> getAllQuestions(String vehicleType) {
+    return getVehicle(vehicleType).getAllQuestionNumbers();
+  }
+
+  static List<int> generateRandomExamSet(String vehicleType) {
+    return VehicleRepository().generateExamQuestions(vehicleType);
   }
 
   static List<List<int>> generateMultipleRandomExamSets(
-    String classType,
+    String vehicleType,
     int numberOfSets,
   ) {
-    return ClassDataRepository().generateMultipleExamSets(
-      classType,
+    return VehicleRepository().generateMultipleExamSets(
+      vehicleType,
       numberOfSets,
     );
   }

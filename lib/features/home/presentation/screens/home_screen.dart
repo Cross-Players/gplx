@@ -1,6 +1,11 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gplx/features/test/controllers/class_data_repository.dart';
+import 'package:gplx/features/test/controllers/exam_set_repository.dart';
+import 'package:gplx/features/test/controllers/vehicle_repository.dart';
+import 'package:gplx/features/test/providers/vehicle_provider.dart';
+import 'package:gplx/features/test/views/quiz_screen.dart';
 import 'package:gplx/features/test_sets/views/test_sets_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -8,10 +13,52 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final classType = ref.watch(selectedClassTypeProvider);
-    print(classType.classType);
+    final vehicle = ref.watch(selectedVehicleTypeProvider);
+    final vehicleType = vehicle.vehicleType;
     final classTotalQuestions =
-        ClassDataRepository.getTotalQuestions(classType.classType);
+        VehicleRepository.getTotalQuestions(vehicleType);
+    final deadPointsLength =
+        VehicleRepository.getDeadPointQuestions(vehicleType).length;
+    final deadpointsId = 'deadpoints-$vehicleType';
+
+    Future<void> navigateToRandomExam() async {
+      try {
+        final repository = ref.read(examSetRepositoryProvider);
+        final examSets = await repository.getExamSets(vehicleType);
+        if (examSets.isEmpty) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                    'Không có đề thi nào để thực hiện. Vui lòng tạo đề thi mới.'),
+                duration: Duration(seconds: 3),
+              ),
+            );
+          }
+          return;
+        }
+        // Chọn ngẫu nhiên một exam set
+        final random = Random();
+        final randomExamSet = examSets[random.nextInt(examSets.length)];
+        if (context.mounted) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => QuizScreen(examSetId: randomExamSet.id),
+            ),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Có lỗi xảy ra: $e'),
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
+      }
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -23,8 +70,7 @@ class HomeScreen extends ConsumerWidget {
             },
           ),
         ],
-        title:
-            Text('Hạng ${classType.classType} - $classTotalQuestions câu 2025'),
+        title: Text('Hạng $vehicleType - $classTotalQuestions câu 2025'),
       ),
       body: GridView.count(
         padding: const EdgeInsets.all(16),
@@ -37,7 +83,7 @@ class HomeScreen extends ConsumerWidget {
             icon: Icons.shuffle,
             label: 'Đề ngẫu nhiên',
             color: Colors.orange,
-            onTap: () {},
+            onTap: () => navigateToRandomExam(),
           ),
           _buildFeatureButton(
             context,
@@ -49,7 +95,7 @@ class HomeScreen extends ConsumerWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => TestSetsScreen(classData: classType)),
+                    builder: (context) => TestSetsScreen(vehicle: vehicle)),
               );
             },
           ),
@@ -81,22 +127,20 @@ class HomeScreen extends ConsumerWidget {
             color: Colors.purple,
             onTap: () {},
           ),
-          // _buildFeatureButton(
-          //   context,
-          //   icon: Icons.timer,
-          //   label: 'Câu điểm liệt',
-          //   color: Colors.brown,
-          //   onTap: () => Navigator.push(
-          //     context,
-          //     MaterialPageRoute(
-          //       builder: (context) => QuizScreen(
-          //         questionsData: ref
-          //             .read(questionRepositoryProvider)
-          //             .fetchDeadPointQuestions(classType: classType),
-          //       ),
-          //     ),
-          //   ),
-          // ),
+          _buildFeatureButton(
+            context,
+            icon: Icons.timer,
+            label: '$deadPointsLength Câu điểm liệt',
+            color: Colors.brown,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => QuizScreen(examSetId: deadpointsId),
+                ),
+              );
+            },
+          ),
           _buildFeatureButton(
             context,
             icon: Icons.star,

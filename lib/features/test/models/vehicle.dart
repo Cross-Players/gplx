@@ -1,23 +1,24 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-part 'class_data.freezed.dart';
-part 'class_data.g.dart';
+part 'vehicle.freezed.dart';
+part 'vehicle.g.dart';
 
 @freezed
-class ClassData with _$ClassData {
-  const ClassData._();
-
-  const factory ClassData({
-    required String classType, // 'A1' or 'A2'
+class Vehicle with _$Vehicle {
+  const factory Vehicle({
+    required String vehicleType, // 'A1' or 'A2'
     required String description,
+    required int minutes,
+    required int minPoint,
+    required int totalQuestionsPerQuiz,
     required Map<String, ChapterData> chapters,
     required List<int> deadPointQuestions,
-  }) = _ClassData;
+  }) = _Vehicle;
 
-  factory ClassData.fromJson(Map<String, dynamic> json) =>
-      _$ClassDataFromJson(json);
+  factory Vehicle.fromJson(Map<String, dynamic> json) =>
+      _$VehicleFromJson(json);
 
-  // Get all question numbers for this class
+  // Get all question numbers for this Vehicle
   List<int> getAllQuestionNumbers() {
     final List<int> allQuestions = [];
 
@@ -37,8 +38,6 @@ class ClassData with _$ClassData {
 
 @freezed
 class ChapterData with _$ChapterData {
-  const ChapterData._();
-
   const factory ChapterData({
     required String chapterName,
     Map<String, List<int>>? subChapters,

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gplx/features/test/controllers/class_data_repository.dart';
-import 'package:gplx/features/test/models/class_data.dart';
+import 'package:gplx/features/test/models/vehicle.dart';
+import 'package:gplx/features/test/providers/vehicle_provider.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -14,15 +14,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   String selectedQuestionSet = '600 câu hỏi (Thử nghiệm)';
   @override
   Widget build(BuildContext context) {
-    final classDataRepository = ref.watch(classDataRepositoryProvider);
-    final availableClassData = classDataRepository.getAllClassData();
+    final vehicleRepository = ref.watch(vehicleRepositoryProvider);
+    final availableVehicle = vehicleRepository.getAllVehicle();
 
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
         title: const Text('Thiết lập'),
         actions: [
           TextButton(
@@ -61,24 +57,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             },
           ),
           const _SectionHeader(title: 'LOẠI BẰNG LÁI XE Ô TÔ'),
-
-          // Display ClassData from ClassDataRepository or loading indicator
           ListView.builder(
-            itemCount: availableClassData.length,
+            itemCount: availableVehicle.length,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemBuilder: (context, index) {
-              final classData = availableClassData[index];
-              // Fix the comparison in the ListView.builder
-              return _ClassDataOption(
-                classData: classData,
-                isSelected: ref.watch(selectedClassTypeProvider).classType ==
-                    classData.classType,
+              final vehicle = availableVehicle[index];
+              return _VehicleOption(
+                vehicle: vehicle,
+                isSelected: ref.watch(selectedVehicleTypeProvider).vehicleType ==
+                    vehicle.vehicleType,
                 onTap: () {
                   // Save selected ClassData to provider
-                  ref.read(selectedClassTypeProvider.notifier).state =
-                      classData;
-                  print('Selected class type: ${classData.classType}');
+                  ref.read(selectedVehicleTypeProvider.notifier).state =
+                      vehicle;
+                  print('Selected class type: ${vehicle.vehicleType}');
                 },
               );
             },
@@ -111,13 +104,13 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
-class _ClassDataOption extends StatelessWidget {
-  final ClassData classData;
+class _VehicleOption extends StatelessWidget {
+  final Vehicle vehicle;
   final bool isSelected;
   final VoidCallback onTap;
 
-  const _ClassDataOption({
-    required this.classData,
+  const _VehicleOption({
+    required this.vehicle,
     required this.isSelected,
     required this.onTap,
   });
@@ -125,9 +118,9 @@ class _ClassDataOption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      title: Text(classData.classType),
+      title: Text(vehicle.vehicleType),
       subtitle: Text(
-        classData.description,
+        vehicle.description,
         style: const TextStyle(fontSize: 12),
       ),
       trailing: isSelected ? const Icon(Icons.check, color: Colors.blue) : null,

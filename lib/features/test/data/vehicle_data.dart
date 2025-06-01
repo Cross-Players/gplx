@@ -1,8 +1,10 @@
+import 'package:gplx/features/test/models/vehicle.dart';
 
-import 'package:gplx/features/test/models/class_data.dart';
-
-const ClassData a1 = ClassData(
-  classType: 'A1',
+const Vehicle a1 = Vehicle(
+  vehicleType: 'A1',
+  minutes: 19,
+  minPoint: 21,
+  totalQuestionsPerQuiz: 25,
   description:
       'Hạng A1 lái xe mô tô hai bánh có dung tích xi-lanh đến 125cm3 hoặc có công suất động cơ điện đến 11kW',
   chapters: {
@@ -210,8 +212,11 @@ const ClassData a1 = ClassData(
   ],
 );
 
-const ClassData a2 = ClassData(
-  classType: 'A2',
+const Vehicle a2 = Vehicle(
+  vehicleType: 'A2',
+  minutes: 19,
+  minPoint: 23,
+  totalQuestionsPerQuiz: 25,
   description: 'Xe máy dung tích xi-lanh từ 175cm³ trở lên',
   chapters: {
     'chapter 1': ChapterData(

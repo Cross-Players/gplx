@@ -9,6 +9,7 @@ class QuizResult with _$QuizResult {
     required String quizId,
     required String quizTitle,
     required int totalQuestions,
+    required int minPoint,
     required int correctAnswers,
     required int wrongAnswers,
     required DateTime attemptDate,

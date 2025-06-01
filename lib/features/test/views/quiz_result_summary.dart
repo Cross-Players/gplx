@@ -37,16 +37,12 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
 
   @override
   Widget build(BuildContext context) {
-    final percentCorrect = widget.quizResult.totalQuestions > 0
-        ? (widget.quizResult.correctAnswers /
-                widget.quizResult.totalQuestions) *
-            100
-        : 0.0;
     final bool passedCriticalQuestions =
         widget.quizResult.failedCriticalQuestion != true;
-    final bool passedScoreThreshold = percentCorrect >= 84;
+    final bool isAboveMinScore =
+        widget.quizResult.correctAnswers >= widget.quizResult.minPoint;
 
-    final isPassed = passedCriticalQuestions && passedScoreThreshold;
+    final isPassed = passedCriticalQuestions && isAboveMinScore;
 
     return Scaffold(
       body: SingleChildScrollView(

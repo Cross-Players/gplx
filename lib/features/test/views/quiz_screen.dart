@@ -6,9 +6,9 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gplx/core/constants/app_styles.dart';
 import 'package:gplx/core/widgets/countdown_timer.dart';
-import 'package:gplx/features/test/controllers/exam_set_repository.dart';
 import 'package:gplx/features/test/models/question.dart';
 import 'package:gplx/features/test/models/quiz_result.dart';
+import 'package:gplx/features/test/providers/vehicle_provider.dart';
 import 'package:gplx/features/test/providers/quiz_providers.dart';
 import 'package:gplx/features/test/views/quiz_result_summary.dart';
 import 'package:gplx/features/test_sets/controllers/test_results_provider.dart';
@@ -31,7 +31,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
   bool _quizCompleted = false;
   ExamSet? _examSet;
 
-  int _remainingTimeInSeconds = 20 * 60; // 20 minutes by default
+  late int _remainingTimeInSeconds;
   Timer? _timer;
 
   DateTime? _startTime;
@@ -53,18 +53,28 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 0, vsync: this);
+
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      _loadExamSetAndQuestions();
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final testTime = ref.watch(selectedVehicleTypeProvider).minutes;
+    final minPoint = ref.watch(selectedVehicleTypeProvider).minPoint;
     _quizResult = QuizResult(
       quizId: widget.examSetId,
       quizTitle: 'Đang tải...',
       totalQuestions: 0,
       correctAnswers: 0,
       wrongAnswers: 0,
+      minPoint: minPoint,
       attemptDate: DateTime.now(),
     );
-
-    SchedulerBinding.instance.addPostFrameCallback((_) {
-      _loadExamSetAndQuestions();
-    });
+    _remainingTimeInSeconds =
+        testTime * 60; 
   }
 
   Future<void> _loadExamSetAndQuestions() async {
@@ -76,7 +86,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
 
     try {
       // Lấy thông tin examSet
-      _examSet = await ref.read(examSetByIdProvider(widget.examSetId).future);
+      _examSet = await ref.read(examSetProvider(widget.examSetId).future);
 
       if (_examSet == null) {
         setState(() {
@@ -92,11 +102,12 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
       final questions = await ref.read(
         quizQuestionsProvider(widget.examSetId).future,
       );
+      final testTime = ref.watch(selectedVehicleTypeProvider).minutes;
 
       if (!mounted) return;
 
       // Reset timer và start time mỗi khi load lại
-      _remainingTimeInSeconds = 20 * 60; // Reset về 20 phút
+      _remainingTimeInSeconds = testTime * 60; // Reset về 20 phút
       _startTime = DateTime.now(); // Reset start time
 
       setState(() {
@@ -185,6 +196,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
             timeTaken: quizResultMap['timeTaken'] != null
                 ? Duration(seconds: quizResultMap['timeTaken'] as int)
                 : null,
+            minPoint: quizResultMap['minPoint'] as int? ?? 0,
             isPassed: quizResultMap['isPassed'] as bool?,
           );
         }
@@ -278,8 +290,10 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
 
   void _completeQuiz() {
     final Duration timeTaken;
+    final testTime = ref.watch(selectedVehicleTypeProvider).minutes;
+
     if (_startTime != null) {
-      int totalSeconds = 20 * 60; // 20 minutes in seconds
+      int totalSeconds = testTime * 60; // 20 minutes in seconds
       int elapsedSeconds = totalSeconds - _remainingTimeInSeconds;
       timeTaken = Duration(seconds: elapsedSeconds);
     } else {
@@ -377,6 +391,8 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
 
   @override
   Widget build(BuildContext context) {
+    final testTime = ref.watch(selectedVehicleTypeProvider).minutes;
+    final minPoint = ref.watch(selectedVehicleTypeProvider).minPoint;
     if (_isLoading) {
       return Scaffold(
         appBar: AppBar(
@@ -448,10 +464,11 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
                 correctAnswers: 0,
                 wrongAnswers: 0,
                 attemptDate: DateTime.now(),
+                minPoint: minPoint,
               );
 
               _startTime = DateTime.now();
-              _remainingTimeInSeconds = 20 * 60;
+              _remainingTimeInSeconds = testTime * 60;
               _tabController.index = 0;
               _startTimer();
             });

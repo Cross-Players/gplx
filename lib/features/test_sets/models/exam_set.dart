@@ -8,7 +8,7 @@ abstract class ExamSet with _$ExamSet {
   const factory ExamSet({
     required String id,
     required String title,
-    required String classType,
+    required String vehicleType,
     required List<int> questionNumbers,
     required DateTime createdAt,
     String? description,

@@ -1,11 +1,6 @@
 import 'package:firebase_database/firebase_database.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gplx/features/test/models/answer.dart';
 import 'package:gplx/features/test/models/question.dart';
-
-final questionRepositoryProvider = Provider<QuestionRepository>((ref) {
-  return QuestionRepository();
-});
 
 class QuestionRepository {
   final _database = FirebaseDatabase.instance.ref();

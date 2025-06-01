@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gplx/core/constants/app_styles.dart';
-import 'package:gplx/features/test/controllers/class_data_repository.dart';
 import 'package:gplx/features/test/controllers/exam_set_repository.dart';
-import 'package:gplx/features/test/models/class_data.dart';
+import 'package:gplx/features/test/controllers/vehicle_repository.dart';
+import 'package:gplx/features/test/models/vehicle.dart';
+import 'package:gplx/features/test/providers/vehicle_provider.dart';
 import 'package:gplx/features/test/views/quiz_screen.dart';
 import 'package:gplx/features/test_sets/controllers/test_results_provider.dart';
 import 'package:gplx/features/test_sets/models/exam_set.dart';
@@ -12,9 +13,9 @@ import 'package:gplx/features/test_sets/models/exam_set.dart';
 final generatedExamSetsProvider = StateProvider<List<List<int>>>((ref) => []);
 
 class TestSetsScreen extends ConsumerStatefulWidget {
-  final ClassData classData;
+  final Vehicle vehicle;
 
-  const TestSetsScreen({super.key, required this.classData});
+  const TestSetsScreen({super.key, required this.vehicle});
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _TestSetsScreenState();
@@ -36,18 +37,18 @@ class _TestSetsScreenState extends ConsumerState<TestSetsScreen> {
 
     // Thử tải các ExamSets đã lưu từ repository
     final savedExamSets = await repository.getExamSets(
-      widget.classData.classType,
+      widget.vehicle.vehicleType,
     );
 
     if (savedExamSets.isNotEmpty) {
-      // Nếu đã có đề thi được lưu, sử dụng chúng
+      // Nếu đã có đề thi được lưu rồi thì dùng danh sách câu hỏi đã lưu
       final questionsList =
           savedExamSets.map((examSet) => examSet.questionNumbers).toList();
       ref.read(generatedExamSetsProvider.notifier).state = questionsList;
     } else {
       // Nếu chưa có, tạo mới và lưu trữ
-      final questionsList = ClassDataRepository.generateMultipleRandomExamSets(
-        widget.classData.classType,
+      final questionsList = VehicleRepository.generateMultipleRandomExamSets(
+        widget.vehicle.vehicleType,
         numberOfSets,
       );
 
@@ -58,30 +59,30 @@ class _TestSetsScreenState extends ConsumerState<TestSetsScreen> {
       final examSets = <ExamSet>[];
       for (int i = 0; i < questionsList.length; i++) {
         final formattedIndex = (i + 1).toString().padLeft(2, '0');
-        final id = '$formattedIndex-${widget.classData.classType}';
+        final id = '$formattedIndex-${widget.vehicle.vehicleType}';
 
         examSets.add(
           ExamSet(
             id: id,
             title: 'Đề số ${i + 1}',
-            classType: widget.classData.classType,
+            vehicleType: widget.vehicle.vehicleType,
             questionNumbers: questionsList[i],
             createdAt: DateTime.now(),
             description:
-                'Bộ đề thi thử ${widget.classData.classType} với ${questionsList[i].length} câu hỏi',
+                'Bộ đề thi thử ${widget.vehicle.vehicleType} với ${questionsList[i].length} câu hỏi',
           ),
         );
       }
 
       // Lưu danh sách ExamSets vào repository
-      await repository.saveExamSets(widget.classData.classType, examSets);
+      await repository.saveExamSets(widget.vehicle.vehicleType, examSets);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final testResults = ref.watch(testResultsNotifierProvider);
-    final classData = ref.watch(selectedClassTypeProvider);
+    final vehicle = ref.watch(selectedVehicleTypeProvider);
     final examSets = ref.watch(generatedExamSetsProvider);
 
     return Scaffold(
@@ -92,7 +93,7 @@ class _TestSetsScreenState extends ConsumerState<TestSetsScreen> {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text('Đề thi hạng ${classData.classType}'),
+        title: Text('Đề thi hạng ${vehicle.vehicleType}'),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -127,8 +128,8 @@ class _TestSetsScreenState extends ConsumerState<TestSetsScreen> {
                           examSetRepositoryProvider,
                         );
                         final questionsList =
-                            ClassDataRepository.generateMultipleRandomExamSets(
-                          widget.classData.classType,
+                            VehicleRepository.generateMultipleRandomExamSets(
+                          widget.vehicle.vehicleType,
                           numberOfSets,
                         );
 
@@ -144,24 +145,24 @@ class _TestSetsScreenState extends ConsumerState<TestSetsScreen> {
                                 '0',
                               );
                           final id =
-                              '$formattedIndex-${widget.classData.classType}';
+                              '$formattedIndex-${widget.vehicle.vehicleType}';
 
                           examSets.add(
                             ExamSet(
                               id: id,
                               title: 'Đề số ${i + 1}',
-                              classType: widget.classData.classType,
+                              vehicleType: widget.vehicle.vehicleType,
                               questionNumbers: questionsList[i],
                               createdAt: DateTime.now(),
                               description:
-                                  'Bộ đề thi thử ${widget.classData.classType} với ${questionsList[i].length} câu hỏi',
+                                  'Bộ đề thi thử ${widget.vehicle.vehicleType} với ${questionsList[i].length} câu hỏi',
                             ),
                           );
                         }
 
                         // Lưu danh sách mới vào repository
                         await repository.saveExamSets(
-                          widget.classData.classType,
+                          widget.vehicle.vehicleType,
                           examSets,
                         );
 
@@ -206,68 +207,6 @@ class _TestSetsScreenState extends ConsumerState<TestSetsScreen> {
             )
           : Column(
               children: [
-                // Nút làm đề ngẫu nhiên
-                // Padding(
-                //   padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                //   child: ElevatedButton.icon(
-                //     icon: const Icon(Icons.shuffle),
-                //     label: const Text('LÀM ĐỀ NGẪU NHIÊN'),
-                //     style: ElevatedButton.styleFrom(
-                //       backgroundColor: Colors.green,
-                //       foregroundColor: Colors.white,
-                //       minimumSize: const Size.fromHeight(45),
-                //     ),
-                //     onPressed: () async {
-                //       // Lấy repository
-                //       final repository = ref.read(examSetRepositoryProvider);
-
-                //       // Tạo ID cho đề ngẫu nhiên
-                //       final examSetId = '00-${widget.classData.classType}';
-
-                //       // Kiểm tra xem đã có đề ngẫu nhiên này chưa
-                //       final existingExamSet = await repository.getExamSetById(
-                //         examSetId,
-                //       );
-
-                //       if (existingExamSet == null) {
-                //         // Nếu chưa có, tạo mới đề ngẫu nhiên
-                //         final questionNumbers =
-                //             ClassDataRepository.generateRandomExamSet(
-                //               widget.classData.classType,
-                //             );
-
-                //         // Tạo ExamSet mới
-                //         final randomExamSet = ExamSet(
-                //           id: examSetId,
-                //           title: 'Đề ngẫu nhiên',
-                //           classType: widget.classData.classType,
-                //           questionNumbers: questionNumbers,
-                //           createdAt: DateTime.now(),
-                //           description:
-                //               'Bộ đề thi thử ${widget.classData.classType} ngẫu nhiên với ${questionNumbers.length} câu hỏi',
-                //         );
-
-                //         // Lưu ExamSet vào SharedPreferences
-                //         await repository.saveExamSets('random', [
-                //           randomExamSet,
-                //         ]);
-                //       }
-
-                //       // Hiển thị dialog xác nhận
-                //       _showStartQuizDialog(context, 0, 25, () {
-                //         // Chuyển đến màn hình quiz với ID đề thi
-                //         Navigator.push(
-                //           context,
-                //           MaterialPageRoute(
-                //             builder:
-                //                 (context) => QuizScreen(examSetId: examSetId),
-                //           ),
-                //         );
-                //       });
-                //     },
-                //   ),
-                // ),
-
                 // GridView hiển thị các đề thi
                 Expanded(
                   child: GridView.builder(
@@ -291,23 +230,11 @@ class _TestSetsScreenState extends ConsumerState<TestSetsScreen> {
                             '0',
                           );
                       final examSetId =
-                          '$formattedIndex-${widget.classData.classType}';
+                          '$formattedIndex-${widget.vehicle.vehicleType}';
 
-                      // Để tương thích với ID cũ cho việc tìm kiếm kết quả
-                      final quizId =
-                          'test_${widget.classData.classType}_$testNumber';
-
-                      // Find the result for this quiz if it exists
+                      // Find the result for this quiz by examSetId only
                       final quizResult = testResults.results
-                          .where(
-                            (result) =>
-                                result.quizId == quizId ||
-                                _extractTestNumber(
-                                      result.quizId,
-                                      result.quizTitle,
-                                    ) ==
-                                    testNumber,
-                          )
+                          .where((result) => result.quizId == examSetId)
                           .firstOrNull;
 
                       // Use saved result data if available, otherwise use default values
@@ -385,7 +312,7 @@ class _TestSetsScreenState extends ConsumerState<TestSetsScreen> {
                 const Icon(Icons.timer, size: 18, color: Colors.grey),
                 const SizedBox(width: 4),
                 Text(
-                  'Thời gian: ${widget.classData.classType == 'A1' ? '19' : '21'} phút',
+                  'Thời gian: ${widget.vehicle.vehicleType == 'A1' ? '19' : '21'} phút',
                   style: const TextStyle(color: Colors.grey),
                 ),
               ],
@@ -426,9 +353,9 @@ class _TestSetsScreenState extends ConsumerState<TestSetsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Xóa tất cả kết quả?'),
-        content: const Text(
-          'Bạn có chắc chắn muốn xóa tất cả kết quả bài thi không?',
+        title: Text('Xóa kết quả hạng ${widget.vehicle.vehicleType}?'),
+        content: Text(
+          'Bạn có chắc chắn muốn xóa tất cả kết quả bài thi hạng ${widget.vehicle.vehicleType} không?',
         ),
         actions: [
           TextButton(
@@ -437,10 +364,10 @@ class _TestSetsScreenState extends ConsumerState<TestSetsScreen> {
           ),
           TextButton(
             onPressed: () {
-              // Clear all saved test results using the notifier
+              // Clear results for current class type only
               ref
                   .read(testResultsNotifierProvider.notifier)
-                  .clearResults()
+                  .clearResultsForClassType(widget.vehicle.vehicleType)
                   .then((_) {
                 Navigator.pop(context);
               });
@@ -450,13 +377,6 @@ class _TestSetsScreenState extends ConsumerState<TestSetsScreen> {
         ],
       ),
     );
-  }
-
-  int _extractTestNumber(String id, String title) {
-    // Extract test number from the quiz ID or title
-    final RegExp regExp = RegExp(r'(\d+)');
-    final match = regExp.firstMatch(id) ?? regExp.firstMatch(title);
-    return match != null ? int.tryParse(match.group(0) ?? '0') ?? 0 : 0;
   }
 }
 

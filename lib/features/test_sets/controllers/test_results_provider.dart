@@ -101,4 +101,21 @@ class TestResultsNotifier extends StateNotifier<TestResultsState> {
     state = state.copyWith(results: []);
     await _saveResults();
   }
+
+  // Clear results for a specific class type (A1, A2, etc.)
+  Future<void> clearResultsForClassType(String classType) async {
+    final filteredResults = state.results
+        .where((result) => !result.quizId.endsWith('-$classType'))
+        .toList();
+
+    state = state.copyWith(results: filteredResults);
+    await _saveResults();
+  }
+
+  // Get results for a specific class type
+  List<QuizResult> getResultsForClassType(String classType) {
+    return state.results
+        .where((result) => result.quizId.endsWith('-$classType'))
+        .toList();
+  }
 }

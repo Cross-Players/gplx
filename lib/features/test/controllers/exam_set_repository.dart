@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gplx/features/test/controllers/class_data_repository.dart';
+import 'package:gplx/features/test/providers/vehicle_provider.dart';
 import 'package:gplx/features/test_sets/models/exam_set.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -10,12 +10,12 @@ final examSetRepositoryProvider = Provider<ExamSetRepository>((ref) {
   return ExamSetRepository(ref);
 });
 
-// Provider cho danh sách ExamSets theo classType
+// Provider cho danh sách ExamSets theo vehicleType
 final examSetsProvider = FutureProvider.family<List<ExamSet>, String>((
   ref,
-  classType,
+  vehicleType,
 ) async {
-  return ref.read(examSetRepositoryProvider).getExamSets(classType);
+  return ref.read(examSetRepositoryProvider).getExamSets(vehicleType);
 });
 
 // Provider cho một ExamSet cụ thể theo ID
@@ -29,31 +29,31 @@ final examSetByIdProvider = FutureProvider.family<ExamSet?, String>((
 class ExamSetRepository {
   final Ref _ref;
 
-  // Cache để lưu trữ danh sách ExamSet theo classType
+  // Cache để lưu trữ danh sách ExamSet theo vehicleType
   final Map<String, List<ExamSet>> _examSetsCache = {};
 
   ExamSetRepository(this._ref);
 
   // Tạo mới hoặc lấy danh sách ExamSet cho một loại class
-  Future<List<ExamSet>> getExamSets(String classType) async {
+  Future<List<ExamSet>> getExamSets(String vehicleType) async {
     // Kiểm tra cache trước
-    if (_examSetsCache.containsKey(classType)) {
-      return _examSetsCache[classType]!;
+    if (_examSetsCache.containsKey(vehicleType)) {
+      return _examSetsCache[vehicleType]!;
     }
 
     // Thử tải từ SharedPreferences
-    final savedSets = await _loadSavedExamSets(classType);
+    final savedSets = await _loadSavedExamSets(vehicleType);
     if (savedSets.isNotEmpty) {
-      _examSetsCache[classType] = savedSets;
+      _examSetsCache[vehicleType] = savedSets;
       return savedSets;
     }
 
     // Nếu không có, tạo mới
-    final examSets = await _generateExamSets(classType);
-    _examSetsCache[classType] = examSets;
+    final examSets = await _generateExamSets(vehicleType);
+    _examSetsCache[vehicleType] = examSets;
 
     // Lưu vào SharedPreferences
-    await saveExamSets(classType, examSets);
+    await saveExamSets(vehicleType, examSets);
 
     return examSets;
   }
@@ -73,8 +73,8 @@ class ExamSetRepository {
     final keys = prefs.getKeys().where((key) => key.startsWith('exam_sets_'));
 
     for (final key in keys) {
-      final classType = key.substring('exam_sets_'.length);
-      final examSets = await getExamSets(classType);
+      final vehicleType = key.substring('exam_sets_'.length);
+      final examSets = await getExamSets(vehicleType);
       final examSet = examSets.where((set) => set.id == examSetId).firstOrNull;
       if (examSet != null) {
         return examSet;
@@ -85,11 +85,11 @@ class ExamSetRepository {
   }
 
   // Tạo mới danh sách các ExamSet cho một loại class
-  Future<List<ExamSet>> _generateExamSets(String classType) async {
+  Future<List<ExamSet>> _generateExamSets(String vehicleType) async {
     const numberOfSets = 20; // Mặc định tạo 10 bộ đề
-    final repository = _ref.read(classDataRepositoryProvider);
+    final repository = _ref.read(vehicleRepositoryProvider);
     final examQuestionsList = repository.generateMultipleExamSets(
-      classType,
+      vehicleType,
       numberOfSets,
     );
     final result = <ExamSet>[];
@@ -99,15 +99,15 @@ class ExamSetRepository {
             2,
             '0',
           ); // Đảm bảo luôn có 2 chữ số
-      final id = '$formattedIndex-$classType';
+      final id = '$formattedIndex-$vehicleType';
       result.add(
         ExamSet(
           id: id,
           title: 'Đề số ${i + 1}',
-          classType: classType,
+          vehicleType: vehicleType,
           questionNumbers: examQuestionsList[i],
           createdAt: DateTime.now(),
-          description: 'Bộ đề thi thử $classType với 25 câu hỏi',
+          description: 'Bộ đề thi thử $vehicleType với 25 câu hỏi',
         ),
       );
     }
@@ -116,10 +116,10 @@ class ExamSetRepository {
   }
 
   // Tải danh sách ExamSet đã lưu
-  Future<List<ExamSet>> _loadSavedExamSets(String classType) async {
+  Future<List<ExamSet>> _loadSavedExamSets(String vehicleType) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final key = 'exam_sets_$classType';
+      final key = 'exam_sets_$vehicleType';
       final jsonString = prefs.getString(key);
 
       if (jsonString == null) {
@@ -135,10 +135,10 @@ class ExamSetRepository {
   }
 
   // Lưu danh sách ExamSet
-  Future<void> saveExamSets(String classType, List<ExamSet> examSets) async {
+  Future<void> saveExamSets(String vehicleType, List<ExamSet> examSets) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final key = 'exam_sets_$classType';
+      final key = 'exam_sets_$vehicleType';
       final jsonList = examSets.map((set) => set.toJson()).toList();
       await prefs.setString(key, jsonEncode(jsonList));
     } catch (e) {
@@ -147,11 +147,13 @@ class ExamSetRepository {
   }
 
   // Làm mới danh sách ExamSet cho một loại class
-  Future<List<ExamSet>> refreshExamSets(String classType) async {
-    _examSetsCache.remove(classType);
-    final examSets = await _generateExamSets(classType);
-    _examSetsCache[classType] = examSets;
-    await saveExamSets(classType, examSets);
+  Future<List<ExamSet>> refreshExamSets(String vehicleType) async {
+    _examSetsCache.remove(vehicleType);
+    final examSets = await _generateExamSets(vehicleType);
+    _examSetsCache[vehicleType] = examSets;
+    await saveExamSets(vehicleType, examSets);
     return examSets;
   }
+
+  
 }
