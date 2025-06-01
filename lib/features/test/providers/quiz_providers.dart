@@ -17,7 +17,7 @@ final quizQuestionsProvider = FutureProvider.family<List<Question>, String>((
     final classType =
         examSetId.split('-')[1]; // Extract classType từ 'deadpoints-A1'
     final deadPointNumbers =
-        VehicleRepository.getDeadPointQuestions(classType);
+        VehicleRepository().getDeadPointQuestions(classType);
     return questionRepo.fetchQuestionsByNumbers(deadPointNumbers);
   }
 
@@ -40,7 +40,7 @@ final examSetProvider = FutureProvider.family<ExamSet?, String>((
   if (examSetId.startsWith('deadpoints-')) {
     final classType = examSetId.split('-')[1];
     final deadPointNumbers =
-        VehicleRepository.getDeadPointQuestions(classType);
+        VehicleRepository().getDeadPointQuestions(classType);
 
     // Tạo một ExamSet ảo cho deadpoints
     return ExamSet(

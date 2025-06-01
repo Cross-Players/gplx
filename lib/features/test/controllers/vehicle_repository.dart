@@ -4,16 +4,64 @@ import 'package:gplx/features/test/data/vehicle_data.dart';
 import 'package:gplx/features/test/models/vehicle.dart';
 
 class VehicleRepository {
+  static const List<Vehicle> _allVehicles = [a1, a2, b2];
+
   List<Vehicle> getAllVehicle() {
-    return VehicleRepository.allVehicle();
+    return _allVehicles;
   }
 
-  List<String> getAllvehicleTypes() {
-    return VehicleRepository.getAllAvailablevehicleTypes();
+  List<String> getAllVehicleTypes() {
+    return _allVehicles.map((vehicle) => vehicle.vehicleType).toList();
+  }
+
+  Vehicle? getVehicleByType(String vehicleType) {
+    try {
+      return _allVehicles.firstWhere(
+        (vehicle) =>
+            vehicle.vehicleType.toUpperCase() == vehicleType.toUpperCase(),
+      );
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Vehicle getVehicle(String vehicleType) {
+    final vehicle = getVehicleByType(vehicleType);
+    if (vehicle != null) {
+      return vehicle;
+    }
+    throw ArgumentError('Unknown vehicle type: $vehicleType');
   }
 
   Vehicle findVehicle(String vehicleType) {
-    return VehicleRepository.getVehicle(vehicleType);
+    return getVehicle(vehicleType);
+  }
+
+  List<int> getDeadPointQuestions(String vehicleType) {
+    return getVehicle(vehicleType).deadPointQuestions;
+  }
+
+  int getTotalQuestions(String vehicleType) {
+    return getVehicle(vehicleType).getAllQuestionNumbers().length;
+  }
+
+  List<int> getDeadPointQuestionsList(String vehicleType) {
+    return getVehicle(vehicleType).deadPointQuestions;
+  }
+
+  List<int> getAllQuestions(String vehicleType) {
+    return getVehicle(vehicleType).getAllQuestionNumbers();
+  }
+
+  List<int> generateRandomExamSet(String vehicleType) {
+    return generateExamQuestions(vehicleType);
+  }
+
+  List<List<int>> generateMultipleRandomExamSets(
+    String vehicleType,
+    int numberOfSets,
+  ) {
+    return generateMultipleExamSets(vehicleType, numberOfSets);
   }
 
   List<int> generateExamQuestions(String vehicleType) {
@@ -21,21 +69,114 @@ class VehicleRepository {
     final vehicle = findVehicle(vehicleType);
     final result = <int>[];
     final allSelectedQuestions = <int>{};
+    Map<String, int> distribution;
+    int requiredQuestionCount;
 
-    final distribution = <String, int>{
-      'deadPoint': 1,
-      'chapter1.1': 1,
-      'chapter1.2': 6,
-      'chapter1.3': 1,
-      'chapter3': 1,
-      'chapter4': 1,
-      'chapter6': 7,
-      'chapter7': 7,
-    };
+    switch (vehicleType.toUpperCase()) {
+      case 'A1':
+      case 'A2':
+      case 'A3':
+      case 'A4':
+        distribution = <String, int>{
+          'deadPoint': 1,
+          'chapter1.1': 1,
+          'chapter1.2': 6,
+          'chapter1.3': 1,
+          'chapter2': 0,
+          'chapter3': 1,
+          'chapter4': 1,
+          'chapter5': 0,
+          'chapter6': 7,
+          'chapter7': 7,
+        };
+        requiredQuestionCount = 25;
+        break;
+
+      case 'B1':
+        distribution = <String, int>{
+          'deadPoint': 1,
+          'chapter1.1': 1,
+          'chapter1.2': 6,
+          'chapter1.3': 1,
+          'chapter2': 0,
+          'chapter3': 1,
+          'chapter4': 1,
+          'chapter5': 1,
+          'chapter6': 9,
+          'chapter7': 9,
+        };
+        requiredQuestionCount = 30;
+        break;
+
+      case 'B2':
+        distribution = <String, int>{
+          'deadPoint': 1,
+          'chapter1.1': 1,
+          'chapter1.2': 7,
+          'chapter1.3': 1,
+          'chapter2': 1,
+          'chapter3': 1,
+          'chapter4': 2,
+          'chapter5': 1,
+          'chapter6': 10,
+          'chapter7': 10,
+        };
+        requiredQuestionCount = 35;
+        break;
+
+      case 'C':
+        distribution = <String, int>{
+          'deadPoint': 1,
+          'chapter1.1': 1,
+          'chapter1.2': 7,
+          'chapter1.3': 1,
+          'chapter2': 1,
+          'chapter3': 1,
+          'chapter4': 2,
+          'chapter5': 1,
+          'chapter6': 14,
+          'chapter7': 11,
+        };
+        requiredQuestionCount = 40;
+        break;
+
+      case 'D':
+      case 'E':
+      case 'F':
+        distribution = <String, int>{
+          'deadPoint': 1,
+          'chapter1.1': 1,
+          'chapter1.2': 7,
+          'chapter1.3': 1,
+          'chapter2': 1,
+          'chapter3': 1,
+          'chapter4': 2,
+          'chapter5': 1,
+          'chapter6': 16,
+          'chapter7': 14,
+        };
+        requiredQuestionCount = 45;
+        break;
+
+      default:
+        distribution = <String, int>{
+          'deadPoint': 1,
+          'chapter1.1': 1,
+          'chapter1.2': 6,
+          'chapter1.3': 1,
+          'chapter3': 1,
+          'chapter4': 1,
+          'chapter5': 1,
+          'chapter6': 7,
+          'chapter7': 7,
+        };
+        requiredQuestionCount = 25;
+    }
 
     _getQuestionsForExam(result, allSelectedQuestions, vehicle, distribution);
 
-    _fillUpToRequiredQuestionCount(result, allSelectedQuestions, vehicle, 25);
+    _fillUpToRequiredQuestionCount(
+        result, allSelectedQuestions, vehicle, requiredQuestionCount);
 
     result.shuffle(random);
     return result;
@@ -214,64 +355,6 @@ class VehicleRepository {
       selected.add(availableQuestions[index]);
       availableQuestions.removeAt(index);
     }
-
     return selected;
-  }
-
-  static List<Vehicle> allVehicle() {
-    return [a1, a2];
-  }
-
-  static Vehicle? getVehicleByType(String vehicleType) {
-    try {
-      return allVehicle().firstWhere(
-        (vehicle) =>
-            vehicle.vehicleType.toUpperCase() == vehicleType.toUpperCase(),
-      );
-    } catch (e) {
-      return null;
-    }
-  }
-
-  static List<String> getAllAvailablevehicleTypes() {
-    return allVehicle().map((vehicle) => vehicle.vehicleType).toList();
-  }
-
-  static Vehicle getVehicle(String vehicleType) {
-    final vehicle = getVehicleByType(vehicleType);
-    if (vehicle != null) {
-      return vehicle;
-    }
-    throw ArgumentError('Unknown class type: $vehicleType');
-  }
-
-  static List<int> getDeadPointQuestions(String vehicleType) {
-    return getVehicle(vehicleType).deadPointQuestions;
-  }
-
-  static int getTotalQuestions(String vehicleType) {
-    return getVehicle(vehicleType).getAllQuestionNumbers().length;
-  }
-
-  static List<int> getDeadPointQuestionsList(String vehicleType) {
-    return getVehicle(vehicleType).deadPointQuestions;
-  }
-
-  static List<int> getAllQuestions(String vehicleType) {
-    return getVehicle(vehicleType).getAllQuestionNumbers();
-  }
-
-  static List<int> generateRandomExamSet(String vehicleType) {
-    return VehicleRepository().generateExamQuestions(vehicleType);
-  }
-
-  static List<List<int>> generateMultipleRandomExamSets(
-    String vehicleType,
-    int numberOfSets,
-  ) {
-    return VehicleRepository().generateMultipleExamSets(
-      vehicleType,
-      numberOfSets,
-    );
   }
 }

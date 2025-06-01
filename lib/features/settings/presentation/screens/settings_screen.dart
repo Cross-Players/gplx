@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gplx/core/data/local_storage.dart';
 import 'package:gplx/features/test/models/vehicle.dart';
 import 'package:gplx/features/test/providers/vehicle_provider.dart';
 
@@ -65,13 +66,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               final vehicle = availableVehicle[index];
               return _VehicleOption(
                 vehicle: vehicle,
-                isSelected: ref.watch(selectedVehicleTypeProvider).vehicleType ==
-                    vehicle.vehicleType,
+                isSelected:
+                    ref.watch(selectedVehicleTypeProvider).vehicleType ==
+                        vehicle.vehicleType,
                 onTap: () {
-                  // Save selected ClassData to provider
+                  // Update state
                   ref.read(selectedVehicleTypeProvider.notifier).state =
                       vehicle;
-                  print('Selected class type: ${vehicle.vehicleType}');
+
+                  // Save to SharedPreferences
+                  ref
+                      .read(localStorageProvider)
+                      .saveSelectedVehicleType(vehicle.vehicleType);
+                  print(
+                      'Selected vehicle type: ${vehicle.vehicleType} - Saved to preferences');
                 },
               );
             },

@@ -47,7 +47,7 @@ class _TestSetsScreenState extends ConsumerState<TestSetsScreen> {
       ref.read(generatedExamSetsProvider.notifier).state = questionsList;
     } else {
       // Nếu chưa có, tạo mới và lưu trữ
-      final questionsList = VehicleRepository.generateMultipleRandomExamSets(
+      final questionsList = VehicleRepository().generateMultipleRandomExamSets(
         widget.vehicle.vehicleType,
         numberOfSets,
       );
@@ -128,7 +128,7 @@ class _TestSetsScreenState extends ConsumerState<TestSetsScreen> {
                           examSetRepositoryProvider,
                         );
                         final questionsList =
-                            VehicleRepository.generateMultipleRandomExamSets(
+                            VehicleRepository().generateMultipleRandomExamSets(
                           widget.vehicle.vehicleType,
                           numberOfSets,
                         );
@@ -312,7 +312,7 @@ class _TestSetsScreenState extends ConsumerState<TestSetsScreen> {
                 const Icon(Icons.timer, size: 18, color: Colors.grey),
                 const SizedBox(width: 4),
                 Text(
-                  'Thời gian: ${widget.vehicle.vehicleType == 'A1' ? '19' : '21'} phút',
+                  'Thời gian: ${widget.vehicle.minutes} phút',
                   style: const TextStyle(color: Colors.grey),
                 ),
               ],

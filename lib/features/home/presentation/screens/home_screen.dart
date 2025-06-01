@@ -15,10 +15,10 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final vehicle = ref.watch(selectedVehicleTypeProvider);
     final vehicleType = vehicle.vehicleType;
-    final classTotalQuestions =
-        VehicleRepository.getTotalQuestions(vehicleType);
+    final vehicleTotalQuestions =
+        VehicleRepository().getTotalQuestions(vehicleType);
     final deadPointsLength =
-        VehicleRepository.getDeadPointQuestions(vehicleType).length;
+        VehicleRepository().getDeadPointQuestions(vehicleType).length;
     final deadpointsId = 'deadpoints-$vehicleType';
 
     Future<void> navigateToRandomExam() async {
@@ -70,7 +70,7 @@ class HomeScreen extends ConsumerWidget {
             },
           ),
         ],
-        title: Text('Hạng $vehicleType - $classTotalQuestions câu 2025'),
+        title: Text('Hạng $vehicleType - $vehicleTotalQuestions câu 2025'),
       ),
       body: GridView.count(
         padding: const EdgeInsets.all(16),

@@ -17,7 +17,22 @@ class Vehicle with _$Vehicle {
 
   factory Vehicle.fromJson(Map<String, dynamic> json) =>
       _$VehicleFromJson(json);
+}
 
+@freezed
+class ChapterData with _$ChapterData {
+  const factory ChapterData({
+    required String chapterName,
+    Map<String, List<int>>? subChapters,
+    List<int>? questions,
+  }) = _ChapterData;
+
+  factory ChapterData.fromJson(Map<String, dynamic> json) =>
+      _$ChapterDataFromJson(json);
+}
+
+// Extensions for Vehicle methods
+extension VehicleExtension on Vehicle {
   // Get all question numbers for this Vehicle
   List<int> getAllQuestionNumbers() {
     final List<int> allQuestions = [];
@@ -34,19 +49,13 @@ class Vehicle with _$Vehicle {
   bool isDeadPointQuestion(int questionNumber) {
     return deadPointQuestions.contains(questionNumber);
   }
+
+  // Get total question count
+  int getTotalQuestionCount() => getAllQuestionNumbers().length;
 }
 
-@freezed
-class ChapterData with _$ChapterData {
-  const factory ChapterData({
-    required String chapterName,
-    Map<String, List<int>>? subChapters,
-    List<int>? questions,
-  }) = _ChapterData;
-
-  factory ChapterData.fromJson(Map<String, dynamic> json) =>
-      _$ChapterDataFromJson(json);
-
+// Extensions for ChapterData methods
+extension ChapterDataExtension on ChapterData {
   // Get all question numbers in this chapter
   List<int> getAllQuestionNumbers() {
     if (subChapters != null) {
@@ -58,4 +67,7 @@ class ChapterData with _$ChapterData {
     }
     return questions ?? [];
   }
+
+  // Get question count for this chapter
+  int getQuestionCount() => getAllQuestionNumbers().length;
 }
