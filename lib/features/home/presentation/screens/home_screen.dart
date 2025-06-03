@@ -2,11 +2,10 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gplx/features/test/controllers/exam_set_repository.dart';
+import 'package:gplx/features/test_sets/controllers/test_set_repository.dart';
 import 'package:gplx/features/test/controllers/vehicle_repository.dart';
 import 'package:gplx/features/test/providers/vehicle_provider.dart';
 import 'package:gplx/features/test/views/quiz_screen.dart';
-import 'package:gplx/features/test_sets/views/test_sets_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -21,11 +20,11 @@ class HomeScreen extends ConsumerWidget {
         VehicleRepository().getDeadPointQuestions(vehicleType).length;
     final deadpointsId = 'deadpoints-$vehicleType';
 
-    Future<void> navigateToRandomExam() async {
+    Future<void> navigateToRandomTest() async {
       try {
-        final repository = ref.read(examSetRepositoryProvider);
-        final examSets = await repository.getExamSets(vehicleType);
-        if (examSets.isEmpty) {
+        final repository = ref.read(testSetRepositoryProvider);
+        final testSets = await repository.getTestSets(vehicleType);
+        if (testSets.isEmpty) {
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
@@ -37,14 +36,14 @@ class HomeScreen extends ConsumerWidget {
           }
           return;
         }
-        // Chọn ngẫu nhiên một exam set
+        // Chọn ngẫu nhiên một Test set
         final random = Random();
-        final randomExamSet = examSets[random.nextInt(examSets.length)];
+        final randomTestSet = testSets[random.nextInt(testSets.length)];
         if (context.mounted) {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => QuizScreen(examSetId: randomExamSet.id),
+              builder: (context) => QuizScreen(testSetId: randomTestSet.id),
             ),
           );
         }
@@ -83,21 +82,14 @@ class HomeScreen extends ConsumerWidget {
             icon: Icons.shuffle,
             label: 'Đề ngẫu nhiên',
             color: Colors.orange,
-            onTap: () => navigateToRandomExam(),
+            onTap: () => navigateToRandomTest(),
           ),
           _buildFeatureButton(
             context,
             icon: Icons.assignment,
             label: 'Thi theo bộ đề',
             color: Colors.red,
-            // onTap: () => Navigator.pushNamed(context, '/test-sets'),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => TestSetsScreen(vehicle: vehicle)),
-              );
-            },
+            onTap: () => Navigator.pushNamed(context, '/test-sets'),
           ),
           _buildFeatureButton(
             context,
@@ -111,7 +103,7 @@ class HomeScreen extends ConsumerWidget {
             icon: Icons.book,
             label: 'Ôn tập câu hỏi',
             color: Colors.teal,
-            onTap: () {},
+            onTap: () => Navigator.pushNamed(context, '/all-chapters'),
           ),
           _buildFeatureButton(
             context,
@@ -136,7 +128,7 @@ class HomeScreen extends ConsumerWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => QuizScreen(examSetId: deadpointsId),
+                  builder: (context) => QuizScreen(testSetId: deadpointsId),
                 ),
               );
             },

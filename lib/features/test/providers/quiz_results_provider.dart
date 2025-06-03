@@ -4,36 +4,36 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gplx/features/test/models/quiz_result.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-// Provider for the list of test results
-final testResultsProvider = FutureProvider<List<QuizResult>>((ref) async {
-  final notifier = ref.read(testResultsNotifierProvider.notifier);
+// Provider for the list of Quiz results
+final quizResultsProvider = FutureProvider<List<QuizResult>>((ref) async {
+  final notifier = ref.read(quizResultsNotifierProvider.notifier);
   return notifier.getResults();
 });
 
-// Provider for the test results notifier
-final testResultsNotifierProvider =
-    StateNotifierProvider<TestResultsNotifier, TestResultsState>((ref) {
-  return TestResultsNotifier();
+// Provider for the Quiz results notifier
+final quizResultsNotifierProvider =
+    StateNotifierProvider<QuizResultsNotifier, QuizResultsState>((ref) {
+  return QuizResultsNotifier();
 });
 
-// State class for test results
-class TestResultsState {
+// State Vehicle for Quiz results
+class QuizResultsState {
   final List<QuizResult> results;
   final bool isLoading;
   final String? error;
 
-  TestResultsState({
+  QuizResultsState({
     this.results = const [],
     this.isLoading = false,
     this.error,
   });
 
-  TestResultsState copyWith({
+  QuizResultsState copyWith({
     List<QuizResult>? results,
     bool? isLoading,
     String? error,
   }) {
-    return TestResultsState(
+    return QuizResultsState(
       results: results ?? this.results,
       isLoading: isLoading ?? this.isLoading,
       error: error,
@@ -41,9 +41,9 @@ class TestResultsState {
   }
 }
 
-// Notifier for managing test results
-class TestResultsNotifier extends StateNotifier<TestResultsState> {
-  TestResultsNotifier() : super(TestResultsState()) {
+// Notifier for managing Quiz results
+class QuizResultsNotifier extends StateNotifier<QuizResultsState> {
+  QuizResultsNotifier() : super(QuizResultsState()) {
     _loadResults();
   }
 
@@ -52,7 +52,7 @@ class TestResultsNotifier extends StateNotifier<TestResultsState> {
     state = state.copyWith(isLoading: true);
     try {
       final prefs = await SharedPreferences.getInstance();
-      final resultsJson = prefs.getString('test_results');
+      final resultsJson = prefs.getString('quiz_results');
       if (resultsJson != null) {
         final List<dynamic> resultsData = jsonDecode(resultsJson);
         final results =
@@ -90,7 +90,7 @@ class TestResultsNotifier extends StateNotifier<TestResultsState> {
       final resultsJson = jsonEncode(
         state.results.map((result) => result.toJson()).toList(),
       );
-      await prefs.setString('test_results', resultsJson);
+      await prefs.setString('quiz_results', resultsJson);
     } catch (e) {
       state = state.copyWith(error: e.toString());
     }
@@ -102,20 +102,20 @@ class TestResultsNotifier extends StateNotifier<TestResultsState> {
     await _saveResults();
   }
 
-  // Clear results for a specific class type (A1, A2, etc.)
-  Future<void> clearResultsForClassType(String classType) async {
+  // Clear results for a specific Vehicle type (A1, A2, etc.)
+  Future<void> clearResultsForVehicleType(String vehicleType) async {
     final filteredResults = state.results
-        .where((result) => !result.quizId.endsWith('-$classType'))
+        .where((result) => !result.quizId.endsWith('-$vehicleType'))
         .toList();
 
     state = state.copyWith(results: filteredResults);
     await _saveResults();
   }
 
-  // Get results for a specific class type
-  List<QuizResult> getResultsForClassType(String classType) {
+  // Get results for a specific Vehicle type
+  List<QuizResult> getResultsForVehicleType(String vehicleType) {
     return state.results
-        .where((result) => result.quizId.endsWith('-$classType'))
+        .where((result) => result.quizId.endsWith('-$vehicleType'))
         .toList();
   }
 }

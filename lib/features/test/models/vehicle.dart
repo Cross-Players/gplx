@@ -45,6 +45,10 @@ extension VehicleExtension on Vehicle {
     return allQuestions;
   }
 
+  List<ChapterData> getAllChapters() {
+    return chapters.values.toList();
+  }
+
   // Check if a question is a dead point question
   bool isDeadPointQuestion(int questionNumber) {
     return deadPointQuestions.contains(questionNumber);

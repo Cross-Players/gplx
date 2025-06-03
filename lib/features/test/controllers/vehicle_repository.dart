@@ -53,18 +53,22 @@ class VehicleRepository {
     return getVehicle(vehicleType).getAllQuestionNumbers();
   }
 
-  List<int> generateRandomExamSet(String vehicleType) {
-    return generateExamQuestions(vehicleType);
+  List<ChapterData> getAllChapters(Vehicle vehicle) {
+    return vehicle.chapters.values.toList();
   }
 
-  List<List<int>> generateMultipleRandomExamSets(
+  List<int> generateRandomTestSet(String vehicleType) {
+    return generateTestQuestions(vehicleType);
+  }
+
+  List<List<int>> generateMultipleRandomTestSets(
     String vehicleType,
     int numberOfSets,
   ) {
-    return generateMultipleExamSets(vehicleType, numberOfSets);
+    return generateMultipleTestSets(vehicleType, numberOfSets);
   }
 
-  List<int> generateExamQuestions(String vehicleType) {
+  List<int> generateTestQuestions(String vehicleType) {
     final random = Random();
     final vehicle = findVehicle(vehicleType);
     final result = <int>[];
@@ -173,7 +177,7 @@ class VehicleRepository {
         requiredQuestionCount = 25;
     }
 
-    _getQuestionsForExam(result, allSelectedQuestions, vehicle, distribution);
+    _getQuestionsForTest(result, allSelectedQuestions, vehicle, distribution);
 
     _fillUpToRequiredQuestionCount(
         result, allSelectedQuestions, vehicle, requiredQuestionCount);
@@ -182,16 +186,16 @@ class VehicleRepository {
     return result;
   }
 
-  List<List<int>> generateMultipleExamSets(
+  List<List<int>> generateMultipleTestSets(
       String vehicleType, int numberOfSets) {
     final result = <List<int>>[];
     for (int i = 0; i < numberOfSets; i++) {
-      result.add(generateExamQuestions(vehicleType));
+      result.add(generateTestQuestions(vehicleType));
     }
     return result;
   }
 
-  void _getQuestionsForExam(
+  void _getQuestionsForTest(
     List<int> result,
     Set<int> allSelectedQuestions,
     Vehicle vehicle,

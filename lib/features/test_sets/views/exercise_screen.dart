@@ -6,36 +6,27 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gplx/core/constants/app_styles.dart';
 import 'package:gplx/core/widgets/base64_image_widget.dart';
-import 'package:gplx/core/widgets/countdown_timer.dart';
 import 'package:gplx/features/test/models/question.dart';
-import 'package:gplx/features/test/models/quiz_result.dart';
 import 'package:gplx/features/test/providers/quiz_providers.dart';
-import 'package:gplx/features/test/providers/quiz_results_provider.dart';
-import 'package:gplx/features/test/providers/vehicle_provider.dart';
-import 'package:gplx/features/test/views/quiz_result_summary.dart';
 import 'package:gplx/features/test_sets/models/test_set.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class QuizScreen extends ConsumerStatefulWidget {
+class ExerciseScreen extends ConsumerStatefulWidget {
   final String testSetId;
+  final String? title;
 
-  const QuizScreen({required this.testSetId, super.key});
+  const ExerciseScreen(
+      {required this.testSetId, required this.title, super.key});
 
   @override
-  ConsumerState<QuizScreen> createState() => _QuizScreenState();
+  ConsumerState<ExerciseScreen> createState() => _ExerciseScreenState();
 }
 
-class _QuizScreenState extends ConsumerState<QuizScreen>
+class _ExerciseScreenState extends ConsumerState<ExerciseScreen>
     with TickerProviderStateMixin {
   List<Question> _questions = [];
   bool _isLoading = true;
-  bool _quizCompleted = false;
-  TestSet? _testSet;
-
-  late int _remainingTimeInSeconds;
-  Timer? _timer;
-
-  DateTime? _startTime;
+  final bool _quizCompleted = false;
 
   late TabController _tabController;
 
@@ -43,12 +34,11 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
   final Map<int, bool> _checkedQuestions = {};
 
   int get _answeredCount => _selectedAnswers.length;
+  TestSet? _testSet;
 
   int currentIndex = 0;
   int? selectedAnswer;
   bool _questionsLoaded = false;
-
-  late QuizResult _quizResult;
 
   @override
   void initState() {
@@ -63,18 +53,6 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final testTime = ref.watch(selectedVehicleTypeProvider).minutes;
-    final minPoint = ref.watch(selectedVehicleTypeProvider).minPoint;
-    _quizResult = QuizResult(
-      quizId: widget.testSetId,
-      quizTitle: 'Đang tải...',
-      totalQuestions: 0,
-      correctAnswers: 0,
-      wrongAnswers: 0,
-      minPoint: minPoint,
-      attemptDate: DateTime.now(),
-    );
-    _remainingTimeInSeconds = testTime * 60;
   }
 
   Future<void> _loadTestSetAndQuestions() async {
@@ -96,19 +74,13 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
       }
 
       // Cập nhật thông tin cho quiz result
-      _quizResult = _quizResult.copyWith(quizTitle: _testSet!.title);
 
       // Lấy danh sách câu hỏi
       final questions = await ref.read(
         quizQuestionsProvider(widget.testSetId).future,
       );
-      final testTime = ref.watch(selectedVehicleTypeProvider).minutes;
 
       if (!mounted) return;
-
-      // Reset timer và start time mỗi khi load lại
-      _remainingTimeInSeconds = testTime * 60; // Reset về 20 phút
-      _startTime = DateTime.now(); // Reset start time
 
       setState(() {
         _questions = questions;
@@ -123,7 +95,6 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
         });
         _isLoading = false;
         _questionsLoaded = true; // Mark as loaded
-        _startTimer();
         _loadSavedProgress();
       });
     } catch (e) {
@@ -134,24 +105,6 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
       });
       print('Error loading Test set and questions: $e');
     }
-  }
-
-  void _startTimer() {
-    _timer?.cancel();
-
-    // Luôn reset start time mỗi khi bắt đầu timer
-    _startTime = DateTime.now();
-
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      setState(() {
-        if (_remainingTimeInSeconds > 0) {
-          _remainingTimeInSeconds--;
-        } else {
-          _timer?.cancel();
-          _completeQuiz();
-        }
-      });
-    });
   }
 
   Future<void> _loadSavedProgress() async {
@@ -184,21 +137,6 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
 
         if (savedData.containsKey('quizResult')) {
           final quizResultMap = savedData['quizResult'] as Map<String, dynamic>;
-          _quizResult = QuizResult(
-            quizId: quizResultMap['quizId'] as String,
-            quizTitle: quizResultMap['quizTitle'] as String,
-            totalQuestions: quizResultMap['totalQuestions'] as int,
-            correctAnswers: quizResultMap['correctAnswers'] as int,
-            wrongAnswers: quizResultMap['wrongAnswers'] as int,
-            attemptDate: DateTime.parse(quizResultMap['attemptDate'] as String),
-            failedCriticalQuestion:
-                quizResultMap['failedCriticalQuestion'] as bool?,
-            timeTaken: quizResultMap['timeTaken'] != null
-                ? Duration(seconds: quizResultMap['timeTaken'] as int)
-                : null,
-            minPoint: quizResultMap['minPoint'] as int? ?? 0,
-            isPassed: quizResultMap['isPassed'] as bool?,
-          );
         }
       }
     } catch (e) {
@@ -206,55 +144,49 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
     }
   }
 
-  Future<void> _saveProgress() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
+  // Future<void> _saveProgress() async {
+  //   try {
+  //     final prefs = await SharedPreferences.getInstance();
 
-      final selectedAnswersMap = <String, int>{};
-      _selectedAnswers.forEach((key, value) {
-        selectedAnswersMap[key.toString()] = value;
-      });
+  //     final selectedAnswersMap = <String, int>{};
+  //     _selectedAnswers.forEach((key, value) {
+  //       selectedAnswersMap[key.toString()] = value;
+  //     });
 
-      final checkedQuestionsMap = <String, bool>{};
-      _checkedQuestions.forEach((key, value) {
-        checkedQuestionsMap[key.toString()] = value;
-      });
+  //     final checkedQuestionsMap = <String, bool>{};
+  //     _checkedQuestions.forEach((key, value) {
+  //       checkedQuestionsMap[key.toString()] = value;
+  //     });
 
-      final savedData = {
-        'selectedAnswers': selectedAnswersMap,
-        'checkedQuestions': checkedQuestionsMap,
-        'quizResult': _quizResult.toJson(),
-        // Không lưu thời gian còn lại để đảm bảo mỗi lần mở lại đều có thời gian đủ
-        // 'remainingTime': _remainingTimeInSeconds,
-        'lastSaved': DateTime.now().toIso8601String(),
-      };
+  //     final savedData = {
+  //       'selectedAnswers': selectedAnswersMap,
+  //       'checkedQuestions': checkedQuestionsMap,
+  //       'quizResult': _quizResult.toJson(),
+  //       // Không lưu thời gian còn lại để đảm bảo mỗi lần mở lại đều có thời gian đủ
+  //       // 'remainingTime': _remainingTimeInSeconds,
+  //       'lastSaved': DateTime.now().toIso8601String(),
+  //     };
 
-      await prefs.setString(
-        'quiz_progress_${widget.testSetId}',
-        jsonEncode(savedData),
-      );
-    } catch (e) {
-      print('Error saving quiz progress: $e');
-    }
-  }
+  //     await prefs.setString(
+  //       'quiz_progress_${widget.testSetId}',
+  //       jsonEncode(savedData),
+  //     );
+  //   } catch (e) {
+  //     print('Error saving quiz progress: $e');
+  //   }
+  // }
 
-  Future<void> _clearSavedProgress() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove('quiz_progress_${widget.testSetId}');
-    } catch (e) {
-      print('Error clearing saved quiz progress: $e');
-    }
-  }
+  // Future<void> _clearSavedProgress() async {
+  //   try {
+  //     final prefs = await SharedPreferences.getInstance();
+  //     await prefs.remove('quiz_progress_${widget.testSetId}');
+  //   } catch (e) {
+  //     print('Error clearing saved quiz progress: $e');
+  //   }
+  // }
 
   @override
   void dispose() {
-    _timer?.cancel();
-
-    if (!_quizCompleted) {
-      _saveProgress();
-    }
-
     _tabController.dispose();
     super.dispose();
   }
@@ -272,127 +204,24 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
     return question.answers[selectedAnswerIndex].isCorrect;
   }
 
-  void _updateQuizResult(int questionIndex, bool isCorrect) {
-    setState(() {
-      if (isCorrect) {
-        _quizResult = _quizResult.copyWith(
-          correctAnswers: _quizResult.correctAnswers + 1,
-        );
-      } else {
-        _quizResult = _quizResult.copyWith(
-          wrongAnswers: _quizResult.wrongAnswers + 1,
-        );
-      }
+  // void _updateQuizResult(int questionIndex, bool isCorrect) {
+  //   setState(() {
+  //     if (isCorrect) {
+  //       _quizResult = _quizResult.copyWith(
+  //         correctAnswers: _quizResult.correctAnswers + 1,
+  //       );
+  //     } else {
+  //       _quizResult = _quizResult.copyWith(
+  //         wrongAnswers: _quizResult.wrongAnswers + 1,
+  //       );
+  //     }
 
-      _saveProgress();
-    });
-  }
-
-  void _completeQuiz() {
-    final Duration timeTaken;
-    final testTime = ref.watch(selectedVehicleTypeProvider).minutes;
-
-    if (_startTime != null) {
-      int totalSeconds = testTime * 60; // 20 minutes in seconds
-      int elapsedSeconds = totalSeconds - _remainingTimeInSeconds;
-      timeTaken = Duration(seconds: elapsedSeconds);
-    } else {
-      timeTaken = Duration.zero;
-    }
-
-    setState(() {
-      bool failedCriticalQuestion = false;
-
-      _selectedAnswers.forEach((questionIndex, selectedAnswerIndex) {
-        if (!(_checkedQuestions[questionIndex] ?? false)) {
-          _checkedQuestions[questionIndex] = true;
-          final isCorrect = _isAnswerCorrect(questionIndex);
-          final isCritical = _questions[questionIndex].isDeadPoint ?? false;
-
-          if (isCritical && !isCorrect) {
-            failedCriticalQuestion = true;
-          }
-
-          if (isCorrect) {
-            _quizResult = _quizResult.copyWith(
-              correctAnswers: _quizResult.correctAnswers + 1,
-            );
-          } else {
-            _quizResult = _quizResult.copyWith(
-              wrongAnswers: _quizResult.wrongAnswers + 1,
-            );
-          }
-        }
-      });
-
-      for (int i = 0; i < _questions.length; i++) {
-        final question = _questions[i];
-        final isChecked = _checkedQuestions[i] ?? false;
-
-        if (isChecked && (question.isDeadPoint ?? false)) {
-          final isCorrect = _isAnswerCorrect(i);
-          if (!isCorrect) {
-            failedCriticalQuestion = true;
-            break;
-          }
-        }
-      }
-
-      for (int i = 0; i < _questions.length; i++) {
-        final question = _questions[i];
-        final isCritical = question.isDeadPoint ?? false;
-        final isAnswered = _selectedAnswers.containsKey(i);
-
-        if (isCritical && !isAnswered) {
-          failedCriticalQuestion = true;
-          break;
-        }
-      }
-
-      _quizResult = _quizResult.copyWith(
-        timeTaken: timeTaken,
-        attemptDate: DateTime.now(),
-        failedCriticalQuestion: failedCriticalQuestion,
-        totalQuestions: _questions.length,
-      );
-
-      _quizCompleted = true;
-
-      _timer?.cancel();
-
-      _saveTestResult();
-
-      _clearSavedProgress();
-    });
-  }
-
-  Future<void> _saveTestResult() async {
-    try {
-      final percentCorrect = _quizResult.totalQuestions > 0
-          ? (_quizResult.correctAnswers / _quizResult.totalQuestions) * 100
-          : 0.0;
-      final bool passedCriticalQuestions =
-          _quizResult.failedCriticalQuestion != true;
-      final bool passedScoreThreshold = percentCorrect >= 84;
-
-      final isPassed = passedCriticalQuestions && passedScoreThreshold;
-      final updatedQuizResult = _quizResult.copyWith(
-        attemptDate: DateTime.now(),
-        isPassed: isPassed,
-      );
-
-      await ref
-          .read(quizResultsNotifierProvider.notifier)
-          .addResult(updatedQuizResult);
-    } catch (e) {
-      print('Error saving test result: $e');
-    }
-  }
+  //     _saveProgress();
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {
-    final testTime = ref.watch(selectedVehicleTypeProvider).minutes;
-    final minPoint = ref.watch(selectedVehicleTypeProvider).minPoint;
     if (_isLoading) {
       return Scaffold(
         appBar: AppBar(
@@ -404,7 +233,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
       );
     }
 
-    if (_testSet == null || _questions.isEmpty) {
+    if (_questions.isEmpty) {
       return Scaffold(
         appBar: AppBar(
           title: const Text('Quiz'),
@@ -433,85 +262,23 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
       );
     }
 
-    if (_quizCompleted) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text('Kết quả - ${_testSet!.title}'),
-          backgroundColor: AppStyles.primaryColor,
-          foregroundColor: Colors.white,
-          actions: [
-            IconButton(icon: const Icon(Icons.share), onPressed: () {}),
-          ],
-        ),
-        body: QuizResultSummary(
-          quizResult: _quizResult,
-          questions: _questions,
-          selectedAnswers: _selectedAnswers,
-          timeTaken: _quizResult.timeTaken ?? Duration.zero,
-          onBackPressed: () {
-            final _ = ref.refresh(quizResultsProvider);
-            Navigator.pop(context);
-          },
-          onRetakeQuiz: () {
-            setState(() {
-              _selectedAnswers.clear();
-              _checkedQuestions.clear();
-              _quizCompleted = false;
-              _quizResult = QuizResult(
-                quizId: widget.testSetId,
-                quizTitle: _testSet!.title,
-                totalQuestions: _questions.length,
-                correctAnswers: 0,
-                wrongAnswers: 0,
-                attemptDate: DateTime.now(),
-                minPoint: minPoint,
-              );
-
-              _startTime = DateTime.now();
-              _remainingTimeInSeconds = testTime * 60;
-              _tabController.index = 0;
-              _startTimer();
-            });
-          },
-        ),
-      );
-    }
-
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
         primary: true,
         backgroundColor: AppStyles.primaryColor,
-        leading: Center(
-          child: Container(
-            margin: const EdgeInsets.only(left: 5.0),
-            child: Text(
-              '$_answeredCount/${_questions.length}',
-              style: const TextStyle(fontSize: 18, color: Colors.white),
-            ),
-          ),
-        ),
-        title: CountdownTimer(
-          duration: Duration(seconds: _remainingTimeInSeconds),
-          textStyle: const TextStyle(color: Colors.white, fontSize: 20),
-          onTimerComplete: () {
-            _completeQuiz();
-          },
-        ),
+        title: widget.title != null
+            ? Text(
+                widget.title!,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                    fontSize: AppStyles.fontSizeH,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white),
+              )
+            : const Text('Ôn tập GPLX'),
         actions: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: TextButton(
-              onPressed: _completeQuiz,
-              child: Text(
-                'Hoàn thành',
-                style: AppStyles.textBold.copyWith(
-                  fontSize: 16,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ),
+          IconButton(onPressed: () {}, icon: const Icon(Icons.refresh))
         ],
       ),
       body: Column(
@@ -744,7 +511,6 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
       onTap: () {
         setState(() {
           _checkedQuestions[questionIndex] = true;
-          _updateQuizResult(questionIndex, _isAnswerCorrect(questionIndex));
         });
       },
       child: Container(
