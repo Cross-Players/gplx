@@ -85,7 +85,6 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
     });
 
     try {
-      // Lấy thông tin TestSet
       _testSet = await ref.read(testSetProvider(widget.testSetId).future);
 
       if (_testSet == null) {
@@ -95,10 +94,8 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
         return;
       }
 
-      // Cập nhật thông tin cho quiz result
       _quizResult = _quizResult.copyWith(quizTitle: _testSet!.title);
 
-      // Lấy danh sách câu hỏi
       final questions = await ref.read(
         quizQuestionsProvider(widget.testSetId).future,
       );
@@ -106,9 +103,8 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
 
       if (!mounted) return;
 
-      // Reset timer và start time mỗi khi load lại
-      _remainingTimeInSeconds = testTime * 60; // Reset về 20 phút
-      _startTime = DateTime.now(); // Reset start time
+      _remainingTimeInSeconds = testTime * 60;
+      _startTime = DateTime.now();
 
       setState(() {
         _questions = questions;
@@ -122,7 +118,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
           }
         });
         _isLoading = false;
-        _questionsLoaded = true; // Mark as loaded
+        _questionsLoaded = true;
         _startTimer();
         _loadSavedProgress();
       });
@@ -139,7 +135,6 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
   void _startTimer() {
     _timer?.cancel();
 
-    // Luôn reset start time mỗi khi bắt đầu timer
     _startTime = DateTime.now();
 
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -224,8 +219,6 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
         'selectedAnswers': selectedAnswersMap,
         'checkedQuestions': checkedQuestionsMap,
         'quizResult': _quizResult.toJson(),
-        // Không lưu thời gian còn lại để đảm bảo mỗi lần mở lại đều có thời gian đủ
-        // 'remainingTime': _remainingTimeInSeconds,
         'lastSaved': DateTime.now().toIso8601String(),
       };
 
@@ -293,7 +286,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
     final testTime = ref.watch(selectedVehicleTypeProvider).minutes;
 
     if (_startTime != null) {
-      int totalSeconds = testTime * 60; // 20 minutes in seconds
+      int totalSeconds = testTime * 60;
       int elapsedSeconds = totalSeconds - _remainingTimeInSeconds;
       timeTaken = Duration(seconds: elapsedSeconds);
     } else {
@@ -532,12 +525,12 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
               Color? textColor;
               if (isChecked) {
                 backgroundColor = isCorrect
-                    ? Colors.green.withOpacity(0.2)
-                    : Colors.red.withOpacity(0.2);
+                    ? Colors.green.withValues(alpha: 0.2)
+                    : Colors.red.withValues(alpha: 0.2);
                 textColor =
                     isCorrect ? Colors.green.shade700 : Colors.red.shade700;
               } else if (hasSelection) {
-                backgroundColor = Colors.blue.withOpacity(0.1);
+                backgroundColor = Colors.blue.withValues(alpha: 0.2);
                 textColor = Colors.blue.shade700;
               }
 
@@ -614,8 +607,8 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
                                   color: _isAnswerCorrect(questionIndex)
-                                      ? Colors.green.withOpacity(0.1)
-                                      : Colors.red.withOpacity(0.1),
+                                      ? Colors.green.withValues(alpha: 0.2)
+                                      : Colors.red.withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(8),
                                   border: Border.all(
                                     color: _isAnswerCorrect(questionIndex)
@@ -678,7 +671,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
               color: AppStyles.primaryColor,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.2),
                   blurRadius: 4,
                   offset: const Offset(0, -2),
                 ),
@@ -808,7 +801,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
                     color: backgroundColor,
                     borderRadius: BorderRadius.circular(
                       8,
-                    ), // Add rounded corners
+                    ),
                   ),
                   child: Center(
                     child: Text(

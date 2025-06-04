@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gplx/core/constants/app_styles.dart';
 import 'package:gplx/features/test/models/vehicle.dart';
 import 'package:gplx/features/test/providers/vehicle_provider.dart';
+import 'package:gplx/features/test_sets/providers/answered_questions_provider.dart';
 import 'package:gplx/features/test_sets/views/exercise_screen.dart';
 
 class AllChapterScreen extends ConsumerWidget {
@@ -73,9 +74,11 @@ class AllChapterScreen extends ConsumerWidget {
               title: 'Toàn bộ $questionLength câu hỏi của Hạng $vehicleType',
               subtitle: '$questionLength câu hỏi từ bộ 600 câu',
               total: questionLength,
-              completed: 0,
+              completed:
+                  ref.watch(answeredQuestionsProvider)['all-$vehicleType'] ?? 0,
               context: context,
               testSetId: 'all-$vehicleType',
+              ref: ref,
             ),
             ListView.builder(
               padding: const EdgeInsets.all(0.0),
@@ -89,13 +92,19 @@ class AllChapterScreen extends ConsumerWidget {
                         orElse: () => MapEntry('unknown', chapter))
                     .key;
                 final testSetId = 'practice-$chapterKey-$vehicleType';
+
+                // Get the answered count from the provider
+                final answeredCount =
+                    ref.watch(answeredQuestionsProvider)[testSetId] ?? 0;
+
                 return _customListTile(
                   title: chapter.chapterName,
                   subtitle: '${chapter.getQuestionCount()} câu hỏi',
                   total: chapter.getQuestionCount(),
-                  completed: 0,
+                  completed: answeredCount,
                   context: context,
                   testSetId: testSetId,
+                  ref: ref,
                 );
               },
             ),
@@ -105,9 +114,12 @@ class AllChapterScreen extends ConsumerWidget {
               subtitle:
                   '${vehicle.deadPointQuestions.length} câu điểm liệt bắt buộc phải trả lời đúng',
               total: vehicle.deadPointQuestions.length,
-              completed: 0,
+              completed: ref.watch(
+                      answeredQuestionsProvider)['deadpoints-$vehicleType'] ??
+                  0,
               context: context,
               testSetId: 'deadpoints-$vehicleType',
+              ref: ref,
             ),
           ],
         ),
@@ -123,6 +135,7 @@ Widget _customListTile({
   required int completed,
   required int total,
   required String testSetId,
+  required WidgetRef ref,
 }) {
   String titleBasedOnChapterType(String vehicleType) {
     switch (vehicleType) {
@@ -153,7 +166,15 @@ Widget _customListTile({
               builder: (context) => ExerciseScreen(
                     testSetId: testSetId,
                     title: titleBasedOnChapterType(title),
-                  )));
+                  ))).then((_) {
+        // Refresh the page when coming back from ExerciseScreen
+        if (context.mounted) {
+          // Invalidate the answeredQuestionsProvider to make sure we get fresh data
+          ref.invalidate(answeredQuestionsProvider);
+          // Then rebuild the widget
+          (context as Element).markNeedsBuild();
+        }
+      });
     },
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,

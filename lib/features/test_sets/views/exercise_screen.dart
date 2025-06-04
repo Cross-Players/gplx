@@ -9,6 +9,7 @@ import 'package:gplx/core/widgets/base64_image_widget.dart';
 import 'package:gplx/features/test/models/question.dart';
 import 'package:gplx/features/test/providers/quiz_providers.dart';
 import 'package:gplx/features/test_sets/models/test_set.dart';
+import 'package:gplx/features/test_sets/providers/answered_questions_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ExerciseScreen extends ConsumerStatefulWidget {
@@ -26,16 +27,10 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen>
     with TickerProviderStateMixin {
   List<Question> _questions = [];
   bool _isLoading = true;
-  final bool _quizCompleted = false;
-
   late TabController _tabController;
-
   final Map<int, int> _selectedAnswers = {};
   final Map<int, bool> _checkedQuestions = {};
-
-  int get _answeredCount => _selectedAnswers.length;
   TestSet? _testSet;
-
   int currentIndex = 0;
   int? selectedAnswer;
   bool _questionsLoaded = false;
@@ -63,7 +58,6 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen>
     });
 
     try {
-      // Lấy thông tin TestSet
       _testSet = await ref.read(testSetProvider(widget.testSetId).future);
 
       if (_testSet == null) {
@@ -72,10 +66,6 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen>
         });
         return;
       }
-
-      // Cập nhật thông tin cho quiz result
-
-      // Lấy danh sách câu hỏi
       final questions = await ref.read(
         quizQuestionsProvider(widget.testSetId).future,
       );
@@ -94,7 +84,7 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen>
           }
         });
         _isLoading = false;
-        _questionsLoaded = true; // Mark as loaded
+        _questionsLoaded = true;
         _loadSavedProgress();
       });
     } catch (e) {
@@ -124,8 +114,10 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen>
           selectedAnswersMap.forEach((key, value) {
             _selectedAnswers[int.parse(key)] = value as int;
           });
+          ref
+              .read(answeredQuestionsProvider.notifier)
+              .updateAnsweredCount(widget.testSetId, _selectedAnswers.length);
         }
-
         if (savedData.containsKey('checkedQuestions')) {
           final checkedQuestionsMap =
               savedData['checkedQuestions'] as Map<String, dynamic>;
@@ -136,7 +128,8 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen>
         }
 
         if (savedData.containsKey('quizResult')) {
-          final quizResultMap = savedData['quizResult'] as Map<String, dynamic>;
+          // Get the quiz result map for reference (unused for now)
+          final _ = savedData['quizResult'] as Map<String, dynamic>;
         }
       }
     } catch (e) {
@@ -144,46 +137,102 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen>
     }
   }
 
-  // Future<void> _saveProgress() async {
-  //   try {
-  //     final prefs = await SharedPreferences.getInstance();
+  // Save progress to SharedPreferences
+  Future<void> _saveProgress() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
 
-  //     final selectedAnswersMap = <String, int>{};
-  //     _selectedAnswers.forEach((key, value) {
-  //       selectedAnswersMap[key.toString()] = value;
-  //     });
+      final selectedAnswersMap = <String, int>{};
+      _selectedAnswers.forEach((key, value) {
+        selectedAnswersMap[key.toString()] = value;
+      });
 
-  //     final checkedQuestionsMap = <String, bool>{};
-  //     _checkedQuestions.forEach((key, value) {
-  //       checkedQuestionsMap[key.toString()] = value;
-  //     });
+      final checkedQuestionsMap = <String, bool>{};
+      _checkedQuestions.forEach((key, value) {
+        checkedQuestionsMap[key.toString()] = value;
+      });
 
-  //     final savedData = {
-  //       'selectedAnswers': selectedAnswersMap,
-  //       'checkedQuestions': checkedQuestionsMap,
-  //       'quizResult': _quizResult.toJson(),
-  //       // Không lưu thời gian còn lại để đảm bảo mỗi lần mở lại đều có thời gian đủ
-  //       // 'remainingTime': _remainingTimeInSeconds,
-  //       'lastSaved': DateTime.now().toIso8601String(),
-  //     };
+      final savedData = {
+        'selectedAnswers': selectedAnswersMap,
+        'checkedQuestions': checkedQuestionsMap,
+        'lastSaved': DateTime.now().toIso8601String(),
+      };
 
-  //     await prefs.setString(
-  //       'quiz_progress_${widget.testSetId}',
-  //       jsonEncode(savedData),
-  //     );
-  //   } catch (e) {
-  //     print('Error saving quiz progress: $e');
-  //   }
-  // }
+      await prefs.setString(
+        'quiz_progress_${widget.testSetId}',
+        jsonEncode(savedData),
+      );
 
-  // Future<void> _clearSavedProgress() async {
-  //   try {
-  //     final prefs = await SharedPreferences.getInstance();
-  //     await prefs.remove('quiz_progress_${widget.testSetId}');
-  //   } catch (e) {
-  //     print('Error clearing saved quiz progress: $e');
-  //   }
-  // }
+      // Update the answeredQuestionsProvider with the current count
+      ref
+          .read(answeredQuestionsProvider.notifier)
+          .updateAnsweredCount(widget.testSetId, _selectedAnswers.length);
+    } catch (e) {
+      print('Error saving quiz progress: $e');
+    }
+  }
+
+  // Clear saved progress
+  Future<void> _clearSavedProgress() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('quiz_progress_${widget.testSetId}');
+    } catch (e) {
+      print('Error clearing saved quiz progress: $e');
+    }
+  }
+
+  // Show confirmation dialog before clearing results
+  void _showClearConfirmationDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Xóa kết quả?'),
+        content: const Text(
+          'Bạn có chắc chắn muốn xóa tất cả kết quả đã làm cho bài ôn tập này không?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('HỦY'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _clearResults();
+            },
+            child: const Text('XÓA', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Clear all results and reset the exercise
+  Future<void> _clearResults() async {
+    setState(() {
+      _selectedAnswers.clear();
+      _checkedQuestions.clear();
+    });
+
+    // Clear saved progress
+    await _clearSavedProgress();
+
+    // Clear the answered questions in the provider
+    ref
+        .read(answeredQuestionsProvider.notifier)
+        .clearAnswersForTestSet(widget.testSetId);
+
+    // Show a confirmation message
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Đã xóa tất cả kết quả!'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
 
   @override
   void dispose() {
@@ -203,22 +252,6 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen>
 
     return question.answers[selectedAnswerIndex].isCorrect;
   }
-
-  // void _updateQuizResult(int questionIndex, bool isCorrect) {
-  //   setState(() {
-  //     if (isCorrect) {
-  //       _quizResult = _quizResult.copyWith(
-  //         correctAnswers: _quizResult.correctAnswers + 1,
-  //       );
-  //     } else {
-  //       _quizResult = _quizResult.copyWith(
-  //         wrongAnswers: _quizResult.wrongAnswers + 1,
-  //       );
-  //     }
-
-  //     _saveProgress();
-  //   });
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -278,7 +311,11 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen>
               )
             : const Text('Ôn tập GPLX'),
         actions: [
-          IconButton(onPressed: () {}, icon: const Icon(Icons.refresh))
+          IconButton(
+            onPressed: () => _showClearConfirmationDialog(context),
+            icon: const Icon(Icons.refresh),
+            tooltip: 'Làm mới kết quả',
+          )
         ],
       ),
       body: Column(
@@ -299,12 +336,12 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen>
               Color? textColor;
               if (isChecked) {
                 backgroundColor = isCorrect
-                    ? Colors.green.withOpacity(0.2)
-                    : Colors.red.withOpacity(0.2);
+                    ? Colors.green.withValues(alpha: 0.2)
+                    : Colors.red.withValues(alpha: 0.2);
                 textColor =
                     isCorrect ? Colors.green.shade700 : Colors.red.shade700;
               } else if (hasSelection) {
-                backgroundColor = Colors.blue.withOpacity(0.1);
+                backgroundColor = Colors.blue.withValues(alpha: 0.1);
                 textColor = Colors.blue.shade700;
               }
 
@@ -381,8 +418,8 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen>
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
                                   color: _isAnswerCorrect(questionIndex)
-                                      ? Colors.green.withOpacity(0.1)
-                                      : Colors.red.withOpacity(0.1),
+                                      ? Colors.green.withValues(alpha: 0.1)
+                                      : Colors.red.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(8),
                                   border: Border.all(
                                     color: _isAnswerCorrect(questionIndex)
@@ -445,7 +482,7 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen>
               color: AppStyles.primaryColor,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 4,
                   offset: const Offset(0, -2),
                 ),
@@ -512,6 +549,9 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen>
         setState(() {
           _checkedQuestions[questionIndex] = true;
         });
+
+        // Save progress after checking an answer
+        _saveProgress();
       },
       child: Container(
         padding: const EdgeInsets.all(12),
@@ -614,7 +654,6 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen>
     } else if (isSelected) {
       backgroundColor = Colors.blue[50];
     }
-
     return GestureDetector(
       onTap: (showResult)
           ? null
@@ -622,6 +661,9 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen>
               setState(() {
                 _selectedAnswers[questionIndex] = optionIndex;
               });
+
+              // Save progress to update the count in provider and SharedPreferences
+              _saveProgress();
             },
       child: Container(
         padding: const EdgeInsets.all(16),
