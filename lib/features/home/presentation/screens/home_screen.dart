@@ -1,13 +1,66 @@
-import 'package:flutter/material.dart';
+import 'dart:math';
 
-class HomeScreen extends StatelessWidget {
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gplx/features/test_sets/controllers/test_set_repository.dart';
+import 'package:gplx/features/test/controllers/vehicle_repository.dart';
+import 'package:gplx/features/test/providers/vehicle_provider.dart';
+import 'package:gplx/features/test/views/quiz_screen.dart';
+
+class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final vehicle = ref.watch(selectedVehicleTypeProvider);
+    final vehicleType = vehicle.vehicleType;
+    final vehicleTotalQuestions =
+        VehicleRepository().getTotalQuestions(vehicleType);
+    final deadPointsLength =
+        VehicleRepository().getDeadPointQuestions(vehicleType).length;
+    final deadpointsId = 'deadpoints-$vehicleType';
+
+    Future<void> navigateToRandomTest() async {
+      try {
+        final repository = ref.read(testSetRepositoryProvider);
+        final testSets = await repository.getTestSets(vehicleType);
+        if (testSets.isEmpty) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                    'Không có đề thi nào để thực hiện. Vui lòng tạo đề thi mới.'),
+                duration: Duration(seconds: 3),
+              ),
+            );
+          }
+          return;
+        }
+        // Chọn ngẫu nhiên một Test set
+        final random = Random();
+        final randomTestSet = testSets[random.nextInt(testSets.length)];
+        if (context.mounted) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => QuizScreen(testSetId: randomTestSet.id),
+            ),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Có lỗi xảy ra: $e'),
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
+      }
+    }
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Ôn thi GPLX B2'),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
@@ -16,6 +69,7 @@ class HomeScreen extends StatelessWidget {
             },
           ),
         ],
+        title: Text('Hạng $vehicleType - $vehicleTotalQuestions câu 2025'),
       ),
       body: GridView.count(
         padding: const EdgeInsets.all(16),
@@ -28,7 +82,7 @@ class HomeScreen extends StatelessWidget {
             icon: Icons.shuffle,
             label: 'Đề ngẫu nhiên',
             color: Colors.orange,
-            onTap: () => Navigator.pushNamed(context, '/random-test'),
+            onTap: () => navigateToRandomTest(),
           ),
           _buildFeatureButton(
             context,
@@ -42,14 +96,14 @@ class HomeScreen extends StatelessWidget {
             icon: Icons.person_outline,
             label: 'Xem câu bị sai',
             color: Colors.green,
-            onTap: () => Navigator.pushNamed(context, '/mistakes'),
+            onTap: () {},
           ),
           _buildFeatureButton(
             context,
             icon: Icons.book,
             label: 'Ôn tập câu hỏi',
             color: Colors.teal,
-            onTap: () => Navigator.pushNamed(context, '/practice'),
+            onTap: () => Navigator.pushNamed(context, '/all-chapters'),
           ),
           _buildFeatureButton(
             context,
@@ -63,21 +117,28 @@ class HomeScreen extends StatelessWidget {
             icon: Icons.extension,
             label: 'Mẹo ghi nhớ',
             color: Colors.purple,
-            onTap: () => Navigator.pushNamed(context, '/tips'),
+            onTap: () {},
           ),
           _buildFeatureButton(
             context,
             icon: Icons.timer,
-            label: 'Thi sa hình',
+            label: '$deadPointsLength Câu điểm liệt',
             color: Colors.brown,
-            onTap: () => Navigator.pushNamed(context, '/practical'),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => QuizScreen(testSetId: deadpointsId),
+                ),
+              );
+            },
           ),
           _buildFeatureButton(
             context,
             icon: Icons.star,
             label: 'Top 50 câu sai',
             color: Colors.blueGrey,
-            onTap: () => Navigator.pushNamed(context, '/top-mistakes'),
+            onTap: () {},
           ),
         ],
       ),

@@ -1,24 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gplx/core/data/local_storage.dart';
+import 'package:gplx/features/test/models/vehicle.dart';
+import 'package:gplx/features/test/providers/vehicle_provider.dart';
 
-class SettingsScreen extends StatefulWidget {
+class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
   @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
+  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen> {
+class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   String selectedQuestionSet = '600 câu hỏi (Thử nghiệm)';
-  String selectedLicenseType = 'Bằng B2';
-
   @override
   Widget build(BuildContext context) {
+    final vehicleRepository = ref.watch(vehicleRepositoryProvider);
+    final availableVehicle = vehicleRepository.getAllVehicle();
+
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
         title: const Text('Thiết lập'),
         actions: [
           TextButton(
@@ -26,7 +27,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               // Save settings
               Navigator.pop(context);
             },
-            child: const Text('Done'),
+            child: const Text(
+              'Done',
+              style: TextStyle(color: Colors.white, fontSize: 16),
+            ),
           ),
         ],
       ),
@@ -54,38 +58,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
             },
           ),
           const _SectionHeader(title: 'LOẠI BẰNG LÁI XE Ô TÔ'),
-          _LicenseTypeOption(
-            title: 'Bằng A2',
-            subtitle: 'Xe mô tô 2 bánh có dung tích xy lanh từ 175 cm3 trở lên',
-            isSelected: selectedLicenseType == 'Bằng A2',
-            onTap: () => setState(() => selectedLicenseType = 'Bằng A2'),
-          ),
-          _LicenseTypeOption(
-            title: 'Bằng A3',
-            subtitle: 'Xe mô tô 3 bánh',
-            isSelected: selectedLicenseType == 'Bằng A3',
-            onTap: () => setState(() => selectedLicenseType = 'Bằng A3'),
-          ),
-          _LicenseTypeOption(
-            title: 'Bằng A4',
-            subtitle: 'Xe máy kéo nhỏ có trọng tải đến 1000kg',
-            isSelected: selectedLicenseType == 'Bằng A4',
-            onTap: () => setState(() => selectedLicenseType = 'Bằng A4'),
-          ),
-          _LicenseTypeOption(
-            title: 'Bằng B1',
-            subtitle:
-                'Không hành nghề lái xe, xe đến 9 chỗ ngồi, xe trọng tải dưới 3.500kg',
-            isSelected: selectedLicenseType == 'Bằng B1',
-            onTap: () => setState(() => selectedLicenseType = 'Bằng B1'),
-          ),
-          _LicenseTypeOption(
-            title: 'Bằng B2',
-            subtitle:
-                'Cho phép hành nghề lái xe, xe đến 9 chỗ ngồi, xe trọng tải dưới 3.500kg',
-            isSelected: selectedLicenseType == 'Bằng B2',
-            onTap: () => setState(() => selectedLicenseType = 'Bằng B2'),
-          ),
+          ListView.builder(
+            itemCount: availableVehicle.length,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemBuilder: (context, index) {
+              final vehicle = availableVehicle[index];
+              return _VehicleOption(
+                vehicle: vehicle,
+                isSelected:
+                    ref.watch(selectedVehicleTypeProvider).vehicleType ==
+                        vehicle.vehicleType,
+                onTap: () {
+                  // Update state
+                  ref.read(selectedVehicleTypeProvider.notifier).state =
+                      vehicle;
+
+                  // Save to SharedPreferences
+                  ref
+                      .read(localStorageProvider)
+                      .saveSelectedVehicleType(vehicle.vehicleType);
+                  print(
+                      'Selected vehicle type: ${vehicle.vehicleType} - Saved to preferences');
+                },
+              );
+            },
+          )
         ],
       ),
     );
@@ -114,15 +112,13 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
-class _LicenseTypeOption extends StatelessWidget {
-  final String title;
-  final String subtitle;
+class _VehicleOption extends StatelessWidget {
+  final Vehicle vehicle;
   final bool isSelected;
   final VoidCallback onTap;
 
-  const _LicenseTypeOption({
-    required this.title,
-    required this.subtitle,
+  const _VehicleOption({
+    required this.vehicle,
     required this.isSelected,
     required this.onTap,
   });
@@ -130,9 +126,9 @@ class _LicenseTypeOption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      title: Text(title),
+      title: Text(vehicle.vehicleType),
       subtitle: Text(
-        subtitle,
+        vehicle.description,
         style: const TextStyle(fontSize: 12),
       ),
       trailing: isSelected ? const Icon(Icons.check, color: Colors.blue) : null,

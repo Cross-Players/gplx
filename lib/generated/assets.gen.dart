@@ -9,6 +9,13 @@
 
 import 'package:flutter/widgets.dart';
 
+class $AssetsImagesGen {
+  const $AssetsImagesGen();
+
+  /// Directory path: assets/images/signs
+  $AssetsImagesSignsGen get signs => const $AssetsImagesSignsGen();
+}
+
 class $AssetsJsonsGen {
   const $AssetsJsonsGen();
 
@@ -25,16 +32,30 @@ class $AssetsJsonsGen {
   List<String> get values => [errorResponse, postResponse, postsResponse];
 }
 
-class Assets {
-  Assets._();
+class $AssetsImagesSignsGen {
+  const $AssetsImagesSignsGen();
 
+  /// File path: assets/images/signs/101.png
+  AssetGenImage get a101 => const AssetGenImage('assets/images/signs/101.png');
+
+  /// List of all assets
+  List<AssetGenImage> get values => [a101];
+}
+
+class Assets {
+  const Assets._();
+
+  static const $AssetsImagesGen images = $AssetsImagesGen();
   static const $AssetsJsonsGen jsons = $AssetsJsonsGen();
 }
 
 class AssetGenImage {
-  const AssetGenImage(this._assetName);
+  const AssetGenImage(this._assetName, {this.size, this.flavors = const {}});
 
   final String _assetName;
+
+  final Size? size;
+  final Set<String> flavors;
 
   Image image({
     Key? key,
@@ -54,10 +75,10 @@ class AssetGenImage {
     ImageRepeat repeat = ImageRepeat.noRepeat,
     Rect? centerSlice,
     bool matchTextDirection = false,
-    bool gaplessPlayback = false,
+    bool gaplessPlayback = true,
     bool isAntiAlias = false,
     String? package,
-    FilterQuality filterQuality = FilterQuality.low,
+    FilterQuality filterQuality = FilterQuality.medium,
     int? cacheWidth,
     int? cacheHeight,
   }) {
@@ -89,15 +110,8 @@ class AssetGenImage {
     );
   }
 
-  ImageProvider provider({
-    AssetBundle? bundle,
-    String? package,
-  }) {
-    return AssetImage(
-      _assetName,
-      bundle: bundle,
-      package: package,
-    );
+  ImageProvider provider({AssetBundle? bundle, String? package}) {
+    return AssetImage(_assetName, bundle: bundle, package: package);
   }
 
   String get path => _assetName;

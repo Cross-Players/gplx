@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:gplx/core/constants/app_styles.dart';
+import 'package:gplx/core/widgets/primary_button.dart';
 import 'package:gplx/features/signs/domain/models/traffic_sign.dart';
 
 class TrafficSignsScreen extends StatefulWidget {
@@ -8,8 +10,21 @@ class TrafficSignsScreen extends StatefulWidget {
   State<TrafficSignsScreen> createState() => _TrafficSignsScreenState();
 }
 
-class _TrafficSignsScreenState extends State<TrafficSignsScreen> {
-  final SignType _selectedType = SignType.prohibitory;
+class _TrafficSignsScreenState extends State<TrafficSignsScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 6, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
 
   final List<TrafficSign> _signs = [
     const TrafficSign(
@@ -56,8 +71,25 @@ class _TrafficSignsScreenState extends State<TrafficSignsScreen> {
     ),
   ];
 
-  List<TrafficSign> get _filteredSigns {
-    return _signs.where((sign) => sign.type == _selectedType).toList();
+  List<TrafficSign> _getFilteredSigns(SignType type) {
+    return _signs.where((sign) => sign.type == type).toList();
+  }
+
+  String _getTabTitle(SignType type) {
+    switch (type) {
+      case SignType.prohibitory:
+        return 'Biển Báo Cấm';
+      case SignType.warning:
+        return 'Biển Báo Nguy Hiểm';
+      case SignType.mandatory:
+        return 'Biển Báo Hiệu Lệnh';
+      case SignType.information:
+        return 'Biển Báo Chỉ Dẫn';
+      case SignType.direction:
+        return 'Biển Báo Phụ';
+      case SignType.temporary:
+        return 'Vạch Kẻ Đường';
+    }
   }
 
   @override
@@ -65,32 +97,48 @@ class _TrafficSignsScreenState extends State<TrafficSignsScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(
+            Icons.arrow_back_ios,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text('Biển báo giao thông'),
       ),
       body: Column(
         children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            color: Colors.blue[50],
-            child: const Text(
-              'BIỂN BÁO CẤM',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.blue,
-              ),
-            ),
+          TabBar(
+            controller: _tabController,
+            isScrollable: true,
+            indicatorWeight: 3,
+            tabs: SignType.values
+                .map((type) => Tab(
+                      text: _getTabTitle(type),
+                    ))
+                .toList(),
           ),
           Expanded(
-            child: ListView.builder(
-              itemCount: _filteredSigns.length,
-              itemBuilder: (context, index) {
-                final sign = _filteredSigns[index];
-                return _SignListItem(sign: sign);
-              },
+            child: TabBarView(
+              controller: _tabController,
+              children: SignType.values.map((type) {
+                final signs = _getFilteredSigns(type);
+                return Column(
+                  children: [
+                    Expanded(
+                      child: signs.isEmpty
+                          ? const Center(
+                              child: Text(
+                                  'Không có biển báo nào trong danh mục này'))
+                          : ListView.builder(
+                              itemCount: signs.length,
+                              itemBuilder: (context, index) {
+                                final sign = signs[index];
+                                return _SignListItem(sign: sign);
+                              },
+                            ),
+                    ),
+                  ],
+                );
+              }).toList(),
             ),
           ),
         ],
@@ -106,44 +154,121 @@ class _SignListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      contentPadding: const EdgeInsets.all(16),
-      leading: Image.asset(
-        sign.imageUrl,
-        width: 48,
-        height: 48,
-      ),
-      title: Text.rich(
-        TextSpan(
-          children: [
+    return Column(
+      children: [
+        ListTile(
+          contentPadding: const EdgeInsets.all(AppStyles.horizontalSpace),
+          leading: Image.asset(
+            sign.imageUrl,
+            width: 48,
+            height: 48,
+          ),
+          title: Text.rich(
             TextSpan(
-              text: '${sign.code}\n',
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.blue,
-              ),
+              children: [
+                TextSpan(
+                  text: '${sign.code}\n',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Color.fromRGBO(46, 93, 137, 1),
+                  ),
+                ),
+                TextSpan(
+                  text: sign.name,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
             ),
-            TextSpan(
-              text: sign.name,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
+          ),
+          onTap: () => showCustomModalBottomSheet(context, sign),
         ),
-      ),
-      subtitle: Padding(
-        padding: const EdgeInsets.only(top: 4),
-        child: Text(
-          sign.description,
-          style: TextStyle(
-            fontSize: 14,
-            color: Colors.grey[600],
+        Padding(
+          padding:
+              const EdgeInsets.symmetric(horizontal: AppStyles.horizontalSpace),
+          child: Divider(
+            height: 1,
+            color: Colors.grey[400],
           ),
         ),
-      ),
+      ],
     );
   }
+}
+
+void showCustomModalBottomSheet(
+  BuildContext context,
+  TrafficSign sign,
+) {
+  showModalBottomSheet(
+    shape: const RoundedRectangleBorder(
+      borderRadius:
+          BorderRadius.vertical(top: Radius.circular(AppStyles.buttonRadiusM)),
+    ),
+    backgroundColor: Colors.white,
+    context: context,
+    enableDrag: true,
+    showDragHandle: true,
+    isScrollControlled: true, // Allows the modal to be larger
+    builder: (BuildContext context) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header with sign code and close button
+            Text(
+              'Biển báo ${sign.code}',
+              style: AppStyles.textBold.copyWith(
+                fontSize: 18,
+              ),
+            ),
+            // Sign name
+            Text(
+              sign.name,
+              style: const TextStyle(
+                  fontSize: 18, color: AppStyles.fontSecondaryColor),
+            ),
+            // Sign image
+            Center(
+              child: Container(
+                width: 150,
+                height: 150,
+                padding: const EdgeInsets.all(8),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                ),
+                child: Image.asset(
+                  sign.imageUrl,
+                  fit: BoxFit.fill,
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            Text(
+              sign.description,
+              style: const TextStyle(
+                fontSize: 16,
+                color: Colors.black,
+              ),
+            ),
+            const SizedBox(height: 16),
+            // Close button
+            PrimaryButton(
+              content: "Đóng",
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            ),
+            SizedBox(height: MediaQuery.of(context).viewInsets.bottom),
+          ],
+        ),
+      );
+    },
+  );
 }
