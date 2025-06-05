@@ -11,7 +11,6 @@ class MemorizationTips extends StatelessWidget {
           'Mẹo cần ghi nhớ',
           style: TextStyle(fontWeight: FontWeight.w500),
         ),
-        backgroundColor: Colors.blue[500],
       ),
       body: ListView(
         padding:

@@ -2,10 +2,10 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gplx/features/test_sets/controllers/test_set_repository.dart';
 import 'package:gplx/features/test/controllers/vehicle_repository.dart';
 import 'package:gplx/features/test/providers/vehicle_provider.dart';
 import 'package:gplx/features/test/views/quiz_screen.dart';
+import 'package:gplx/features/test_sets/controllers/test_set_repository.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -117,7 +117,7 @@ class HomeScreen extends ConsumerWidget {
             icon: Icons.extension,
             label: 'Mẹo ghi nhớ',
             color: Colors.purple,
-            onTap: () {},
+            onTap: () => Navigator.pushNamed(context, '/tips'),
           ),
           _buildFeatureButton(
             context,
