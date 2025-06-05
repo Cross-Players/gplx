@@ -56,14 +56,12 @@ final quizQuestionsProvider = FutureProvider.family<List<Question>, String>((
         }
       }
 
-      // Nếu không tìm thấy chapter hoặc vehicle, ném ngoại lệ
       throw Exception(
           'Không tìm thấy chương "$chapterKey" cho loại bằng "$vehicleType"');
     }
   }
 
   if (testSetId.startsWith('all-')) {
-    // Trường hợp là đề tất cả, có thể cần xử lý khác
     final vehicleType = testSetId.split('-')[1];
     final allQuestions = VehicleRepository().getAllQuestions(vehicleType);
     return questionRepo.fetchQuestionsByNumbers(allQuestions);
@@ -159,4 +157,11 @@ final testSetProvider = FutureProvider.family<TestSet?, String>((
 
 final questionRepositoryProvider = Provider<QuestionRepository>((ref) {
   return QuestionRepository();
+});
+
+/// Provider để tải trước tất cả câu hỏi khi khởi động ứng dụng
+final preloadQuestionsProvider = FutureProvider<void>((ref) async {
+  final questionRepo = ref.read(questionRepositoryProvider);
+  // Tải tất cả câu hỏi vào cache khi khởi động ứng dụng
+  await questionRepo.fetchQuestions();
 });

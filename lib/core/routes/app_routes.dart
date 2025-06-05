@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gplx/features/home/presentation/screens/home_screen.dart';
 import 'package:gplx/features/settings/presentation/screens/settings_screen.dart';
 import 'package:gplx/features/signs/presentation/screens/traffic_signs_screen.dart';
-import 'package:gplx/features/test_sets/views/all_chapter_screen.dart';
+import 'package:gplx/features/exercise/views/all_chapter_screen.dart';
 import 'package:gplx/features/test_sets/views/test_sets_screen.dart';
 import 'package:gplx/features/tips/presentation/screens/memorization_tips.dart';
 

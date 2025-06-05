@@ -10,14 +10,6 @@ final testSetRepositoryProvider = Provider<TestSetRepository>((ref) {
   return TestSetRepository(ref);
 });
 
-// Provider cho danh sách TestSets theo vehicleType
-final testSetsProvider = FutureProvider.family<List<TestSet>, String>((
-  ref,
-  vehicleType,
-) async {
-  return ref.read(testSetRepositoryProvider).getTestSets(vehicleType);
-});
-
 // Provider cho một TestSet cụ thể theo ID
 final testSetByIdProvider = FutureProvider.family<TestSet?, String>((
   ref,

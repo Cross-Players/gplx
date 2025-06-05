@@ -2,15 +2,35 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gplx/core/constants/app_styles.dart';
 import 'package:gplx/features/test/models/vehicle.dart';
+import 'package:gplx/features/test/providers/quiz_providers.dart';
 import 'package:gplx/features/test/providers/vehicle_provider.dart';
 import 'package:gplx/features/test_sets/providers/answered_questions_provider.dart';
-import 'package:gplx/features/test_sets/views/exercise_screen.dart';
+import 'package:gplx/features/exercise/views/exercise_screen.dart';
 
-class AllChapterScreen extends ConsumerWidget {
+class AllChapterScreen extends ConsumerStatefulWidget {
   const AllChapterScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AllChapterScreen> createState() => _AllChapterScreenState();
+}
+
+class _AllChapterScreenState extends ConsumerState<AllChapterScreen> {
+  late TextEditingController searchController;
+
+  @override
+  void initState() {
+    searchController = TextEditingController();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final vehicle = ref.watch(selectedVehicleTypeProvider);
     final vehicleType = vehicle.vehicleType;
     final questionLength = ref
@@ -40,6 +60,28 @@ class AllChapterScreen extends ConsumerWidget {
                       borderRadius: BorderRadius.circular(16.0),
                     ),
                     child: TextField(
+                      onSubmitted: (searchText) {
+                        if (searchText.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Vui lòng nhập từ khóa tìm kiếm'),
+                              duration: Duration(seconds: 2),
+                            ),
+                          );
+                          return;
+                        }
+                        searchText.toLowerCase();
+                        Navigator.push(context, MaterialPageRoute(
+                          builder: (context) {
+                            return ExerciseScreen(
+                              questions: ref
+                                  .read(questionRepositoryProvider)
+                                  .fetchQuestionsByName(searchText),
+                              title: 'Kết quả tìm kiếm cho "$searchText"',
+                            );
+                          },
+                        ));
+                      },
                       decoration: InputDecoration(
                         alignLabelWithHint: true,
                         contentPadding: const EdgeInsets.all(0),
@@ -57,9 +99,6 @@ class AllChapterScreen extends ConsumerWidget {
                           borderSide: BorderSide.none,
                         ),
                       ),
-                      onChanged: (value) {
-                        // Handle search logic here
-                      },
                     ),
                   ),
                 ),

@@ -13,11 +13,12 @@ import 'package:gplx/features/test_sets/providers/answered_questions_provider.da
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ExerciseScreen extends ConsumerStatefulWidget {
-  final String testSetId;
+  final String? testSetId;
   final String? title;
+  final List<Question>? questions;
 
   const ExerciseScreen(
-      {required this.testSetId, required this.title, super.key});
+      {this.testSetId, this.questions, required this.title, super.key});
 
   @override
   ConsumerState<ExerciseScreen> createState() => _ExerciseScreenState();
@@ -41,13 +42,47 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen>
     _tabController = TabController(length: 0, vsync: this);
 
     SchedulerBinding.instance.addPostFrameCallback((_) {
-      _loadTestSetAndQuestions();
+      widget.questions != null
+          ? _loadSearchQuestions()
+          : _loadTestSetAndQuestions();
     });
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+  }
+
+  Future<void> _loadSearchQuestions() async {
+    if (_isLoading && _questionsLoaded) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      if (widget.questions != null) {
+        _questions = widget.questions!;
+        _tabController.dispose();
+        _tabController = TabController(length: _questions.length, vsync: this);
+        _tabController.addListener(() {
+          if (_tabController.indexIsChanging) {
+            setState(() {
+              selectedAnswer = _selectedAnswers[_tabController.index];
+            });
+          }
+        });
+        _isLoading = false;
+        _questionsLoaded = true;
+      }
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        _isLoading = false;
+      });
+      print('Error loading search questions: $e');
+    }
   }
 
   Future<void> _loadTestSetAndQuestions() async {
@@ -58,7 +93,7 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen>
     });
 
     try {
-      _testSet = await ref.read(testSetProvider(widget.testSetId).future);
+      _testSet = await ref.read(testSetProvider(widget.testSetId ?? '').future);
 
       if (_testSet == null) {
         setState(() {
@@ -67,7 +102,7 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen>
         return;
       }
       final questions = await ref.read(
-        quizQuestionsProvider(widget.testSetId).future,
+        quizQuestionsProvider(widget.testSetId ?? '').future,
       );
 
       if (!mounted) return;
@@ -114,9 +149,8 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen>
           selectedAnswersMap.forEach((key, value) {
             _selectedAnswers[int.parse(key)] = value as int;
           });
-          ref
-              .read(answeredQuestionsProvider.notifier)
-              .updateAnsweredCount(widget.testSetId, _selectedAnswers.length);
+          ref.read(answeredQuestionsProvider.notifier).updateAnsweredCount(
+              widget.testSetId ?? '', _selectedAnswers.length);
         }
         if (savedData.containsKey('checkedQuestions')) {
           final checkedQuestionsMap =
@@ -166,7 +200,7 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen>
       // Update the answeredQuestionsProvider with the current count
       ref
           .read(answeredQuestionsProvider.notifier)
-          .updateAnsweredCount(widget.testSetId, _selectedAnswers.length);
+          .updateAnsweredCount(widget.testSetId ?? '', _selectedAnswers.length);
     } catch (e) {
       print('Error saving quiz progress: $e');
     }
@@ -221,7 +255,7 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen>
     // Clear the answered questions in the provider
     ref
         .read(answeredQuestionsProvider.notifier)
-        .clearAnswersForTestSet(widget.testSetId);
+        .clearAnswersForTestSet(widget.testSetId ?? '');
 
     // Show a confirmation message
     if (mounted) {
