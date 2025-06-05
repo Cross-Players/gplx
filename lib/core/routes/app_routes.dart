@@ -4,6 +4,7 @@ import 'package:gplx/features/settings/presentation/screens/settings_screen.dart
 import 'package:gplx/features/signs/presentation/screens/traffic_signs_screen.dart';
 import 'package:gplx/features/test_sets/views/all_chapter_screen.dart';
 import 'package:gplx/features/test_sets/views/test_sets_screen.dart';
+import 'package:gplx/features/tips/presentation/screens/memorization_tips.dart';
 
 class AppRoutes {
   static const String home = '/';
@@ -13,6 +14,7 @@ class AppRoutes {
   static const String signs = '/signs';
   static const String quiz = '/quiz';
   static const String allChapters = '/all-chapters';
+  static const String tips = '/tips';
 
   static Route<dynamic> onGenerateRoute(RouteSettings route) {
     switch (route.name) {
@@ -39,6 +41,10 @@ class AppRoutes {
       case allChapters:
         return MaterialPageRoute(
           builder: (_) => const AllChapterScreen(),
+        );
+      case tips:
+        return MaterialPageRoute(
+          builder: (_) => const MemorizationTips(),
         );
       default:
         return MaterialPageRoute(
