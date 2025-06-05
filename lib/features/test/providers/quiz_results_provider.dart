@@ -68,7 +68,20 @@ class QuizResultsNotifier extends StateNotifier<QuizResultsState> {
 
   // Add a new result
   Future<void> addResult(QuizResult result) async {
-    final updatedResults = [...state.results, result];
+    // Check if a result with the same quizId already exists
+    final existingResultIndex =
+        state.results.indexWhere((r) => r.quizId == result.quizId);
+
+    List<QuizResult> updatedResults;
+    if (existingResultIndex >= 0) {
+      // Replace the existing result
+      updatedResults = [...state.results];
+      updatedResults[existingResultIndex] = result;
+    } else {
+      // Add as a new result
+      updatedResults = [...state.results, result];
+    }
+
     state = state.copyWith(results: updatedResults);
     await _saveResults();
   }

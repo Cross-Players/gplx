@@ -390,7 +390,7 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen>
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Text(
-                    'Câu ${index + 1}',
+                    'Câu ${_questions[index].number}',
                     style: TextStyle(
                       color: textColor,
                       fontWeight: hasSelection ? FontWeight.bold : null,
@@ -413,7 +413,7 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'CÂU HỎI ${questionIndex + 1}:',
+                        'CÂU HỎI ${question.number}:',
                         style: AppStyles.textBold.copyWith(
                           fontSize: AppStyles.fontSizeH,
                         ),
@@ -652,7 +652,7 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen>
                   ),
                   child: Center(
                     child: Text(
-                      '${i + 1}',
+                      '${_questions[i].number}',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 18,
