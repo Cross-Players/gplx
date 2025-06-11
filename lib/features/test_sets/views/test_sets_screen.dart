@@ -45,7 +45,7 @@ class _TestSetsScreenState extends ConsumerState<TestSetsScreen> {
       ref.read(generatedTestSetsProvider.notifier).state = questionsList;
     } else {
       // Nếu chưa có, tạo mới và lưu trữ
-      final questionsList = VehicleRepository().generateMultipleRandomTestSets(
+      final questionsList = VehicleRepository().generateMultipleTestSets(
         vehicle.vehicleType,
         numberOfSets,
       );
@@ -125,7 +125,7 @@ class _TestSetsScreenState extends ConsumerState<TestSetsScreen> {
                           testSetRepositoryProvider,
                         );
                         final questionsList =
-                            VehicleRepository().generateMultipleRandomTestSets(
+                            VehicleRepository().generateMultipleTestSets(
                           vehicle.vehicleType,
                           numberOfSets,
                         );
