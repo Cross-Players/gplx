@@ -2,7 +2,9 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gplx/features/exercise/views/exercise_screen.dart';
 import 'package:gplx/features/test/controllers/vehicle_repository.dart';
+import 'package:gplx/features/test/controllers/questions_repository.dart';
 import 'package:gplx/features/test/providers/vehicle_provider.dart';
 import 'package:gplx/features/test/views/quiz_screen.dart';
 import 'package:gplx/features/test_sets/controllers/test_set_repository.dart';
@@ -19,6 +21,8 @@ class HomeScreen extends ConsumerWidget {
     final deadPointsLength =
         VehicleRepository().getDeadPointQuestions(vehicleType).length;
     final deadpointsId = 'deadpoints-$vehicleType';
+    final wrongAnswerQuestions =
+        QuestionRepository().fetchQuestionsByIsCorrect(vehicleType);
 
     Future<void> navigateToRandomTest() async {
       try {
@@ -96,7 +100,29 @@ class HomeScreen extends ConsumerWidget {
             icon: Icons.person_outline,
             label: 'Xem câu bị sai',
             color: Colors.green,
-            onTap: () {},
+            onTap: () async {
+              try {
+                if (context.mounted) {
+                  Navigator.push(context, MaterialPageRoute(
+                    builder: (context) {
+                      return ExerciseScreen(
+                        title: 'Các câu bị sai',
+                        questions: Future.value(wrongAnswerQuestions),
+                      );
+                    },
+                  ));
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Có lỗi xảy ra: $e'),
+                      duration: const Duration(seconds: 3),
+                    ),
+                  );
+                }
+              }
+            },
           ),
           _buildFeatureButton(
             context,
@@ -136,7 +162,7 @@ class HomeScreen extends ConsumerWidget {
           _buildFeatureButton(
             context,
             icon: Icons.star,
-            label: 'Top 50 câu sai',
+            label: 'Top 50 câu hay sai',
             color: Colors.blueGrey,
             onTap: () {},
           ),

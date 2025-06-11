@@ -6,14 +6,17 @@ import 'package:gplx/features/test/models/vehicle.dart';
 class VehicleRepository {
   static const List<Vehicle> _allVehicles = [a1, a2, b2];
 
+  // Get all available vehicles
   List<Vehicle> getAllVehicle() {
     return _allVehicles;
   }
 
+  // Get all vehicle type names
   List<String> getAllVehicleTypes() {
     return _allVehicles.map((vehicle) => vehicle.vehicleType).toList();
   }
 
+  // Find vehicle by type (nullable)
   Vehicle? getVehicleByType(String vehicleType) {
     try {
       return _allVehicles.firstWhere(
@@ -25,6 +28,7 @@ class VehicleRepository {
     }
   }
 
+  // Get vehicle by type (throws exception if not found)
   Vehicle getVehicle(String vehicleType) {
     final vehicle = getVehicleByType(vehicleType);
     if (vehicle != null) {
@@ -33,273 +37,254 @@ class VehicleRepository {
     throw ArgumentError('Unknown vehicle type: $vehicleType');
   }
 
-  Vehicle findVehicle(String vehicleType) {
-    return getVehicle(vehicleType);
-  }
-
+  // Get dead point questions for a vehicle type
   List<int> getDeadPointQuestions(String vehicleType) {
     return getVehicle(vehicleType).deadPointQuestions;
   }
 
+  // Get total number of questions for a vehicle type
   int getTotalQuestions(String vehicleType) {
     return getVehicle(vehicleType).getAllQuestionNumbers().length;
   }
 
-  List<int> getDeadPointQuestionsList(String vehicleType) {
-    return getVehicle(vehicleType).deadPointQuestions;
-  }
-
+  // Get all question numbers for a vehicle type
   List<int> getAllQuestions(String vehicleType) {
     return getVehicle(vehicleType).getAllQuestionNumbers();
   }
 
+  // Get all chapters for a vehicle
   List<ChapterData> getAllChapters(Vehicle vehicle) {
     return vehicle.chapters.values.toList();
   }
 
-  List<int> generateRandomTestSet(String vehicleType) {
-    return generateTestQuestions(vehicleType);
-  }
-
-  List<List<int>> generateMultipleRandomTestSets(
-    String vehicleType,
-    int numberOfSets,
-  ) {
-    return generateMultipleTestSets(vehicleType, numberOfSets);
-  }
-
+  // Generate random test questions based on distribution rules
   List<int> generateTestQuestions(String vehicleType) {
-    final random = Random();
-    final vehicle = findVehicle(vehicleType);
+    final vehicle = getVehicle(vehicleType);
     final result = <int>[];
     final allSelectedQuestions = <int>{};
-    Map<String, int> distribution;
-    int requiredQuestionCount;
 
+    final testConfig = _getTestConfiguration(vehicleType);
+
+    _selectQuestionsByDistribution(
+        result, allSelectedQuestions, vehicle, testConfig.distribution);
+
+    _fillToRequiredCount(
+        result, allSelectedQuestions, vehicle, testConfig.requiredCount);
+
+    result.shuffle(Random());
+    return result;
+  }
+
+  // Generate multiple test sets
+  List<List<int>> generateMultipleTestSets(
+      String vehicleType, int numberOfSets) {
+    return List.generate(
+        numberOfSets, (_) => generateTestQuestions(vehicleType));
+  }
+
+  // Test configuration structure
+  ({Map<String, int> distribution, int requiredCount}) _getTestConfiguration(
+      String vehicleType) {
     switch (vehicleType.toUpperCase()) {
       case 'A1':
       case 'A2':
       case 'A3':
       case 'A4':
-        distribution = <String, int>{
-          'deadPoint': 1,
-          'chapter1.1': 1,
-          'chapter1.2': 6,
-          'chapter1.3': 1,
-          'chapter2': 0,
-          'chapter3': 1,
-          'chapter4': 1,
-          'chapter5': 0,
-          'chapter6': 7,
-          'chapter7': 7,
-        };
-        requiredQuestionCount = 25;
-        break;
+        return (
+          distribution: {
+            'deadPoint': 1,
+            'chapter1.1': 1,
+            'chapter1.2': 6,
+            'chapter1.3': 1,
+            'chapter2': 0,
+            'chapter3': 1,
+            'chapter4': 1,
+            'chapter5': 0,
+            'chapter6': 7,
+            'chapter7': 7,
+          },
+          requiredCount: 25
+        );
 
       case 'B1':
-        distribution = <String, int>{
-          'deadPoint': 1,
-          'chapter1.1': 1,
-          'chapter1.2': 6,
-          'chapter1.3': 1,
-          'chapter2': 0,
-          'chapter3': 1,
-          'chapter4': 1,
-          'chapter5': 1,
-          'chapter6': 9,
-          'chapter7': 9,
-        };
-        requiredQuestionCount = 30;
-        break;
+        return (
+          distribution: {
+            'deadPoint': 1,
+            'chapter1.1': 1,
+            'chapter1.2': 6,
+            'chapter1.3': 1,
+            'chapter2': 0,
+            'chapter3': 1,
+            'chapter4': 1,
+            'chapter5': 1,
+            'chapter6': 9,
+            'chapter7': 9,
+          },
+          requiredCount: 30
+        );
 
       case 'B2':
-        distribution = <String, int>{
-          'deadPoint': 1,
-          'chapter1.1': 1,
-          'chapter1.2': 7,
-          'chapter1.3': 1,
-          'chapter2': 1,
-          'chapter3': 1,
-          'chapter4': 2,
-          'chapter5': 1,
-          'chapter6': 10,
-          'chapter7': 10,
-        };
-        requiredQuestionCount = 35;
-        break;
+        return (
+          distribution: {
+            'deadPoint': 1,
+            'chapter1.1': 1,
+            'chapter1.2': 7,
+            'chapter1.3': 1,
+            'chapter2': 1,
+            'chapter3': 1,
+            'chapter4': 2,
+            'chapter5': 1,
+            'chapter6': 10,
+            'chapter7': 10,
+          },
+          requiredCount: 35
+        );
 
       case 'C':
-        distribution = <String, int>{
-          'deadPoint': 1,
-          'chapter1.1': 1,
-          'chapter1.2': 7,
-          'chapter1.3': 1,
-          'chapter2': 1,
-          'chapter3': 1,
-          'chapter4': 2,
-          'chapter5': 1,
-          'chapter6': 14,
-          'chapter7': 11,
-        };
-        requiredQuestionCount = 40;
-        break;
+        return (
+          distribution: {
+            'deadPoint': 1,
+            'chapter1.1': 1,
+            'chapter1.2': 7,
+            'chapter1.3': 1,
+            'chapter2': 1,
+            'chapter3': 1,
+            'chapter4': 2,
+            'chapter5': 1,
+            'chapter6': 14,
+            'chapter7': 11,
+          },
+          requiredCount: 40
+        );
 
       case 'D':
       case 'E':
       case 'F':
-        distribution = <String, int>{
-          'deadPoint': 1,
-          'chapter1.1': 1,
-          'chapter1.2': 7,
-          'chapter1.3': 1,
-          'chapter2': 1,
-          'chapter3': 1,
-          'chapter4': 2,
-          'chapter5': 1,
-          'chapter6': 16,
-          'chapter7': 14,
-        };
-        requiredQuestionCount = 45;
-        break;
+        return (
+          distribution: {
+            'deadPoint': 1,
+            'chapter1.1': 1,
+            'chapter1.2': 7,
+            'chapter1.3': 1,
+            'chapter2': 1,
+            'chapter3': 1,
+            'chapter4': 2,
+            'chapter5': 1,
+            'chapter6': 16,
+            'chapter7': 14,
+          },
+          requiredCount: 45
+        );
 
       default:
-        distribution = <String, int>{
-          'deadPoint': 1,
-          'chapter1.1': 1,
-          'chapter1.2': 6,
-          'chapter1.3': 1,
-          'chapter3': 1,
-          'chapter4': 1,
-          'chapter5': 1,
-          'chapter6': 7,
-          'chapter7': 7,
-        };
-        requiredQuestionCount = 25;
+        return (
+          distribution: {
+            'deadPoint': 1,
+            'chapter1.1': 1,
+            'chapter1.2': 6,
+            'chapter1.3': 1,
+            'chapter3': 1,
+            'chapter4': 1,
+            'chapter5': 1,
+            'chapter6': 7,
+            'chapter7': 7,
+          },
+          requiredCount: 25
+        );
     }
-
-    _getQuestionsForTest(result, allSelectedQuestions, vehicle, distribution);
-
-    _fillUpToRequiredQuestionCount(
-        result, allSelectedQuestions, vehicle, requiredQuestionCount);
-
-    result.shuffle(random);
-    return result;
   }
 
-  List<List<int>> generateMultipleTestSets(
-      String vehicleType, int numberOfSets) {
-    final result = <List<int>>[];
-    for (int i = 0; i < numberOfSets; i++) {
-      result.add(generateTestQuestions(vehicleType));
-    }
-    return result;
-  }
-
-  void _getQuestionsForTest(
+  // Select questions based on distribution rules
+  void _selectQuestionsByDistribution(
     List<int> result,
     Set<int> allSelectedQuestions,
     Vehicle vehicle,
     Map<String, int> distribution,
   ) {
-    if (distribution.containsKey('deadPoint')) {
-      final deadPointCount = distribution['deadPoint'] ?? 0;
-      final deadPointQuestions = _getRandomQuestions(
+    // Handle dead point questions
+    _addDeadPointQuestions(result, allSelectedQuestions, vehicle, distribution);
+
+    // Handle chapter 1 sub-chapters
+    _addChapter1Questions(result, allSelectedQuestions, vehicle, distribution);
+
+    // Handle other chapters
+    for (final chapterKey in [
+      'chapter2',
+      'chapter3',
+      'chapter4',
+      'chapter5',
+      'chapter6',
+      'chapter7'
+    ]) {
+      _addChapterQuestions(result, allSelectedQuestions, vehicle, chapterKey,
+          distribution[chapterKey] ?? 0);
+    }
+  }
+
+  // Add dead point questions
+  void _addDeadPointQuestions(
+    List<int> result,
+    Set<int> allSelectedQuestions,
+    Vehicle vehicle,
+    Map<String, int> distribution,
+  ) {
+    final deadPointCount = distribution['deadPoint'] ?? 0;
+    if (deadPointCount > 0) {
+      final selected = _selectRandomQuestions(
         vehicle.deadPointQuestions,
         deadPointCount,
         allSelectedQuestions,
       );
-      result.addAll(deadPointQuestions);
-      allSelectedQuestions.addAll(deadPointQuestions);
+      result.addAll(selected);
+      allSelectedQuestions.addAll(selected);
     }
-
-    final chapter1 = vehicle.chapters['chapter 1'];
-    if (chapter1 != null && chapter1.subChapters != null) {
-      _getQuestionsFromSubChapter(
-        result,
-        allSelectedQuestions,
-        chapter1.subChapters!,
-        'chapter 1.1',
-        distribution['chapter1.1'] ?? 0,
-      );
-
-      _getQuestionsFromSubChapter(
-        result,
-        allSelectedQuestions,
-        chapter1.subChapters!,
-        'chapter 1.2',
-        distribution['chapter1.2'] ?? 0,
-      );
-
-      _getQuestionsFromSubChapter(
-        result,
-        allSelectedQuestions,
-        chapter1.subChapters!,
-        'chapter 1.3',
-        distribution['chapter1.3'] ?? 0,
-      );
-    }
-
-    _getQuestionsFromChapter(
-      result,
-      allSelectedQuestions,
-      vehicle,
-      'chapter 3',
-      distribution['chapter3'] ?? 0,
-    );
-
-    _getQuestionsFromChapter(
-      result,
-      allSelectedQuestions,
-      vehicle,
-      'chapter 4',
-      distribution['chapter4'] ?? 0,
-    );
-
-    _getQuestionsFromChapter(
-      result,
-      allSelectedQuestions,
-      vehicle,
-      'chapter 5',
-      distribution['chapter5'] ?? 0,
-    );
-
-    _getQuestionsFromChapter(
-      result,
-      allSelectedQuestions,
-      vehicle,
-      'chapter 6',
-      distribution['chapter6'] ?? 0,
-    );
-
-    _getQuestionsFromChapter(
-      result,
-      allSelectedQuestions,
-      vehicle,
-      'chapter 7',
-      distribution['chapter7'] ?? 0,
-    );
   }
 
-  void _getQuestionsFromSubChapter(
+  // Add chapter 1 questions from sub-chapters
+  void _addChapter1Questions(
+    List<int> result,
+    Set<int> allSelectedQuestions,
+    Vehicle vehicle,
+    Map<String, int> distribution,
+  ) {
+    final chapter1 = vehicle.chapters['chapter 1'];
+    if (chapter1?.subChapters != null) {
+      for (final subChapterKey in [
+        'chapter 1.1',
+        'chapter 1.2',
+        'chapter 1.3'
+      ]) {
+        final count = distribution[subChapterKey.replaceAll(' ', '')] ?? 0;
+        if (count > 0) {
+          _addSubChapterQuestions(
+            result,
+            allSelectedQuestions,
+            chapter1!.subChapters!,
+            subChapterKey,
+            count,
+          );
+        }
+      }
+    }
+  }
+
+  // Add questions from a specific sub-chapter
+  void _addSubChapterQuestions(
     List<int> result,
     Set<int> allSelectedQuestions,
     Map<String, List<int>> subChapters,
     String subChapterKey,
     int count,
   ) {
-    if (count <= 0) return;
-
     final questions = subChapters[subChapterKey] ?? [];
-    final selected = _getRandomQuestions(
-      questions,
-      count,
-      allSelectedQuestions,
-    );
+    final selected =
+        _selectRandomQuestions(questions, count, allSelectedQuestions);
     result.addAll(selected);
     allSelectedQuestions.addAll(selected);
   }
 
-  void _getQuestionsFromChapter(
+  // Add questions from a specific chapter
+  void _addChapterQuestions(
     List<int> result,
     Set<int> allSelectedQuestions,
     Vehicle vehicle,
@@ -311,54 +296,55 @@ class VehicleRepository {
     final chapter = vehicle.chapters[chapterKey];
     if (chapter != null) {
       final questions = chapter.getAllQuestionNumbers();
-      final selected = _getRandomQuestions(
-        questions,
-        count,
-        allSelectedQuestions,
-      );
+      final selected =
+          _selectRandomQuestions(questions, count, allSelectedQuestions);
       result.addAll(selected);
       allSelectedQuestions.addAll(selected);
     }
   }
 
-  void _fillUpToRequiredQuestionCount(
+  // Fill remaining slots to reach required question count
+  void _fillToRequiredCount(
     List<int> result,
     Set<int> allSelectedQuestions,
     Vehicle vehicle,
     int requiredCount,
   ) {
-    if (result.length < requiredCount) {
-      final allQuestions = vehicle.getAllQuestionNumbers();
-      allQuestions.removeWhere((q) => allSelectedQuestions.contains(q));
+    if (result.length >= requiredCount) return;
 
-      allQuestions.shuffle(Random());
+    final remainingQuestions = vehicle
+        .getAllQuestionNumbers()
+        .where((q) => !allSelectedQuestions.contains(q))
+        .toList();
 
-      result.addAll(allQuestions.take(requiredCount - result.length));
-    }
+    remainingQuestions.shuffle(Random());
+
+    final needed = requiredCount - result.length;
+    result.addAll(remainingQuestions.take(needed));
   }
 
-  List<int> _getRandomQuestions(
+  // Select random questions from a source list, avoiding duplicates
+  List<int> _selectRandomQuestions(
     List<int> sourceQuestions,
     int count,
-    Set<int> allSelectedQuestions,
+    Set<int> excludeQuestions,
   ) {
-    final random = Random();
-
-    final availableQuestions = List<int>.from(sourceQuestions);
-
-    availableQuestions.removeWhere((q) => allSelectedQuestions.contains(q));
+    final availableQuestions =
+        sourceQuestions.where((q) => !excludeQuestions.contains(q)).toList();
 
     if (availableQuestions.length <= count) {
       return availableQuestions;
     }
 
+    final random = Random();
     final selected = <int>[];
-    for (int i = 0; i < count; i++) {
-      if (availableQuestions.isEmpty) break;
-      final index = random.nextInt(availableQuestions.length);
-      selected.add(availableQuestions[index]);
-      availableQuestions.removeAt(index);
+    final remaining = List<int>.from(availableQuestions);
+
+    for (int i = 0; i < count && remaining.isNotEmpty; i++) {
+      final index = random.nextInt(remaining.length);
+      selected.add(remaining.removeAt(index));
     }
+
     return selected;
   }
 }

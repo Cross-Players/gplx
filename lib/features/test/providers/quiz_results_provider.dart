@@ -4,25 +4,25 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gplx/features/test/models/quiz_result.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-// Provider for the list of Quiz results
+// Provider for the list of quiz results
 final quizResultsProvider = FutureProvider<List<QuizResult>>((ref) async {
   final notifier = ref.read(quizResultsNotifierProvider.notifier);
   return notifier.getResults();
 });
 
-// Provider for the Quiz results notifier
+// Provider for the quiz results notifier
 final quizResultsNotifierProvider =
     StateNotifierProvider<QuizResultsNotifier, QuizResultsState>((ref) {
-  return QuizResultsNotifier();
+  return QuizResultsNotifier(ref);
 });
 
-// State Vehicle for Quiz results
+// State class for quiz results
 class QuizResultsState {
   final List<QuizResult> results;
   final bool isLoading;
   final String? error;
 
-  QuizResultsState({
+  const QuizResultsState({
     this.results = const [],
     this.isLoading = false,
     this.error,
@@ -41,18 +41,24 @@ class QuizResultsState {
   }
 }
 
-// Notifier for managing Quiz results
+// Notifier for managing quiz results
 class QuizResultsNotifier extends StateNotifier<QuizResultsState> {
-  QuizResultsNotifier() : super(QuizResultsState()) {
+  final Ref _ref;
+  static const String _storageKey = 'quiz_results';
+
+  QuizResultsNotifier(this._ref) : super(const QuizResultsState()) {
     _loadResults();
   }
 
   // Load results from SharedPreferences
   Future<void> _loadResults() async {
-    state = state.copyWith(isLoading: true);
+    if (state.isLoading) return;
+
+    state = state.copyWith(isLoading: true, error: null);
     try {
       final prefs = await SharedPreferences.getInstance();
-      final resultsJson = prefs.getString('quiz_results');
+      final resultsJson = prefs.getString(_storageKey);
+
       if (resultsJson != null) {
         final List<dynamic> resultsData = jsonDecode(resultsJson);
         final results =
@@ -62,37 +68,40 @@ class QuizResultsNotifier extends StateNotifier<QuizResultsState> {
         state = state.copyWith(results: [], isLoading: false);
       }
     } catch (e) {
-      state = state.copyWith(error: e.toString(), isLoading: false);
+      state = state.copyWith(
+        error: 'Failed to load quiz results: $e',
+        isLoading: false,
+      );
     }
   }
 
-  // Add a new result
+  // Add or update a quiz result
   Future<void> addResult(QuizResult result) async {
-    // Check if a result with the same quizId already exists
-    final existingResultIndex =
-        state.results.indexWhere((r) => r.quizId == result.quizId);
+    try {
+      final updatedResults = List<QuizResult>.from(state.results);
 
-    List<QuizResult> updatedResults;
-    if (existingResultIndex >= 0) {
-      // Replace the existing result
-      updatedResults = [...state.results];
-      updatedResults[existingResultIndex] = result;
-    } else {
-      // Add as a new result
-      updatedResults = [...state.results, result];
+      // Find existing result with same quizId
+      final existingIndex =
+          updatedResults.indexWhere((r) => r.quizId == result.quizId);
+
+      if (existingIndex >= 0) {
+        updatedResults[existingIndex] = result;
+      } else {
+        updatedResults.add(result);
+      }
+
+      state = state.copyWith(results: updatedResults, error: null);
+      await _saveResults();
+
+      // Invalidate the provider to refresh UI
+      _ref.invalidate(quizResultsProvider);
+    } catch (e) {
+      state = state.copyWith(error: 'Failed to add result: $e');
     }
-
-    state = state.copyWith(results: updatedResults);
-    await _saveResults();
   }
 
-  // Get all results
-  Future<List<QuizResult>> getResults() async {
-    if (state.isLoading) {
-      // Wait for loading to complete
-      await Future.delayed(const Duration(milliseconds: 100));
-      return getResults();
-    }
+  // Get all results (optimized async handling)
+  List<QuizResult> getResults() {
     return state.results;
   }
 
@@ -103,32 +112,55 @@ class QuizResultsNotifier extends StateNotifier<QuizResultsState> {
       final resultsJson = jsonEncode(
         state.results.map((result) => result.toJson()).toList(),
       );
-      await prefs.setString('quiz_results', resultsJson);
+      await prefs.setString(_storageKey, resultsJson);
     } catch (e) {
-      state = state.copyWith(error: e.toString());
+      state = state.copyWith(error: 'Failed to save results: $e');
+      rethrow;
     }
   }
 
   // Clear all results
-  Future<void> clearResults() async {
-    state = state.copyWith(results: []);
-    await _saveResults();
+  Future<void> clearAllResults() async {
+    try {
+      state = state.copyWith(results: [], error: null);
+      await _saveResults();
+      _ref.invalidate(quizResultsProvider);
+    } catch (e) {
+      state = state.copyWith(error: 'Failed to clear results: $e');
+    }
   }
 
-  // Clear results for a specific Vehicle type (A1, A2, etc.)
+  // Clear results for a specific vehicle type
   Future<void> clearResultsForVehicleType(String vehicleType) async {
-    final filteredResults = state.results
-        .where((result) => !result.quizId.endsWith('-$vehicleType'))
-        .toList();
+    try {
+      final filteredResults = state.results
+          .where((result) => !_isResultForVehicleType(result, vehicleType))
+          .toList();
 
-    state = state.copyWith(results: filteredResults);
-    await _saveResults();
+      state = state.copyWith(results: filteredResults, error: null);
+      await _saveResults();
+      _ref.invalidate(quizResultsProvider);
+    } catch (e) {
+      state =
+          state.copyWith(error: 'Failed to clear results for vehicle type: $e');
+    }
   }
 
-  // Get results for a specific Vehicle type
+  // Get results for a specific vehicle type
   List<QuizResult> getResultsForVehicleType(String vehicleType) {
     return state.results
-        .where((result) => result.quizId.endsWith('-$vehicleType'))
+        .where((result) => _isResultForVehicleType(result, vehicleType))
         .toList();
+  }
+
+  // Helper method to check if result belongs to a vehicle type
+  bool _isResultForVehicleType(QuizResult result, String vehicleType) {
+    return result.quizId.contains(vehicleType) ||
+        result.quizId.endsWith('-$vehicleType');
+  }
+
+  // Refresh results from storage
+  Future<void> refresh() async {
+    await _loadResults();
   }
 }

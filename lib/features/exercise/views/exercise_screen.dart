@@ -6,8 +6,10 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gplx/core/constants/app_styles.dart';
 import 'package:gplx/core/widgets/base64_image_widget.dart';
+import 'package:gplx/features/test/controllers/questions_repository.dart';
 import 'package:gplx/features/test/models/question.dart';
 import 'package:gplx/features/test/providers/quiz_providers.dart';
+import 'package:gplx/features/test/providers/vehicle_provider.dart';
 import 'package:gplx/features/test_sets/models/test_set.dart';
 import 'package:gplx/features/test_sets/providers/answered_questions_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -15,7 +17,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ExerciseScreen extends ConsumerStatefulWidget {
   final String? testSetId;
   final String? title;
-  final List<Question>? questions;
+  final Future<List<Question>>? questions;
 
   const ExerciseScreen(
       {this.testSetId, this.questions, required this.title, super.key});
@@ -54,7 +56,7 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen>
   }
 
   Future<void> _loadSearchQuestions() async {
-    if (_isLoading && _questionsLoaded) return;
+    if (_questionsLoaded) return;
 
     setState(() {
       _isLoading = true;
@@ -62,7 +64,9 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen>
 
     try {
       if (widget.questions != null) {
-        _questions = widget.questions!;
+        _questions = await widget.questions!;
+        if (!mounted) return;
+
         _tabController.dispose();
         _tabController = TabController(length: _questions.length, vsync: this);
         _tabController.addListener(() {
@@ -72,8 +76,15 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen>
             });
           }
         });
-        _isLoading = false;
-        _questionsLoaded = true;
+
+        setState(() {
+          _isLoading = false;
+          _questionsLoaded = true;
+        });
+      } else {
+        setState(() {
+          _isLoading = false;
+        });
       }
     } catch (e) {
       if (!mounted) return;
@@ -579,7 +590,24 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen>
 
   GestureDetector _buildCheckAnswerButton(int questionIndex) {
     return GestureDetector(
-      onTap: () {
+      onTap: () async {
+        final question = _questions[questionIndex];
+        final isCorrect = _isAnswerCorrect(questionIndex);
+
+        // Save question result to repository
+        final vehicleType = ref.read(selectedVehicleTypeProvider).vehicleType;
+        final questionRepository = QuestionRepository();
+
+        if (isCorrect) {
+          // Add to correct questions if answered correctly (remove from wrong list)
+          await questionRepository.saveCorrectQuestion(
+              question.number, vehicleType);
+        } else {
+          // Remove from correct questions if answered incorrectly (add back to wrong list)
+          await questionRepository.removeCorrectQuestion(
+              question.number, vehicleType);
+        }
+
         setState(() {
           _checkedQuestions[questionIndex] = true;
         });
