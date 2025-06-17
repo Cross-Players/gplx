@@ -2,13 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gplx/core/constants/app_styles.dart';
 import 'package:gplx/features/test/controllers/vehicle_repository.dart';
+import 'package:gplx/features/test/models/quiz_result.dart';
 import 'package:gplx/features/test/models/vehicle.dart';
+import 'package:gplx/features/test/providers/quiz_providers.dart';
 import 'package:gplx/features/test/providers/quiz_results_provider.dart';
 import 'package:gplx/features/test/providers/vehicle_provider.dart';
+import 'package:gplx/features/test/views/quiz_result_summary.dart';
 import 'package:gplx/features/test/views/quiz_screen.dart';
-import 'package:gplx/features/test_sets/controllers/test_set_repository.dart';
 import 'package:gplx/features/test_sets/models/test_set.dart';
 import 'package:gplx/features/test_sets/providers/test_sets_provider.dart';
+import 'package:gplx/features/test_sets/views/components/test_set_card.dart';
 
 class TestSetsScreen extends ConsumerStatefulWidget {
   const TestSetsScreen({super.key});
@@ -18,312 +21,243 @@ class TestSetsScreen extends ConsumerStatefulWidget {
 }
 
 class _TestSetsScreenState extends ConsumerState<TestSetsScreen> {
-  int numberOfSets = 20; // Default number of Test sets
+  static const int _defaultNumberOfSets = 20;
+
   @override
   void initState() {
     super.initState();
-    // Schedule the state update for after the first frame renders
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await generateTestSets();
+      await _generateTestSets();
     });
   }
 
-  Future<void> generateTestSets() async {
-    final vehicle = ref.watch(selectedVehicleTypeProvider);
+  // Core business logic methods
+  Future<void> _generateTestSets() async {
+    try {
+      final vehicle = ref.read(selectedVehicleTypeProvider);
+      final repository = ref.read(testSetRepositoryProvider);
 
-    final repository = ref.read(testSetRepositoryProvider);
+      final savedTestSets = await repository.getTestSets(vehicle.vehicleType);
 
-    // Thử tải các TestSets đã lưu từ repository
-    final savedTestSets = await repository.getTestSets(
-      vehicle.vehicleType,
-    );
-
-    if (savedTestSets.isNotEmpty) {
-      // Nếu đã có đề thi được lưu rồi thì dùng danh sách câu hỏi đã lưu
-      final questionsList =
-          savedTestSets.map((testSet) => testSet.questionNumbers).toList();
-      ref.read(generatedTestSetsProvider.notifier).state = questionsList;
-    } else {
-      // Nếu chưa có, tạo mới và lưu trữ
-      final questionsList = VehicleRepository().generateMultipleTestSets(
-        vehicle.vehicleType,
-        numberOfSets,
-      );
-
-      // Lưu vào state provider (cho ListView hiển thị)
-      ref.read(generatedTestSetsProvider.notifier).state = questionsList;
-
-      // Chuyển đổi List<List<int>> thành List<TestSet> với ID định dạng
-      final testSets = <TestSet>[];
-      for (int i = 0; i < questionsList.length; i++) {
-        final formattedIndex = (i + 1).toString().padLeft(2, '0');
-        final id = '$formattedIndex-${vehicle.vehicleType}';
-
-        testSets.add(
-          TestSet(
-            id: id,
-            title: 'Đề số ${i + 1}',
-            vehicleType: vehicle.vehicleType,
-            questionNumbers: questionsList[i],
-            description:
-                'Bộ đề thi thử ${vehicle.vehicleType} với ${questionsList[i].length} câu hỏi',
-          ),
-        );
+      if (savedTestSets.isNotEmpty) {
+        await _loadExistingTestSets(savedTestSets);
+      } else {
+        await _createAndSaveNewTestSets(vehicle, repository);
       }
-
-      // Lưu danh sách TestSets vào repository
-      await repository.saveTestSets(vehicle.vehicleType, testSets);
+    } catch (e) {
+      _showError('Có lỗi khi tải đề thi: $e');
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final testResults = ref.watch(quizResultsNotifierProvider);
-    final vehicle = ref.watch(selectedVehicleTypeProvider);
-    final testSets = ref.watch(generatedTestSetsProvider);
+  Future<void> _loadExistingTestSets(List<TestSet> savedTestSets) async {
+    final questionsList =
+        savedTestSets.map((testSet) => testSet.questionNumbers).toList();
 
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: AppStyles.primaryColor,
-        foregroundColor: Colors.white,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
+    ref.read(generatedTestSetsProvider.notifier).state = questionsList;
+  }
+
+  Future<void> _createAndSaveNewTestSets(
+    Vehicle vehicle,
+    dynamic repository,
+  ) async {
+    final questionsList = VehicleRepository().generateMultipleTestSets(
+      vehicle.vehicleType,
+      _defaultNumberOfSets,
+    );
+
+    ref.read(generatedTestSetsProvider.notifier).state = questionsList;
+
+    final testSets = _createTestSetsFromQuestionsList(
+      questionsList,
+      vehicle.vehicleType,
+    );
+
+    await repository.saveTestSets(vehicle.vehicleType, testSets);
+  }
+
+  List<TestSet> _createTestSetsFromQuestionsList(
+    List<List<int>> questionsList,
+    String vehicleType,
+  ) {
+    return List.generate(questionsList.length, (index) {
+      final formattedIndex = (index + 1).toString().padLeft(2, '0');
+      final id = '$formattedIndex-$vehicleType';
+
+      return TestSet(
+        id: id,
+        title: 'Đề số ${index + 1}',
+        vehicleType: vehicleType,
+        questionNumbers: questionsList[index],
+      );
+    });
+  }
+
+  Future<void> _refreshTestSets() async {
+    try {
+      _showLoadingSnackBar('Đang tạo bộ đề mới...');
+
+      final vehicle = ref.read(selectedVehicleTypeProvider);
+      final repository = ref.read(testSetRepositoryProvider);
+
+      final questionsList = VehicleRepository().generateMultipleTestSets(
+        vehicle.vehicleType,
+        _defaultNumberOfSets,
+      );
+
+      ref.read(generatedTestSetsProvider.notifier).state = questionsList;
+
+      final testSets = _createTestSetsFromQuestionsList(
+        questionsList,
+        vehicle.vehicleType,
+      );
+
+      await repository.saveTestSets(vehicle.vehicleType, testSets);
+
+      if (mounted) {
+        _showSuccessSnackBar('Đã tạo bộ đề mới thành công!');
+      }
+    } catch (e) {
+      _showError('Có lỗi khi tạo bộ đề mới: $e');
+    }
+  }
+
+  // Navigation and quiz handling methods
+  Future<void> _handleTestSetTap({
+    required QuizResult? quizResult,
+    required String testSetId,
+    required int testNumber,
+    required int questionCount,
+    required Vehicle vehicle,
+  }) async {
+    final isCompleted = quizResult != null;
+    final hasSelectedAnswers = _hasValidSelectedAnswers(quizResult);
+
+    if (isCompleted && hasSelectedAnswers) {
+      await _showQuizResult(quizResult, testSetId);
+    } else {
+      _showStartQuizDialog(
+        testNumber: testNumber,
+        questionCount: questionCount,
+        vehicle: vehicle,
+        onStart: () => _navigateToQuiz(testSetId),
+      );
+    }
+  }
+
+  bool _hasValidSelectedAnswers(QuizResult? quizResult) {
+    return quizResult?.selectedAnswers != null &&
+        quizResult!.selectedAnswers!.isNotEmpty;
+  }
+
+  Future<void> _showQuizResult(QuizResult quizResult, String testSetId) async {
+    try {
+      final questions = await ref.read(
+        quizQuestionsProvider(testSetId).future,
+      );
+
+      if (!mounted) return;
+
+      final selectedAnswers = _convertSelectedAnswersFromStorage(
+        quizResult.selectedAnswers,
+      );
+
+      _navigateToQuizResultSummary(
+        quizResult: quizResult,
+        questions: questions,
+        selectedAnswers: selectedAnswers,
+        testSetId: testSetId,
+      );
+    } catch (e) {
+      _showError('Có lỗi khi tải kết quả: $e');
+    }
+  }
+
+  Map<int, int> _convertSelectedAnswersFromStorage(
+    Map<String, int>? selectedAnswersFromStorage,
+  ) {
+    final selectedAnswers = <int, int>{};
+    selectedAnswersFromStorage?.forEach((key, value) {
+      selectedAnswers[int.parse(key)] = value;
+    });
+    return selectedAnswers;
+  }
+
+  void _navigateToQuizResultSummary({
+    required QuizResult quizResult,
+    required dynamic questions,
+    required Map<int, int> selectedAnswers,
+    required String testSetId,
+  }) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => QuizResultSummary(
+          quizResult: quizResult,
+          questions: questions,
+          selectedAnswers: selectedAnswers,
+          timeTaken: quizResult.timeTaken ?? Duration.zero,
+          onBackPressed: () => Navigator.pop(context),
+          onRetakeQuiz: () {
+            Navigator.pop(context);
+            _navigateToQuiz(testSetId);
+          },
         ),
-        title: Text('Đề thi hạng ${vehicle.vehicleType}'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () {
-              // Hiển thị hộp thoại xác nhận trước khi tạo bộ đề mới
-              showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('Tạo bộ đề mới?'),
-                  content: const Text(
-                    'Bạn có chắc chắn muốn tạo bộ đề thi mới? Các đề thi hiện tại sẽ bị thay thế.',
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('HỦY'),
-                    ),
-                    TextButton(
-                      onPressed: () async {
-                        Navigator.pop(context);
-
-                        // Hiển thị loading indicator
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Đang tạo bộ đề mới...'),
-                            duration: Duration(seconds: 1),
-                          ),
-                        );
-
-                        // Tạo các đề thi mới
-                        final repository = ref.read(
-                          testSetRepositoryProvider,
-                        );
-                        final questionsList =
-                            VehicleRepository().generateMultipleTestSets(
-                          vehicle.vehicleType,
-                          numberOfSets,
-                        );
-
-                        // Lưu vào state provider
-                        ref.read(generatedTestSetsProvider.notifier).state =
-                            questionsList;
-
-                        // Chuyển đổi thành danh sách TestSet
-                        final testSets = <TestSet>[];
-                        for (int i = 0; i < questionsList.length; i++) {
-                          final formattedIndex = (i + 1).toString().padLeft(
-                                2,
-                                '0',
-                              );
-                          final id = '$formattedIndex-${vehicle.vehicleType}';
-
-                          testSets.add(
-                            TestSet(
-                              id: id,
-                              title: 'Đề số ${i + 1}',
-                              vehicleType: vehicle.vehicleType,
-                              questionNumbers: questionsList[i],
-                              description:
-                                  'Bộ đề thi thử ${vehicle.vehicleType} với ${questionsList[i].length} câu hỏi',
-                            ),
-                          );
-                        }
-
-                        // Lưu danh sách mới vào repository
-                        await repository.saveTestSets(
-                          vehicle.vehicleType,
-                          testSets,
-                        );
-
-                        // Thông báo thành công
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Đã tạo bộ đề mới thành công!'),
-                              duration: Duration(seconds: 2),
-                            ),
-                          );
-                        }
-                      },
-                      child: const Text(
-                        'TẠO MỚI',
-                        style: TextStyle(color: Colors.red),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.delete_outline),
-            onPressed: () {
-              _showDeleteConfirmationDialog(context, ref, vehicle);
-            },
-          ),
-        ],
       ),
-      body: testSets.isEmpty
-          ? const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text('Đang tạo đề thi...'),
-                ],
-              ),
-            )
-          : Column(
-              children: [
-                // GridView hiển thị các đề thi
-                Expanded(
-                  child: GridView.builder(
-                    padding: const EdgeInsets.all(16),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      mainAxisSpacing: 16,
-                      crossAxisSpacing: 16,
-                      childAspectRatio: 1.5,
-                    ),
-                    itemCount: testSets.length,
-                    itemBuilder: (context, index) {
-                      final testSet =
-                          testSets[index]; // List of question numbers
-                      final testNumber = index + 1;
-
-                      // Format ID theo dạng: Số thứ tự đề - Tên hạng xe (ví dụ: 01-A1)
-                      final formattedIndex = (index + 1).toString().padLeft(
-                            2,
-                            '0',
-                          );
-                      final testSetId =
-                          '$formattedIndex-${vehicle.vehicleType}';
-
-                      // Find the result for this quiz by TestSetId only
-                      final quizResult = testResults.results
-                          .where((result) => result.quizId == testSetId)
-                          .firstOrNull;
-
-                      // Use saved result data if available, otherwise use default values
-                      final isCompleted = quizResult != null;
-                      final correct =
-                          isCompleted ? quizResult.correctAnswers : 0;
-                      final wrong = isCompleted ? quizResult.wrongAnswers : 0;
-
-                      return _TestSetCard(
-                        testNumber: testNumber,
-                        questionCount: testSet.length,
-                        correct: correct,
-                        wrong: wrong,
-                        isCompleted: isCompleted,
-                        isPassed: quizResult?.isPassed,
-                        onTap: () {
-                          _showStartQuizDialog(
-                            context,
-                            testNumber,
-                            testSet.length,
-                            () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      QuizScreen(testSetId: testSetId),
-                                ),
-                              );
-                            },
-                            vehicle,
-                          );
-                        },
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
     );
   }
 
-  void _showStartQuizDialog(
-    BuildContext context,
-    int testNumber,
-    int questionCount,
-    VoidCallback onStart,
-    Vehicle vehicle,
-  ) {
+  void _navigateToQuiz(String testSetId) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => QuizScreen(testSetId: testSetId),
+      ),
+    );
+  }
+
+  // Dialog methods
+  void _showRefreshConfirmationDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Tạo bộ đề mới?'),
+        content: const Text(
+          'Bạn có chắc chắn muốn tạo bộ đề thi mới? Các đề thi hiện tại sẽ bị thay thế.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('HỦY'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _refreshTestSets();
+            },
+            child: const Text(
+              'TẠO MỚI',
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showStartQuizDialog({
+    required int testNumber,
+    required int questionCount,
+    required Vehicle vehicle,
+    required VoidCallback onStart,
+  }) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Đề thi số $testNumber'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Bạn sắp làm đề thi số $testNumber',
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                const Icon(Icons.quiz, size: 18, color: Colors.grey),
-                const SizedBox(width: 4),
-                Text(
-                  'Số câu hỏi: $questionCount câu',
-                  style: const TextStyle(color: Colors.grey),
-                ),
-              ],
-            ),
-            Row(
-              children: [
-                const Icon(Icons.timer, size: 18, color: Colors.grey),
-                const SizedBox(width: 4),
-                Text(
-                  'Thời gian: ${vehicle.minutes} phút',
-                  style: const TextStyle(color: Colors.grey),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Trong quá trình làm bài, bạn có thể:',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            const Text('• Chọn một đáp án và kiểm tra ngay kết quả'),
-            const Text('• Xem lại các câu đã làm và chưa làm'),
-            const Text('• Nộp bài bất cứ lúc nào'),
-          ],
+        content: _buildQuizDialogContent(
+          testNumber: testNumber,
+          questionCount: questionCount,
+          vehicle: vehicle,
         ),
         actions: [
           TextButton(
@@ -346,8 +280,68 @@ class _TestSetsScreenState extends ConsumerState<TestSetsScreen> {
     );
   }
 
-  void _showDeleteConfirmationDialog(
-      BuildContext context, WidgetRef ref, Vehicle vehicle) {
+  Widget _buildQuizDialogContent({
+    required int testNumber,
+    required int questionCount,
+    required Vehicle vehicle,
+  }) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Bạn sắp làm đề thi số $testNumber',
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 12),
+        _buildInfoRow(
+          icon: Icons.quiz,
+          text: 'Số câu hỏi: $questionCount câu',
+        ),
+        _buildInfoRow(
+          icon: Icons.timer,
+          text: 'Thời gian: ${vehicle.minutes} phút',
+        ),
+        const SizedBox(height: 16),
+        const Text(
+          'Trong quá trình làm bài, bạn có thể:',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+        ..._buildInstructionList(),
+      ],
+    );
+  }
+
+  Widget _buildInfoRow({required IconData icon, required String text}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: Colors.grey),
+          const SizedBox(width: 4),
+          Text(text, style: const TextStyle(color: Colors.grey)),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _buildInstructionList() {
+    const instructions = [
+      '• Chọn một đáp án và kiểm tra ngay kết quả',
+      '• Xem lại các câu đã làm và chưa làm',
+      '• Nộp bài bất cứ lúc nào',
+    ];
+
+    return instructions.map((instruction) => Text(instruction)).toList();
+  }
+
+  void _showDeleteConfirmationDialog() {
+    final vehicle = ref.read(selectedVehicleTypeProvider);
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -361,116 +355,182 @@ class _TestSetsScreenState extends ConsumerState<TestSetsScreen> {
             child: const Text('HỦY'),
           ),
           TextButton(
-            onPressed: () {
-              // Clear results for current Vehicle type only
-              ref
-                  .read(quizResultsNotifierProvider.notifier)
-                  .clearResultsForVehicleType(vehicle.vehicleType)
-                  .then((_) {
-                Navigator.pop(context);
-              });
-            },
+            onPressed: () => _deleteResults(vehicle.vehicleType),
             child: const Text('XÓA', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
     );
   }
-}
 
-class _TestSetCard extends StatelessWidget {
-  final int testNumber;
-  final int questionCount;
-  final int correct;
-  final int wrong;
-  final bool isCompleted;
-  final bool? isPassed;
-  final VoidCallback onTap;
+  Future<void> _deleteResults(String vehicleType) async {
+    try {
+      await ref
+          .read(quizResultsNotifierProvider.notifier)
+          .clearResultsForVehicleType(vehicleType);
 
-  const _TestSetCard({
-    required this.testNumber,
-    required this.questionCount,
-    required this.correct,
-    required this.wrong,
-    required this.isCompleted,
-    required this.onTap,
-    required this.isPassed,
-  });
+      if (mounted) {
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      _showError('Có lỗi khi xóa kết quả: $e');
+    }
+  }
+
+  void _showLoadingSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: const Duration(seconds: 1),
+      ),
+    );
+  }
+
+  void _showSuccessSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: const Duration(seconds: 2),
+        backgroundColor: Colors.green,
+      ),
+    );
+  }
+
+  void _showError(String message) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
+  }
+
+  String _generateTestSetId(int index, String vehicleType) {
+    final formattedIndex = (index + 1).toString().padLeft(2, '0');
+    return '$formattedIndex-$vehicleType';
+  }
 
   @override
   Widget build(BuildContext context) {
-    final backgroundColor = isCompleted
-        ? (isPassed == false ? AppStyles.errorColor : Colors.green[700])
-        : Colors.grey[200];
+    final testResults = ref.watch(quizResultsNotifierProvider);
+    final vehicle = ref.watch(selectedVehicleTypeProvider);
+    final testSets = ref.watch(generatedTestSetsProvider);
 
-    return Material(
-      color: backgroundColor,
-      borderRadius: BorderRadius.circular(8),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Column(
-          children: [
-            const Spacer(),
-            Text(
-              'ĐỀ THI SỐ $testNumber',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: isCompleted ? Colors.white : Colors.black87,
-              ),
-            ),
-            Text(
-              '$questionCount câu hỏi',
-              style: TextStyle(
-                fontSize: 12,
-                color: isCompleted ? Colors.white70 : Colors.black54,
-              ),
-            ),
-            const Spacer(),
-            if (isCompleted) ...[
-              const SizedBox(height: 8),
-              Container(
-                decoration: BoxDecoration(color: Colors.grey[300]),
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.check_circle,
-                      color: Colors.green[700],
-                      size: AppStyles.iconSizeM,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      '$correct',
-                      style: TextStyle(
-                        color: Colors.green[700],
-                        fontSize: AppStyles.fontSizeL,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Icon(
-                      Icons.cancel,
-                      color: Colors.red[700],
-                      size: AppStyles.iconSizeM,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      '$wrong',
-                      style: TextStyle(
-                        color: Colors.red[700],
-                        fontSize: AppStyles.fontSizeL,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ],
+    return Scaffold(
+      appBar: _buildAppBar(vehicle),
+      body: _buildBody(testSets, testResults, vehicle),
+    );
+  }
+
+  PreferredSizeWidget _buildAppBar(Vehicle vehicle) {
+    return AppBar(
+      backgroundColor: AppStyles.primaryColor,
+      foregroundColor: Colors.white,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back),
+        onPressed: () => Navigator.pop(context),
+      ),
+      title: Text('Đề thi hạng ${vehicle.vehicleType}'),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.refresh),
+          onPressed: _showRefreshConfirmationDialog,
         ),
+        IconButton(
+          icon: const Icon(Icons.delete_outline),
+          onPressed: _showDeleteConfirmationDialog,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBody(
+    List<List<int>> testSets,
+    dynamic testResults,
+    Vehicle vehicle,
+  ) {
+    if (testSets.isEmpty) {
+      return _buildLoadingState();
+    }
+
+    return Column(
+      children: [
+        Expanded(
+          child: _buildTestSetsGrid(testSets, testResults, vehicle),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLoadingState() {
+    return const Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircularProgressIndicator(),
+          SizedBox(height: 16),
+          Text('Đang tạo đề thi...'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTestSetsGrid(
+    List<List<int>> testSets,
+    dynamic testResults,
+    Vehicle vehicle,
+  ) {
+    return GridView.builder(
+      padding: const EdgeInsets.all(16),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        mainAxisSpacing: 16,
+        crossAxisSpacing: 16,
+        childAspectRatio: 1.5,
+      ),
+      itemCount: testSets.length,
+      itemBuilder: (context, index) => _buildTestSetItem(
+        index: index,
+        testSet: testSets[index],
+        testResults: testResults,
+        vehicle: vehicle,
+      ),
+    );
+  }
+
+  Widget _buildTestSetItem({
+    required int index,
+    required List<int> testSet,
+    required dynamic testResults,
+    required Vehicle vehicle,
+  }) {
+    final testNumber = index + 1;
+    final testSetId = _generateTestSetId(index, vehicle.vehicleType);
+
+    final quizResult = testResults.results
+        .where((result) => result.quizId == testSetId)
+        .firstOrNull;
+
+    final isCompleted = quizResult != null;
+    final correct = isCompleted ? quizResult.correctAnswers : 0;
+    final wrong = isCompleted ? quizResult.wrongAnswers : 0;
+
+    return TestSetCard(
+      testNumber: testNumber,
+      questionCount: testSet.length,
+      correct: correct,
+      wrong: wrong,
+      isCompleted: isCompleted,
+      isPassed: quizResult?.isPassed,
+      onTap: () => _handleTestSetTap(
+        quizResult: quizResult,
+        testSetId: testSetId,
+        testNumber: testNumber,
+        questionCount: testSet.length,
+        vehicle: vehicle,
       ),
     );
   }

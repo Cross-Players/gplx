@@ -16,6 +16,7 @@ class QuizResult with _$QuizResult {
     bool? isPassed,
     Duration? timeTaken,
     bool? failedCriticalQuestion,
+    Map<String, int>? selectedAnswers,
   }) = _QuizResult;
 
   factory QuizResult.fromJson(Map<String, dynamic> json) =>

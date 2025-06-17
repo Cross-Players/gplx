@@ -5,19 +5,6 @@ import 'package:gplx/features/test/providers/vehicle_provider.dart';
 import 'package:gplx/features/test_sets/models/test_set.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-// Provider cho TestSetRepository
-final testSetRepositoryProvider = Provider<TestSetRepository>((ref) {
-  return TestSetRepository(ref);
-});
-
-// Provider cho một TestSet cụ thể theo ID
-final testSetByIdProvider = FutureProvider.family<TestSet?, String>((
-  ref,
-  testSetId,
-) async {
-  return ref.read(testSetRepositoryProvider).getTestSetById(testSetId);
-});
-
 class TestSetRepository {
   final Ref _ref;
 
@@ -98,7 +85,6 @@ class TestSetRepository {
           title: 'Đề số ${i + 1}',
           vehicleType: vehicleType,
           questionNumbers: testQuestionsList[i],
-          description: 'Bộ đề thi thử $vehicleType với 25 câu hỏi',
         ),
       );
     }
