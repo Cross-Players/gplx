@@ -10,7 +10,6 @@ abstract class TestSet with _$TestSet {
     required String title,
     required String vehicleType,
     required List<int> questionNumbers,
-    String? description,
   }) = _TestSet;
 
   factory TestSet.fromJson(Map<String, dynamic> json) =>

@@ -2,8 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gplx/features/test/controllers/questions_repository.dart';
 import 'package:gplx/features/test/controllers/vehicle_repository.dart';
 import 'package:gplx/features/test/models/question.dart';
-import 'package:gplx/features/test_sets/controllers/test_set_repository.dart';
 import 'package:gplx/features/test_sets/models/test_set.dart';
+import 'package:gplx/features/test_sets/providers/test_sets_provider.dart';
 
 /// Provider to get questions based on TestSetId
 final quizQuestionsProvider = FutureProvider.family<List<Question>, String>((
@@ -116,8 +116,7 @@ Future<TestSet?> _createTestSet(Ref ref, String testSetId) async {
       title: 'Dead point questions for $vehicleType license',
       vehicleType: vehicleType,
       questionNumbers: deadPointNumbers,
-      description:
-          'Collection of dead point questions for $vehicleType license',
+      
     );
   }
 
@@ -136,7 +135,6 @@ Future<TestSet?> _createTestSet(Ref ref, String testSetId) async {
       title: 'All questions for $vehicleType license',
       vehicleType: vehicleType,
       questionNumbers: allQuestions,
-      description: 'Complete question set for $vehicleType license',
     );
   }
 
@@ -182,7 +180,6 @@ TestSet _createPracticeTestSet(
     title: 'Practice ${targetChapter.chapterName}',
     vehicleType: vehicleType,
     questionNumbers: questionNumbers,
-    description:
-        'Practice exercises for ${targetChapter.chapterName} - $vehicleType license',
+   
   );
 }

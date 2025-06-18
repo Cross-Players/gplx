@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gplx/core/constants/app_styles.dart';
+import 'package:gplx/core/widgets/base64_image_widget.dart';
 import 'package:gplx/features/test/models/question.dart';
 import 'package:gplx/features/test/models/quiz_result.dart';
 
@@ -45,6 +46,12 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
     final isPassed = passedCriticalQuestions && isAboveMinScore;
 
     return Scaffold(
+      appBar: AppBar(
+        title: Text('Kết quả - ${widget.quizResult.quizTitle}'),
+        backgroundColor: AppStyles.primaryColor,
+        foregroundColor: Colors.white,
+        actions: [IconButton(onPressed: () {}, icon: const Icon(Icons.share))],
+      ),
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -52,27 +59,30 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
             _buildTimerAndScoreRow(),
             _buildStatsSummary(),
             _buildQuestionGrid(),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: ElevatedButton.icon(
-                onPressed: widget.onRetakeQuiz,
-                icon: const Icon(Icons.restart_alt),
-                label: const Text(
-                  'Làm lại bài quiz',
-                  style: TextStyle(fontSize: 16),
-                ),
-                style: ElevatedButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-                  backgroundColor: AppStyles.primaryColor,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
-            ),
+            _buildRetakeTestButton(),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRetakeTestButton() {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: ElevatedButton.icon(
+        onPressed: widget.onRetakeQuiz,
+        icon: const Icon(Icons.restart_alt),
+        label: const Text(
+          'Làm lại bài quiz',
+          style: TextStyle(fontSize: 16),
+        ),
+        style: ElevatedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+          backgroundColor: AppStyles.primaryColor,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
         ),
       ),
     );
@@ -559,85 +569,119 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
               const SizedBox(height: 20),
               if (question.imageUrl != null && question.imageUrl!.isNotEmpty)
                 Container(
-                  height: 150,
-                  width: double.infinity,
-                  margin: const EdgeInsets.only(bottom: 20),
-                  child: question.imageUrl!.startsWith('http')
-                      ? Image.network(
-                          question.imageUrl!,
-                          fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) =>
-                              const Icon(Icons.image_not_supported, size: 50),
-                        )
-                      : Image.asset(
-                          question.imageUrl!,
-                          fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) =>
-                              const Icon(Icons.image_not_supported, size: 50),
-                        ),
-                ),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: question.answers.length,
-                  itemBuilder: (context, index) {
-                    final bool isCorrectOption =
-                        question.answers[index].isCorrect;
-                    final bool isSelected = selectedAnswerIndex == index;
+                    height: 150,
+                    width: double.infinity,
+                    margin: const EdgeInsets.only(bottom: 20),
+                    child: Base64ImageWidget(
+                      base64String: question.imageUrl!,
+                    )),
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: question.answers.length,
+                itemBuilder: (context, index) {
+                  final bool isCorrectOption =
+                      question.answers[index].isCorrect;
+                  final bool isSelected = selectedAnswerIndex == index;
 
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 15),
-                      padding: const EdgeInsets.all(15),
-                      decoration: BoxDecoration(
-                        color: _getAnswerBackgroundColor(
-                            isSelected, isCorrectOption),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: _getAnswerBorderColor(
-                              isSelected, isCorrectOption),
-                          width: 1.5,
-                        ),
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 15),
+                    padding: const EdgeInsets.all(15),
+                    decoration: BoxDecoration(
+                      color: _getAnswerBackgroundColor(
+                          isSelected, isCorrectOption),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color:
+                            _getAnswerBorderColor(isSelected, isCorrectOption),
+                        width: 1.5,
                       ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 30,
-                            height: 30,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: _getAnswerCircleColor(
-                                  isSelected, isCorrectOption),
-                              border: isSelected || isCorrectOption
-                                  ? null
-                                  : Border.all(color: Colors.grey),
-                            ),
-                            child: Center(
-                              child:
-                                  _getAnswerIcon(isSelected, isCorrectOption),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 30,
+                          height: 30,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: _getAnswerCircleColor(
+                                isSelected, isCorrectOption),
+                            border: isSelected || isCorrectOption
+                                ? null
+                                : Border.all(color: Colors.grey),
+                          ),
+                          child: Center(
+                            child: _getAnswerIcon(isSelected, isCorrectOption),
+                          ),
+                        ),
+                        const SizedBox(width: 15),
+                        Expanded(
+                          child: Text(
+                            question.answers[index].answerContent,
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: isSelected || isCorrectOption
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                              color: isCorrectOption
+                                  ? Colors.green.shade800
+                                  : (isSelected && !isCorrectOption
+                                      ? Colors.red.shade800
+                                      : Colors.black87),
                             ),
                           ),
-                          const SizedBox(width: 15),
-                          Expanded(
-                            child: Text(
-                              question.answers[index].answerContent,
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: isSelected || isCorrectOption
-                                    ? FontWeight.bold
-                                    : FontWeight.normal,
-                                color: isCorrectOption
-                                    ? Colors.green.shade800
-                                    : (isSelected && !isCorrectOption
-                                        ? Colors.red.shade800
-                                        : Colors.black87),
-                              ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+              if (question.explanation.isNotEmpty) ...[
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: Colors.blue.shade200,
+                      width: 1,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.lightbulb_outline,
+                            color: Colors.blue.shade700,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Giải thích:',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.blue.shade700,
                             ),
                           ),
                         ],
                       ),
-                    );
-                  },
+                      const SizedBox(height: 8),
+                      Text(
+                        question.explanation,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          height: 1.5,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
+              ],
             ],
           ),
         );

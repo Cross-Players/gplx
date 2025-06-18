@@ -4,11 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gplx/core/services/firebase/auth_services.dart';
 import 'package:gplx/features/exercise/views/exercise_screen.dart';
+import 'package:gplx/core/routes/app_routes.dart';
 import 'package:gplx/features/test/controllers/questions_repository.dart';
 import 'package:gplx/features/test/controllers/vehicle_repository.dart';
 import 'package:gplx/features/test/providers/vehicle_provider.dart';
 import 'package:gplx/features/test/views/quiz_screen.dart';
-import 'package:gplx/features/test_sets/controllers/test_set_repository.dart';
+import 'package:gplx/features/test_sets/providers/test_sets_provider.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -24,6 +25,9 @@ class HomeScreen extends ConsumerWidget {
     final deadpointsId = 'deadpoints-$vehicleType';
     final wrongAnswerQuestions =
         QuestionRepository().fetchQuestionsByIsCorrect(vehicleType);
+
+    bool isPortrait =
+        MediaQuery.of(context).orientation == Orientation.portrait;
 
     Future<void> navigateToRandomTest() async {
       try {
@@ -99,7 +103,7 @@ class HomeScreen extends ConsumerWidget {
       ),
       body: GridView.count(
         padding: const EdgeInsets.all(16),
-        crossAxisCount: 2,
+        crossAxisCount: isPortrait ? 2 : 4,
         mainAxisSpacing: 16,
         crossAxisSpacing: 16,
         children: [
@@ -125,14 +129,14 @@ class HomeScreen extends ConsumerWidget {
             onTap: () async {
               try {
                 if (context.mounted) {
-                  Navigator.push(context, MaterialPageRoute(
-                    builder: (context) {
-                      return ExerciseScreen(
-                        title: 'Các câu bị sai',
-                        questions: Future.value(wrongAnswerQuestions),
-                      );
+                  Navigator.pushNamed(
+                    context,
+                    AppRoutes.wrongAnswers,
+                    arguments: {
+                      'title': 'Các câu bị sai',
+                      'questions': wrongAnswerQuestions,
                     },
-                  ));
+                  );
                 }
               } catch (e) {
                 if (context.mounted) {
@@ -151,21 +155,21 @@ class HomeScreen extends ConsumerWidget {
             icon: Icons.book,
             label: 'Ôn tập câu hỏi',
             color: Colors.teal,
-            onTap: () => Navigator.pushNamed(context, '/all-chapters'),
+            onTap: () => Navigator.pushNamed(context, AppRoutes.allChapters),
           ),
           _buildFeatureButton(
             context,
             icon: Icons.traffic,
             label: 'Các biển báo',
             color: Colors.blue,
-            onTap: () => Navigator.pushNamed(context, '/signs'),
+            onTap: () => Navigator.pushNamed(context, AppRoutes.signs),
           ),
           _buildFeatureButton(
             context,
             icon: Icons.extension,
             label: 'Mẹo ghi nhớ',
             color: Colors.purple,
-            onTap: () => Navigator.pushNamed(context, '/tips'),
+            onTap: () => Navigator.pushNamed(context, AppRoutes.tips),
           ),
           _buildFeatureButton(
             context,
@@ -173,11 +177,10 @@ class HomeScreen extends ConsumerWidget {
             label: '$deadPointsLength Câu điểm liệt',
             color: Colors.brown,
             onTap: () {
-              Navigator.push(
+              Navigator.pushNamed(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => QuizScreen(testSetId: deadpointsId),
-                ),
+                AppRoutes.deadpointQuestions,
+                arguments: deadpointsId,
               );
             },
           ),
