@@ -22,6 +22,7 @@ class TestSetsScreen extends ConsumerStatefulWidget {
 
 class _TestSetsScreenState extends ConsumerState<TestSetsScreen> {
   int numberOfSets = 20; // Default number of Test sets
+
   @override
   void initState() {
     super.initState();
@@ -247,6 +248,7 @@ class _TestSetsScreenState extends ConsumerState<TestSetsScreen> {
     final testResults = ref.watch(quizResultsNotifierProvider);
     final vehicle = ref.watch(selectedVehicleTypeProvider);
     final testSets = ref.watch(generatedTestSetsProvider);
+    bool isPortrait = MediaQuery.of(context).orientation == Orientation.portrait;
 
     return Scaffold(
       appBar: AppBar(
@@ -370,9 +372,8 @@ class _TestSetsScreenState extends ConsumerState<TestSetsScreen> {
                 Expanded(
                   child: GridView.builder(
                     padding: const EdgeInsets.all(16),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: isPortrait ? 2 : 4,
                       mainAxisSpacing: 16,
                       crossAxisSpacing: 16,
                       childAspectRatio: 1.5,

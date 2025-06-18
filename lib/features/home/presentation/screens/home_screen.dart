@@ -24,6 +24,9 @@ class HomeScreen extends ConsumerWidget {
     final wrongAnswerQuestions =
         QuestionRepository().fetchQuestionsByIsCorrect(vehicleType);
 
+    bool isPortrait =
+        MediaQuery.of(context).orientation == Orientation.portrait;
+
     Future<void> navigateToRandomTest() async {
       try {
         final repository = ref.read(testSetRepositoryProvider);
@@ -77,7 +80,7 @@ class HomeScreen extends ConsumerWidget {
       ),
       body: GridView.count(
         padding: const EdgeInsets.all(16),
-        crossAxisCount: 2,
+        crossAxisCount: isPortrait ? 2 : 4,
         mainAxisSpacing: 16,
         crossAxisSpacing: 16,
         children: [
