@@ -123,7 +123,6 @@ class _TestSetsScreenState extends ConsumerState<TestSetsScreen> {
         ),
       );
     } catch (e) {
-      print('Error loading quiz result: $e');
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -231,7 +230,9 @@ class _TestSetsScreenState extends ConsumerState<TestSetsScreen> {
                   .read(quizResultsNotifierProvider.notifier)
                   .clearResultsForVehicleType(vehicle.vehicleType)
                   .then((_) {
-                Navigator.pop(context);
+                if (context.mounted) {
+                  Navigator.pop(context);
+                }
               });
             },
             child: const Text('XÓA', style: TextStyle(color: Colors.red)),

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -307,6 +308,34 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
     });
   }
 
+  Future<void> _showConfirmationDialog() async {
+    return showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return CupertinoAlertDialog(
+          title: const Text('Bạn chắc chắn muốn nộp bài không?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text(
+                'Hủy',
+                style: TextStyle(color: Colors.black),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _completeQuiz();
+              },
+              child: const Text('Nộp bài'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _completeQuiz() {
     final timeTaken = _calculateTimeTaken();
     final failedCriticalQuestion = _checkCriticalQuestions();
@@ -585,7 +614,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: TextButton(
-            onPressed: _completeQuiz,
+            onPressed: () => _showConfirmationDialog(),
             child: Text(
               'Hoàn thành',
               style: AppStyles.textBold.copyWith(
