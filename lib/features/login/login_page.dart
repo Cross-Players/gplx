@@ -1,6 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:gplx/core/services/firebase/auth_sevices.dart';
+import 'package:gplx/core/services/firebase/auth_services.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -15,6 +15,7 @@ class _LoginPageState extends State<LoginPage> {
   final formKey = GlobalKey<FormState>();
   String errorMessage = '';
   bool _obscureText = true;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -46,20 +47,36 @@ class _LoginPageState extends State<LoginPage> {
 
   void signIn() async {
     if (formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true;
+        errorMessage = '';
+      });
+
       try {
         await authServices.value.signIn(
             email: emailController.text, password: passwordController.text);
-        popPage();
       } on FirebaseAuthException catch (e) {
-        setState(() {
-          errorMessage = e.message ?? 'This is not working';
-        });
+        errorMessage = e.message.toString();
+      } catch (e) {
+        if (mounted) {
+          setState(() {
+            errorMessage = 'Đã xảy ra lỗi không xác định: $e';
+          });
+        }
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
       }
     }
   }
 
   void popPage() {
-    Navigator.pop(context);
+    if (mounted) {
+      Navigator.pop(context);
+    }
   }
 
   @override
@@ -91,8 +108,8 @@ class _LoginPageState extends State<LoginPage> {
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            labelText: 'Tên người dùng',
-                            hintText: 'Nhập tên người dùng của bạn',
+                            labelText: 'Email',
+                            hintText: 'Nhập email của bạn',
                             filled: true,
                             fillColor: Colors.white,
                           ),
@@ -149,20 +166,26 @@ class _LoginPageState extends State<LoginPage> {
                           width: double.infinity,
                           height: 55,
                           child: ElevatedButton(
-                            onPressed: () {
-                              signIn();
-                            },
+                            onPressed: _isLoading
+                                ? null
+                                : () {
+                                    signIn();
+                                  },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.grey,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
                             ),
-                            child: const Text(
-                              'Đăng nhập',
-                              style:
-                                  TextStyle(fontSize: 16, color: Colors.white),
-                            ),
+                            child: _isLoading
+                                ? const CircularProgressIndicator(
+                                    color: Colors.white,
+                                  )
+                                : const Text(
+                                    'Đăng nhập',
+                                    style: TextStyle(
+                                        fontSize: 16, color: Colors.white),
+                                  ),
                           ),
                         ),
                       ],

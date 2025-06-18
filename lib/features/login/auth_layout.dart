@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:gplx/core/services/firebase/auth_sevices.dart';
+import 'package:gplx/core/services/firebase/auth_services.dart';
 import 'package:gplx/features/home/presentation/screens/home_screen.dart';
 import 'package:gplx/features/login/app_loading_page.dart';
 import 'package:gplx/features/login/login_page.dart';

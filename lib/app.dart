@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gplx/core/constants/app_styles.dart';
 import 'package:gplx/core/routes/app_routes.dart';
+import 'package:gplx/features/login/auth_layout.dart';
 import 'package:gplx/features/test/providers/vehicle_provider.dart';
 
 class App extends ConsumerWidget {
@@ -10,10 +11,10 @@ class App extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(loadSavedVehicleTypeProvider);
-
     return MaterialApp(
       title: 'Ôn thi GPLX B2',
       debugShowCheckedModeBanner: false,
+      home: const AuthLayout(),
       theme: ThemeData(
         appBarTheme: const AppBarTheme(
             backgroundColor: AppStyles.primaryColor,
