@@ -53,22 +53,26 @@ flutter_gen:
   integrations:
     flutter_svg: true
 
-# TODO: update your splash configuration
-# flutter_native_splash:
-#   android: true
-#   ios: true
-#   web: true
-#   color: "#FFFFFF"
-#   image: assets/images/app_logo.png
-#   ios_content_mode: center
-#   web_image_mode: center
-#   fullscreen: true
-
-#   android_12:
-#     image: assets/images/android12splash.png
-#     icon_background_color: "#FFFFFF"
-#     color: "#FFFFFF"
-
+flutter_native_splash:
+  color: "#FFFFFF"
+  image: assets/images/app_logo.png
+  color_dark: "#121212"
+  image_dark: assets/images/app_logo.png
+  
+  android_12:
+    image: assets/images/app_logo.png
+    icon_background_color: "#FFFFFF"
+    image_dark: assets/images/app_logo.png
+    icon_background_color_dark: "#121212"
+    
+  android: true
+  ios: true
+  web: false
+  
+  fullscreen: true
+  android_gravity: center
+  ios_content_mode: center
+  
 # TODO: update localization configuration
 # flutter_intl:
 #   enabled: true # Required. Must be set to true to activate the package. Default: false
