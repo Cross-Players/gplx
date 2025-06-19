@@ -2,6 +2,8 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gplx/core/services/firebase/auth_services.dart';
+import 'package:gplx/features/exercise/views/exercise_screen.dart';
 import 'package:gplx/core/routes/app_routes.dart';
 import 'package:gplx/features/test/controllers/questions_repository.dart';
 import 'package:gplx/features/test/controllers/vehicle_repository.dart';
@@ -68,6 +70,27 @@ class HomeScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
+        leading: RotatedBox(
+          quarterTurns: 2,
+          child: IconButton(
+            icon: const Icon(Icons.logout),
+            tooltip: 'Đăng xuất',
+            onPressed: () async {
+              try {
+                await authServices.value.signOut();
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Lỗi khi đăng xuất: $e'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
+            },
+          ),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
