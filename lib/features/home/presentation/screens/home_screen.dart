@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gplx/core/services/firebase/auth_services.dart';
-import 'package:gplx/features/exercise/views/exercise_screen.dart';
 import 'package:gplx/core/routes/app_routes.dart';
 import 'package:gplx/features/test/controllers/questions_repository.dart';
 import 'package:gplx/features/test/controllers/vehicle_repository.dart';
