@@ -55,14 +55,14 @@ flutter_gen:
 
 flutter_native_splash:
   color: "#FFFFFF"
-  image: assets/images/app_logo.png
+  image: assets/images/logo_vx.jpg
   color_dark: "#121212"
-  image_dark: assets/images/app_logo.png
+  image_dark: assets/images/logo_vx.jpg
   
   android_12:
-    image: assets/images/app_logo.png
+    image: assets/images/logo_vx.jpg
     icon_background_color: "#FFFFFF"
-    image_dark: assets/images/app_logo.png
+    image_dark: assets/images/logo_vx.jpg
     icon_background_color_dark: "#121212"
     
   android: true
