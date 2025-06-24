@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:gplx/core/services/firebase/auth_services.dart';
 import 'package:gplx/features/forgot_password/forgot_password_page.dart';
@@ -30,9 +29,14 @@ class _LoginPageState extends State<LoginPage> {
     if (value == null || value.isEmpty) {
       return 'Vui lòng nhập email';
     }
-    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    final emailRegex = RegExp(r'^[\w\-.]+@([\w\-]+\.)+[\w\-]{2,4}$');
     if (!emailRegex.hasMatch(value)) {
       return 'Vui lòng nhập email hợp lệ';
+    }
+    // Không cho phép email có đuôi gmail.co (ví dụ: gmail.co, gmail.com.vn, ...)
+    final gmailCoRegex = RegExp(r'@gmail\.co(\.|$)');
+    if (gmailCoRegex.hasMatch(value)) {
+      return 'Email không đúng định dạng';
     }
     return null;
   }
@@ -57,12 +61,10 @@ class _LoginPageState extends State<LoginPage> {
       try {
         await authServices.value.signIn(
             email: emailController.text, password: passwordController.text);
-      } on FirebaseAuthException catch (e) {
-        errorMessage = e.message.toString();
       } catch (e) {
         if (mounted) {
           setState(() {
-            errorMessage = 'Đã xảy ra lỗi không xác định: $e';
+            errorMessage = e.toString().replaceFirst('Exception: ', '');
           });
         }
       } finally {

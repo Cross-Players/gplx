@@ -13,8 +13,20 @@ class AuthSevices {
     required String email,
     required String password,
   }) async {
-    return await firebaseAuth.signInWithEmailAndPassword(
-        email: email, password: password);
+    try {
+      return await firebaseAuth.signInWithEmailAndPassword(
+          email: email, password: password);
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'user-not-found') {
+        throw Exception('Email không đúng.');
+      } else if (e.code == 'wrong-password') {
+        throw Exception('Mật khẩu không đúng.');
+      } else if (e.code == 'invalid-credential') {
+        throw Exception('Email hoặc mật khẩu không hợp lệ.');
+      } else {
+        throw Exception('Đăng nhập thất bại (${e.code}): ${e.message}');
+      }
+    }
   }
 
   Future<void> signOut() async {
