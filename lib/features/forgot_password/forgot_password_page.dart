@@ -241,6 +241,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                                     : const Text(
                                         'Gửi yêu cầu',
                                         style: TextStyle(
+                                          color: Colors.white,
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
                                         ),
