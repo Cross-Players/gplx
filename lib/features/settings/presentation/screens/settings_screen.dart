@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gplx/core/data/local_storage.dart';
+import 'package:gplx/core/routes/app_routes.dart';
+import 'package:gplx/core/services/firebase/auth_services.dart';
 import 'package:gplx/features/test/models/vehicle.dart';
 import 'package:gplx/features/test/providers/vehicle_provider.dart';
 
@@ -83,7 +85,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 },
               );
             },
-          )
+          ),
+          const SizedBox(height: 16),
+          const LogoutButton(),
         ],
       ),
     );
@@ -106,6 +110,69 @@ class _SectionHeader extends StatelessWidget {
           fontSize: 14,
           fontWeight: FontWeight.w500,
           color: Colors.grey,
+        ),
+      ),
+    );
+  }
+}
+
+class LogoutButton extends StatelessWidget {
+  const LogoutButton({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () async {
+        try {
+          await authServices.value.signOut();
+          if (context.mounted) {
+            Navigator.pushNamedAndRemoveUntil(
+                context, AppRoutes.login, (route) => false);
+          }
+        } catch (e) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Lỗi khi đăng xuất: $e'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        }
+      },
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withValues(alpha: 0.2),
+              spreadRadius: 2,
+              blurRadius: 5,
+              offset: const Offset(0, 3), // changes position of shadow
+            ),
+          ],
+        ),
+        child: const Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Đăng xuất',
+              style: TextStyle(
+                  color: Colors.red, fontSize: 18, fontWeight: FontWeight.w500),
+            ),
+            SizedBox(width: 8),
+            Icon(
+              Icons.logout,
+              color: Colors.red,
+              size: 18,
+            ),
+          ],
         ),
       ),
     );

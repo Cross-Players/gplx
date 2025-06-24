@@ -356,6 +356,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                         style: TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
+                                          color: Colors.white,
                                         ),
                                       ),
                               ),
