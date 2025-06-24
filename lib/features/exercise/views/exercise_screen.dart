@@ -93,6 +93,7 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen>
       setState(() {
         _isLoading = false;
       });
+      // ignore: avoid_print
       print('Error loading search questions: $e');
     }
   }
@@ -140,6 +141,7 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen>
       setState(() {
         _isLoading = false;
       });
+      // ignore: avoid_print
       print('Error loading Test set and questions: $e');
     }
   }
@@ -179,6 +181,7 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen>
         }
       }
     } catch (e) {
+      // ignore: avoid_print
       print('Error loading saved quiz progress: $e');
     }
   }
@@ -214,6 +217,7 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen>
           .read(answeredQuestionsProvider.notifier)
           .updateAnsweredCount(widget.testSetId ?? '', _selectedAnswers.length);
     } catch (e) {
+      // ignore: avoid_print
       print('Error saving quiz progress: $e');
     }
   }
@@ -224,6 +228,7 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen>
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('quiz_progress_${widget.testSetId}');
     } catch (e) {
+      // ignore: avoid_print
       print('Error clearing saved quiz progress: $e');
     }
   }

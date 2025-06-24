@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:gplx/core/constants/app_styles.dart';
 import 'package:gplx/core/services/firebase/auth_services.dart';
 import 'package:gplx/features/forgot_password/forgot_password_page.dart';
+import 'package:gplx/features/login/widgets/auth_text_field.dart';
 import 'package:gplx/features/register/register_page.dart';
 
 class LoginPage extends StatefulWidget {
@@ -88,7 +90,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: AppLoginColors.background,
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -96,7 +98,7 @@ class _LoginPageState extends State<LoginPage> {
             end: Alignment.bottomCenter,
             colors: [
               Colors.blue.shade50,
-              const Color(0xFFF5F5F5),
+              AppLoginColors.background,
             ],
           ),
         ),
@@ -104,23 +106,13 @@ class _LoginPageState extends State<LoginPage> {
           child: Center(
             child: SingleChildScrollView(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 30),
+                padding: AppLoginPaddings.screen,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 10,
-                            spreadRadius: 5,
-                          ),
-                        ],
-                      ),
+                      padding: AppLoginPaddings.card,
+                      decoration: AppLoginDecorations.card,
                       child: Column(
                         children: [
                           const Image(
@@ -131,94 +123,42 @@ class _LoginPageState extends State<LoginPage> {
                           const SizedBox(height: 30),
                           const Text(
                             'Đăng nhập',
-                            style: TextStyle(
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF2E3B55),
-                            ),
+                            style: AppLoginTextStyles.title,
                           ),
                           const SizedBox(height: 30),
                           Form(
                             key: formKey,
                             child: Column(
                               children: [
-                                TextFormField(
+                                AuthTextField(
                                   controller: emailController,
-                                  decoration: InputDecoration(
-                                    contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 20, vertical: 15),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(15),
-                                      borderSide: BorderSide.none,
-                                    ),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(15),
-                                      borderSide: BorderSide(
-                                          color: Colors.grey.shade300),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(15),
-                                      borderSide: BorderSide(
-                                          color:
-                                              Theme.of(context).primaryColor),
-                                    ),
-                                    labelText: 'Email',
-                                    labelStyle:
-                                        TextStyle(color: Colors.grey.shade600),
-                                    hintText: 'Nhập email của bạn',
-                                    filled: true,
-                                    fillColor: Colors.grey.shade100,
-                                    prefixIcon: Icon(Icons.email_outlined,
-                                        color: Colors.grey.shade600),
-                                  ),
-                                  keyboardType: TextInputType.emailAddress,
+                                  labelText: 'Email',
+                                  hintText: 'Nhập email của bạn',
+                                  icon: Icons.email_outlined,
                                   validator: _validateEmail,
+                                  keyboardType: TextInputType.emailAddress,
                                 ),
                                 const SizedBox(height: 20),
-                                TextFormField(
+                                AuthTextField(
                                   controller: passwordController,
+                                  labelText: 'Mật khẩu',
+                                  hintText: 'Nhập mật khẩu của bạn',
+                                  icon: Icons.lock_outline,
                                   obscureText: _obscureText,
-                                  decoration: InputDecoration(
-                                    contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 20, vertical: 15),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(15),
-                                      borderSide: BorderSide.none,
-                                    ),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(15),
-                                      borderSide: BorderSide(
-                                          color: Colors.grey.shade300),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(15),
-                                      borderSide: BorderSide(
-                                          color:
-                                              Theme.of(context).primaryColor),
-                                    ),
-                                    labelText: 'Mật khẩu',
-                                    labelStyle:
-                                        TextStyle(color: Colors.grey.shade600),
-                                    hintText: 'Nhập mật khẩu của bạn',
-                                    filled: true,
-                                    fillColor: Colors.grey.shade100,
-                                    prefixIcon: Icon(Icons.lock_outline,
-                                        color: Colors.grey.shade600),
-                                    suffixIcon: IconButton(
-                                      icon: Icon(
-                                        _obscureText
-                                            ? Icons.visibility_outlined
-                                            : Icons.visibility_off_outlined,
-                                        color: Colors.grey.shade600,
-                                      ),
-                                      onPressed: () {
-                                        setState(() {
-                                          _obscureText = !_obscureText;
-                                        });
-                                      },
-                                    ),
-                                  ),
                                   validator: _validatePassword,
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                      _obscureText
+                                          ? Icons.visibility_outlined
+                                          : Icons.visibility_off_outlined,
+                                      color: AppLoginColors.inputIcon,
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        _obscureText = !_obscureText;
+                                      });
+                                    },
+                                  ),
                                 ),
                                 if (errorMessage.isNotEmpty)
                                   Padding(
@@ -226,8 +166,7 @@ class _LoginPageState extends State<LoginPage> {
                                         top: 15, bottom: 5),
                                     child: Text(
                                       errorMessage,
-                                      style: const TextStyle(
-                                          color: Colors.red, fontSize: 14),
+                                      style: AppLoginTextStyles.error,
                                       textAlign: TextAlign.center,
                                     ),
                                   ),
@@ -238,7 +177,7 @@ class _LoginPageState extends State<LoginPage> {
                                   child: ElevatedButton(
                                     onPressed: _isLoading ? null : signIn,
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFF2E3B55),
+                                      backgroundColor: AppLoginColors.primary,
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(15),
                                       ),
@@ -255,11 +194,7 @@ class _LoginPageState extends State<LoginPage> {
                                           )
                                         : const Text(
                                             'Đăng nhập',
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.white,
-                                            ),
+                                            style: AppLoginTextStyles.button,
                                           ),
                                   ),
                                 ),
@@ -275,14 +210,11 @@ class _LoginPageState extends State<LoginPage> {
                                     );
                                   },
                                   style: TextButton.styleFrom(
-                                    foregroundColor: const Color(0xFF2E3B55),
+                                    foregroundColor: AppLoginColors.primary,
                                   ),
                                   child: const Text(
                                     'Quên mật khẩu?',
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w600,
-                                    ),
+                                    style: AppLoginTextStyles.label,
                                   ),
                                 ),
                               ],
@@ -316,7 +248,7 @@ class _LoginPageState extends State<LoginPage> {
                               }
                             },
                             style: TextButton.styleFrom(
-                              foregroundColor: const Color(0xFF2E3B55),
+                              foregroundColor: AppLoginColors.primary,
                             ),
                             child: const Text(
                               'Đăng ký',

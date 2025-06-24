@@ -74,6 +74,7 @@ class CacheExpiryManager {
     try {
       return jsonDecode(jsonString) as Map<String, dynamic>;
     } catch (e) {
+      // ignore: avoid_print
       print('Error decoding JSON for key $key: $e');
       return null;
     }
@@ -87,6 +88,7 @@ class CacheExpiryManager {
     try {
       return jsonDecode(jsonString) as List<dynamic>;
     } catch (e) {
+      // ignore: avoid_print
       print('Error decoding JSON list for key $key: $e');
       return null;
     }
@@ -105,6 +107,7 @@ class CacheExpiryManager {
 
   /// Cleans up all expired cache entries
   static Future<void> cleanExpiredCache() async {
+    // ignore: avoid_print
     print('Cleaning expired cache (older than $_cacheExpiryDays days)');
     final prefs = await _prefs;
     final allKeys = prefs.getKeys();
@@ -135,10 +138,12 @@ class CacheExpiryManager {
         await prefs.remove(timestampKey);
         removedCount++;
 
+        // ignore: avoid_print
         print('Removed expired cache: $originalKey (${_formatDaysOld(age)})');
       }
     }
 
+    // ignore: avoid_print
     print('Cache cleanup complete. Removed $removedCount expired items.');
   }
 

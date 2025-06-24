@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gplx/core/constants/app_styles.dart';
 import 'package:gplx/core/data/local_storage.dart';
 import 'package:gplx/core/routes/app_routes.dart';
 import 'package:gplx/core/services/firebase/auth_services.dart';
@@ -80,6 +81,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ref
                       .read(localStorageProvider)
                       .saveSelectedVehicleType(vehicle.vehicleType);
+                  // ignore: avoid_print
                   print(
                       'Selected vehicle type: ${vehicle.vehicleType} - Saved to preferences');
                 },
@@ -102,15 +104,11 @@ class _SectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-      color: Colors.grey[100],
+      padding: AppSettingsPaddings.section,
+      color: AppSettingsColors.sectionBg,
       child: Text(
         title,
-        style: const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-          color: Colors.grey,
-        ),
+        style: AppSettingsTextStyles.section,
       ),
     );
   }
@@ -144,34 +142,26 @@ class LogoutButton extends StatelessWidget {
       },
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        margin: const EdgeInsets.symmetric(horizontal: 16),
+        padding: AppSettingsPaddings.logout,
+        margin: AppSettingsPaddings.logoutMargin,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppSettingsColors.logoutBg,
           borderRadius: BorderRadius.circular(10),
           boxShadow: [
             BoxShadow(
               color: Colors.grey.withValues(alpha: 0.2),
               spreadRadius: 2,
               blurRadius: 5,
-              offset: const Offset(0, 3), // changes position of shadow
+              offset: const Offset(0, 3),
             ),
           ],
         ),
         child: const Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              'Đăng xuất',
-              style: TextStyle(
-                  color: Colors.red, fontSize: 18, fontWeight: FontWeight.w500),
-            ),
+            Text('Đăng xuất', style: AppSettingsTextStyles.logout),
             SizedBox(width: 8),
-            Icon(
-              Icons.logout,
-              color: Colors.red,
-              size: 18,
-            ),
+            Icon(Icons.logout, color: AppSettingsColors.logoutIcon, size: 18),
           ],
         ),
       ),
@@ -194,11 +184,11 @@ class _VehicleOption extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       title: Text(vehicle.vehicleType),
-      subtitle: Text(
-        vehicle.description,
-        style: const TextStyle(fontSize: 12),
-      ),
-      trailing: isSelected ? const Icon(Icons.check, color: Colors.blue) : null,
+      subtitle:
+          Text(vehicle.description, style: AppSettingsTextStyles.vehicleDesc),
+      trailing: isSelected
+          ? const Icon(Icons.check, color: AppSettingsColors.vehicleSelected)
+          : null,
       onTap: onTap,
     );
   }
