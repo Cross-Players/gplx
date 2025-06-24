@@ -2,7 +2,9 @@ import 'dart:ui';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:gplx/core/constants/app_styles.dart';
 import 'package:gplx/core/services/firebase/auth_services.dart';
+import 'package:gplx/features/login/widgets/auth_text_field.dart';
 
 class ForgotPasswordPage extends StatefulWidget {
   const ForgotPasswordPage({super.key});
@@ -82,7 +84,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
-      backgroundColor: Colors.blue.shade50,
+      backgroundColor: AppLoginColors.background,
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(kToolbarHeight),
         child: ClipRRect(
@@ -92,7 +94,8 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
               backgroundColor: Colors.transparent,
               elevation: 0,
               leading: IconButton(
-                icon: const Icon(Icons.arrow_back, color: Color(0xFF2E3B55)),
+                icon:
+                    const Icon(Icons.arrow_back, color: AppLoginColors.primary),
                 onPressed: popPage,
               ),
             ),
@@ -106,7 +109,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
             end: Alignment.bottomCenter,
             colors: [
               Colors.blue.shade50,
-              const Color(0xFFF5F5F5),
+              AppLoginColors.background,
             ],
           ),
         ),
@@ -114,23 +117,13 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
           child: Center(
             child: SingleChildScrollView(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 30),
+                padding: AppLoginPaddings.screen,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 10,
-                            spreadRadius: 5,
-                          ),
-                        ],
-                      ),
+                      padding: AppLoginPaddings.card,
+                      decoration: AppLoginDecorations.card,
                       child: Form(
                         key: formKey,
                         child: Column(
@@ -143,11 +136,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                             const SizedBox(height: 30),
                             const Text(
                               'Quên mật khẩu',
-                              style: TextStyle(
-                                fontSize: 28,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF2E3B55),
-                              ),
+                              style: AppLoginTextStyles.title,
                             ),
                             const SizedBox(height: 20),
                             const Text(
@@ -160,36 +149,13 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                               ),
                             ),
                             const SizedBox(height: 30),
-                            TextFormField(
+                            AuthTextField(
                               controller: emailController,
-                              decoration: InputDecoration(
-                                contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 20, vertical: 15),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(15),
-                                  borderSide: BorderSide.none,
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(15),
-                                  borderSide:
-                                      BorderSide(color: Colors.grey.shade300),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(15),
-                                  borderSide: BorderSide(
-                                      color: Theme.of(context).primaryColor),
-                                ),
-                                labelText: 'Email',
-                                labelStyle:
-                                    TextStyle(color: Colors.grey.shade600),
-                                hintText: 'Nhập email của bạn',
-                                filled: true,
-                                fillColor: Colors.grey.shade100,
-                                prefixIcon: Icon(Icons.email_outlined,
-                                    color: Colors.grey.shade600),
-                              ),
-                              keyboardType: TextInputType.emailAddress,
+                              labelText: 'Email',
+                              hintText: 'Nhập email của bạn',
+                              icon: Icons.email_outlined,
                               validator: _validateEmail,
+                              keyboardType: TextInputType.emailAddress,
                             ),
                             const SizedBox(height: 20),
                             if (errorMessage.isNotEmpty)
@@ -197,10 +163,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                                 padding: const EdgeInsets.only(bottom: 10),
                                 child: Text(
                                   errorMessage,
-                                  style: const TextStyle(
-                                    color: Colors.red,
-                                    fontSize: 14,
-                                  ),
+                                  style: AppLoginTextStyles.error,
                                   textAlign: TextAlign.center,
                                 ),
                               ),
@@ -223,7 +186,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                               child: ElevatedButton(
                                 onPressed: _isLoading ? null : resetPassword,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF2E3B55),
+                                  backgroundColor: AppLoginColors.primary,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(15),
                                   ),
@@ -240,11 +203,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                                       )
                                     : const Text(
                                         'Gửi yêu cầu',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                        ),
+                                        style: AppLoginTextStyles.button,
                                       ),
                               ),
                             ),

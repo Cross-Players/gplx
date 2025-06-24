@@ -2,7 +2,9 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gplx/core/constants/app_styles.dart';
 import 'package:gplx/core/routes/app_routes.dart';
+import 'package:gplx/features/home/presentation/widgets/feature_button.dart';
 import 'package:gplx/features/test/controllers/questions_repository.dart';
 import 'package:gplx/features/test/controllers/vehicle_repository.dart';
 import 'package:gplx/features/test/providers/vehicle_provider.dart';
@@ -84,25 +86,22 @@ class HomeScreen extends ConsumerWidget {
         mainAxisSpacing: 16,
         crossAxisSpacing: 16,
         children: [
-          _buildFeatureButton(
-            context,
+          FeatureButton(
             icon: Icons.shuffle,
             label: 'Đề ngẫu nhiên',
-            color: Colors.orange,
+            color: AppHomeColors.orange,
             onTap: () => navigateToRandomTest(),
           ),
-          _buildFeatureButton(
-            context,
+          FeatureButton(
             icon: Icons.assignment,
             label: 'Thi theo bộ đề',
-            color: Colors.red,
+            color: AppHomeColors.red,
             onTap: () => Navigator.pushNamed(context, '/test-sets'),
           ),
-          _buildFeatureButton(
-            context,
+          FeatureButton(
             icon: Icons.person_outline,
             label: 'Xem câu bị sai',
-            color: Colors.green,
+            color: AppHomeColors.green,
             onTap: () async {
               try {
                 if (context.mounted) {
@@ -127,32 +126,28 @@ class HomeScreen extends ConsumerWidget {
               }
             },
           ),
-          _buildFeatureButton(
-            context,
+          FeatureButton(
             icon: Icons.book,
             label: 'Ôn tập câu hỏi',
-            color: Colors.teal,
+            color: AppHomeColors.teal,
             onTap: () => Navigator.pushNamed(context, AppRoutes.allChapters),
           ),
-          _buildFeatureButton(
-            context,
+          FeatureButton(
             icon: Icons.traffic,
             label: 'Các biển báo',
-            color: Colors.blue,
+            color: AppHomeColors.blue,
             onTap: () => Navigator.pushNamed(context, AppRoutes.signs),
           ),
-          _buildFeatureButton(
-            context,
+          FeatureButton(
             icon: Icons.extension,
             label: 'Mẹo ghi nhớ',
-            color: Colors.purple,
+            color: AppHomeColors.purple,
             onTap: () => Navigator.pushNamed(context, AppRoutes.tips),
           ),
-          _buildFeatureButton(
-            context,
+          FeatureButton(
             icon: Icons.timer,
             label: '$deadPointsLength Câu điểm liệt',
-            color: Colors.brown,
+            color: AppHomeColors.brown,
             onTap: () {
               Navigator.pushNamed(
                 context,
@@ -161,51 +156,13 @@ class HomeScreen extends ConsumerWidget {
               );
             },
           ),
-          _buildFeatureButton(
-            context,
+          FeatureButton(
             icon: Icons.star,
             label: 'Top 50 câu hay sai',
-            color: Colors.blueGrey,
+            color: AppHomeColors.blueGrey,
             onTap: () {},
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildFeatureButton(
-    BuildContext context, {
-    required IconData icon,
-    required String label,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return Material(
-      color: color,
-      borderRadius: BorderRadius.circular(8),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              size: 40,
-              color: Colors.white,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
       ),
     );
   }

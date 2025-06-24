@@ -2,6 +2,8 @@ import 'dart:ui';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:gplx/core/constants/app_styles.dart';
+import 'package:gplx/features/login/widgets/auth_text_field.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -127,7 +129,7 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
-      backgroundColor: Colors.blue.shade50,
+      backgroundColor: AppLoginColors.background,
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(kToolbarHeight),
         child: ClipRRect(
@@ -137,7 +139,8 @@ class _RegisterPageState extends State<RegisterPage> {
               backgroundColor: Colors.transparent,
               elevation: 0,
               leading: IconButton(
-                icon: const Icon(Icons.arrow_back, color: Color(0xFF2E3B55)),
+                icon:
+                    const Icon(Icons.arrow_back, color: AppLoginColors.primary),
                 onPressed: popPage,
               ),
             ),
@@ -151,7 +154,7 @@ class _RegisterPageState extends State<RegisterPage> {
             end: Alignment.bottomCenter,
             colors: [
               Colors.blue.shade50,
-              const Color(0xFFF5F5F5),
+              AppLoginColors.background,
             ],
           ),
         ),
@@ -159,23 +162,13 @@ class _RegisterPageState extends State<RegisterPage> {
           child: Center(
             child: SingleChildScrollView(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 30),
+                padding: AppLoginPaddings.screen,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 10,
-                            spreadRadius: 5,
-                          ),
-                        ],
-                      ),
+                      padding: AppLoginPaddings.card,
+                      decoration: AppLoginDecorations.card,
                       child: Form(
                         key: formKey,
                         child: Column(
@@ -188,144 +181,68 @@ class _RegisterPageState extends State<RegisterPage> {
                             const SizedBox(height: 30),
                             const Text(
                               'Đăng ký tài khoản',
-                              style: TextStyle(
-                                fontSize: 28,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF2E3B55),
-                              ),
+                              style: AppLoginTextStyles.title,
                             ),
                             const SizedBox(height: 30),
-                            TextFormField(
+                            AuthTextField(
                               controller: emailController,
-                              decoration: InputDecoration(
-                                contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 20, vertical: 15),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(15),
-                                  borderSide: BorderSide.none,
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(15),
-                                  borderSide:
-                                      BorderSide(color: Colors.grey.shade300),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(15),
-                                  borderSide: BorderSide(
-                                      color: Theme.of(context).primaryColor),
-                                ),
-                                labelText: 'Email',
-                                labelStyle:
-                                    TextStyle(color: Colors.grey.shade600),
-                                hintText: 'Nhập email của bạn',
-                                filled: true,
-                                fillColor: Colors.grey.shade100,
-                                prefixIcon: Icon(Icons.email_outlined,
-                                    color: Colors.grey.shade600),
-                              ),
-                              keyboardType: TextInputType.emailAddress,
+                              labelText: 'Email',
+                              hintText: 'Nhập email của bạn',
+                              icon: Icons.email_outlined,
                               validator: _validateEmail,
+                              keyboardType: TextInputType.emailAddress,
                             ),
                             const SizedBox(height: 20),
-                            TextFormField(
+                            AuthTextField(
                               controller: passwordController,
+                              labelText: 'Mật khẩu',
+                              hintText: 'Nhập mật khẩu của bạn',
+                              icon: Icons.lock_outline,
                               obscureText: _obscurePassword,
-                              decoration: InputDecoration(
-                                contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 20, vertical: 15),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(15),
-                                  borderSide: BorderSide.none,
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(15),
-                                  borderSide:
-                                      BorderSide(color: Colors.grey.shade300),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(15),
-                                  borderSide: BorderSide(
-                                      color: Theme.of(context).primaryColor),
-                                ),
-                                labelText: 'Mật khẩu',
-                                labelStyle:
-                                    TextStyle(color: Colors.grey.shade600),
-                                hintText: 'Nhập mật khẩu của bạn',
-                                filled: true,
-                                fillColor: Colors.grey.shade100,
-                                prefixIcon: Icon(Icons.lock_outline,
-                                    color: Colors.grey.shade600),
-                                suffixIcon: IconButton(
-                                  icon: Icon(
-                                    _obscurePassword
-                                        ? Icons.visibility_outlined
-                                        : Icons.visibility_off_outlined,
-                                    color: Colors.grey.shade600,
-                                  ),
-                                  onPressed: () {
-                                    setState(() {
-                                      _obscurePassword = !_obscurePassword;
-                                    });
-                                  },
-                                ),
-                              ),
                               validator: _validatePassword,
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _obscurePassword
+                                      ? Icons.visibility_outlined
+                                      : Icons.visibility_off_outlined,
+                                  color: AppLoginColors.inputIcon,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _obscurePassword = !_obscurePassword;
+                                  });
+                                },
+                              ),
                             ),
                             const SizedBox(height: 20),
-                            TextFormField(
+                            AuthTextField(
                               controller: confirmPasswordController,
+                              labelText: 'Xác nhận mật khẩu',
+                              hintText: 'Nhập lại mật khẩu của bạn',
+                              icon: Icons.lock_outline,
                               obscureText: _obscureConfirmPassword,
-                              decoration: InputDecoration(
-                                contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 20, vertical: 15),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(15),
-                                  borderSide: BorderSide.none,
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(15),
-                                  borderSide:
-                                      BorderSide(color: Colors.grey.shade300),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(15),
-                                  borderSide: BorderSide(
-                                      color: Theme.of(context).primaryColor),
-                                ),
-                                labelText: 'Xác nhận mật khẩu',
-                                labelStyle:
-                                    TextStyle(color: Colors.grey.shade600),
-                                hintText: 'Nhập lại mật khẩu của bạn',
-                                filled: true,
-                                fillColor: Colors.grey.shade100,
-                                prefixIcon: Icon(Icons.lock_outline,
-                                    color: Colors.grey.shade600),
-                                suffixIcon: IconButton(
-                                  icon: Icon(
-                                    _obscureConfirmPassword
-                                        ? Icons.visibility_outlined
-                                        : Icons.visibility_off_outlined,
-                                    color: Colors.grey.shade600,
-                                  ),
-                                  onPressed: () {
-                                    setState(() {
-                                      _obscureConfirmPassword =
-                                          !_obscureConfirmPassword;
-                                    });
-                                  },
-                                ),
-                              ),
                               validator: _validateConfirmPassword,
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _obscureConfirmPassword
+                                      ? Icons.visibility_outlined
+                                      : Icons.visibility_off_outlined,
+                                  color: AppLoginColors.inputIcon,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _obscureConfirmPassword =
+                                        !_obscureConfirmPassword;
+                                  });
+                                },
+                              ),
                             ),
                             if (errorMessage.isNotEmpty)
                               Padding(
                                 padding: const EdgeInsets.only(top: 20),
                                 child: Text(
                                   errorMessage,
-                                  style: const TextStyle(
-                                    color: Colors.red,
-                                    fontSize: 14,
-                                  ),
+                                  style: AppLoginTextStyles.error,
                                   textAlign: TextAlign.center,
                                 ),
                               ),
@@ -336,7 +253,7 @@ class _RegisterPageState extends State<RegisterPage> {
                               child: ElevatedButton(
                                 onPressed: _isLoading ? null : _register,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF2E3B55),
+                                  backgroundColor: AppLoginColors.primary,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(15),
                                   ),
@@ -353,11 +270,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                       )
                                     : const Text(
                                         'Đăng ký',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white,
-                                        ),
+                                        style: AppLoginTextStyles.button,
                                       ),
                               ),
                             ),
