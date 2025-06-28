@@ -4,7 +4,7 @@ import 'package:gplx/features/test/data/vehicle_data.dart';
 import 'package:gplx/features/test/models/vehicle.dart';
 
 class VehicleRepository {
-  static const List<Vehicle> _allVehicles = [a1, a2, b2];
+  static const List<Vehicle> _allVehicles = [a1, a2];
 
   // Get all available vehicles
   List<Vehicle> getAllVehicle() {

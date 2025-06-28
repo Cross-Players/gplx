@@ -19,9 +19,11 @@ class _LoginPageState extends State<LoginPage> {
   String errorMessage = '';
   bool _obscureText = true;
   bool _isLoading = false;
+  bool _isDisposed = false;
 
   @override
   void dispose() {
+    _isDisposed = true;
     emailController.dispose();
     passwordController.dispose();
     super.dispose();
@@ -31,13 +33,14 @@ class _LoginPageState extends State<LoginPage> {
     if (value == null || value.isEmpty) {
       return 'Vui lòng nhập email';
     }
+    final emailTrimmed = value.trim();
     final emailRegex = RegExp(r'^[\w\-.]+@([\w\-]+\.)+[\w\-]{2,4}$');
-    if (!emailRegex.hasMatch(value)) {
+    if (!emailRegex.hasMatch(emailTrimmed)) {
       return 'Vui lòng nhập email hợp lệ';
     }
     // Không cho phép email có đuôi gmail.co (ví dụ: gmail.co, gmail.com.vn, ...)
     final gmailCoRegex = RegExp(r'@gmail\.co(\.|$)');
-    if (gmailCoRegex.hasMatch(value)) {
+    if (gmailCoRegex.hasMatch(emailTrimmed)) {
       return 'Email không đúng định dạng';
     }
     return null;
@@ -54,7 +57,11 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void signIn() async {
+    if (_isDisposed || !mounted) return;
+
     if (formKey.currentState!.validate()) {
+      if (!mounted || _isDisposed) return;
+
       setState(() {
         _isLoading = true;
         errorMessage = '';
@@ -64,13 +71,13 @@ class _LoginPageState extends State<LoginPage> {
         await authServices.value.signIn(
             email: emailController.text, password: passwordController.text);
       } catch (e) {
-        if (mounted) {
+        if (mounted && !_isDisposed) {
           setState(() {
             errorMessage = e.toString().replaceFirst('Exception: ', '');
           });
         }
       } finally {
-        if (mounted) {
+        if (mounted && !_isDisposed) {
           setState(() {
             _isLoading = false;
           });
@@ -80,11 +87,15 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void clearLoginData() {
+    if (_isDisposed) return;
+
     emailController.clear();
     passwordController.clear();
-    setState(() {
-      errorMessage = '';
-    });
+    if (mounted && !_isDisposed) {
+      setState(() {
+        errorMessage = '';
+      });
+    }
   }
 
   @override
