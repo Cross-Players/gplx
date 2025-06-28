@@ -1,4 +1,4 @@
-package com.example.gplx
+package com.daotaolaixevanxuan.gplx
 
 import io.flutter.embedding.android.FlutterActivity
 

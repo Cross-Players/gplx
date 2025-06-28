@@ -9,7 +9,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.gplx"
+    namespace = "com.daotaolaixevanxuan.gplx"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = "27.0.12077973"
 

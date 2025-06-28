@@ -108,10 +108,6 @@ class _TestSetsScreenState extends ConsumerState<TestSetsScreen> {
     return AppBar(
       backgroundColor: AppStyles.primaryColor,
       foregroundColor: Colors.white,
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back),
-        onPressed: () => Navigator.pop(context),
-      ),
       title: Text('Đề thi hạng ${vehicle.vehicleType}'),
       actions: [
         IconButton(

@@ -16,6 +16,9 @@ class App extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       home: const AuthLayout(),
       theme: ThemeData(
+        actionIconTheme: ActionIconThemeData(
+          backButtonIconBuilder: (context) => const Icon(Icons.arrow_back_ios),
+        ),
         appBarTheme: const AppBarTheme(
             backgroundColor: AppStyles.primaryColor,
             foregroundColor: Colors.black,
