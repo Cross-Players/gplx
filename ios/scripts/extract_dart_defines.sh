@@ -4,7 +4,7 @@
 # We will create a file named `Dart-Defines.xcconfig`.
 OUTPUT_FILE="${SRCROOT}/Flutter/Dart-Defines.xcconfig"
 # The file is initially emptied so that the old properties do not remain when the contents of the Dart define are changed.
-: > "${OUTPUT_FILE}"
+: > $OUTPUT_FILE
 
 # This function decodes the Dart define.
 function decode_url() { echo "${*}" | base64 --decode; }
