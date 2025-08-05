@@ -1,3 +1,0 @@
-[CI/CD Configurations] @vfast-org/devops
-.gitlab-ci.yml
-.gitlab/ci/*.yml

@@ -1,0 +1,21 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: "stable"
+          # flutter-version: "3.19.0" # Specify the exact Flutter version
+      - run: flutter pub get
+      - run: flutter test
+      - run: flutter analyze
+      - run: flutter build apk --release
