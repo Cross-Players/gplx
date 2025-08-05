@@ -10,4 +10,5 @@ import 'package:flutter_test/flutter_test.dart';
 // TODO(anyone): implement widget testing
 void main() {
   testWidgets('Test HomePage', (WidgetTester tester) async {});
+  testWidgets('Test Setting page', (WidgetTester tester) async {});
 }
