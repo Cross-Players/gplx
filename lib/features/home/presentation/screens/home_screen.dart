@@ -1,13 +1,75 @@
-import 'package:flutter/material.dart';
+import 'dart:math';
 
-class HomeScreen extends StatelessWidget {
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gplx/core/constants/app_styles.dart';
+import 'package:gplx/core/routes/app_routes.dart';
+import 'package:gplx/features/home/presentation/widgets/feature_button.dart';
+import 'package:gplx/features/test/controllers/questions_repository.dart';
+import 'package:gplx/features/test/controllers/vehicle_repository.dart';
+import 'package:gplx/features/test/providers/vehicle_provider.dart';
+import 'package:gplx/features/test/views/quiz_screen.dart';
+import 'package:gplx/features/test_sets/providers/test_sets_provider.dart';
+
+class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final vehicle = ref.watch(selectedVehicleTypeProvider);
+    final vehicleType = vehicle.vehicleType;
+    final vehicleTotalQuestions =
+        VehicleRepository().getTotalQuestions(vehicleType);
+    final deadPointsLength =
+        VehicleRepository().getDeadPointQuestions(vehicleType).length;
+    final deadpointsId = 'deadpoints-$vehicleType';
+    final wrongAnswerQuestions =
+        QuestionRepository().fetchQuestionsByIsCorrect(vehicleType);
+
+    bool isPortrait =
+        MediaQuery.of(context).orientation == Orientation.portrait;
+
+    Future<void> navigateToRandomTest() async {
+      try {
+        final repository = ref.read(testSetRepositoryProvider);
+        final testSets = await repository.getTestSets(vehicleType);
+        if (testSets.isEmpty) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                    'Không có đề thi nào để thực hiện. Vui lòng tạo đề thi mới.'),
+                duration: Duration(seconds: 3),
+              ),
+            );
+          }
+          return;
+        }
+        // Chọn ngẫu nhiên một Test set
+        final random = Random();
+        final randomTestSet = testSets[random.nextInt(testSets.length)];
+        if (context.mounted) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => QuizScreen(testSetId: randomTestSet.id),
+            ),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Có lỗi xảy ra: $e'),
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
+      }
+    }
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Ôn thi GPLX B2'),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
@@ -16,107 +78,91 @@ class HomeScreen extends StatelessWidget {
             },
           ),
         ],
+        title: Text('Hạng $vehicleType - $vehicleTotalQuestions câu 2025'),
       ),
       body: GridView.count(
         padding: const EdgeInsets.all(16),
-        crossAxisCount: 2,
+        crossAxisCount: isPortrait ? 2 : 4,
         mainAxisSpacing: 16,
         crossAxisSpacing: 16,
         children: [
-          _buildFeatureButton(
-            context,
+          FeatureButton(
             icon: Icons.shuffle,
             label: 'Đề ngẫu nhiên',
-            color: Colors.orange,
-            onTap: () => Navigator.pushNamed(context, '/random-test'),
+            color: AppHomeColors.orange,
+            onTap: () => navigateToRandomTest(),
           ),
-          _buildFeatureButton(
-            context,
+          FeatureButton(
             icon: Icons.assignment,
             label: 'Thi theo bộ đề',
-            color: Colors.red,
+            color: AppHomeColors.red,
             onTap: () => Navigator.pushNamed(context, '/test-sets'),
           ),
-          _buildFeatureButton(
-            context,
+          FeatureButton(
             icon: Icons.person_outline,
             label: 'Xem câu bị sai',
-            color: Colors.green,
-            onTap: () => Navigator.pushNamed(context, '/mistakes'),
+            color: AppHomeColors.green,
+            onTap: () async {
+              try {
+                if (context.mounted) {
+                  Navigator.pushNamed(
+                    context,
+                    AppRoutes.wrongAnswers,
+                    arguments: {
+                      'title': 'Các câu bị sai',
+                      'questions': wrongAnswerQuestions,
+                    },
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Có lỗi xảy ra: $e'),
+                      duration: const Duration(seconds: 3),
+                    ),
+                  );
+                }
+              }
+            },
           ),
-          _buildFeatureButton(
-            context,
+          FeatureButton(
             icon: Icons.book,
             label: 'Ôn tập câu hỏi',
-            color: Colors.teal,
-            onTap: () => Navigator.pushNamed(context, '/practice'),
+            color: AppHomeColors.teal,
+            onTap: () => Navigator.pushNamed(context, AppRoutes.allChapters),
           ),
-          _buildFeatureButton(
-            context,
+          FeatureButton(
             icon: Icons.traffic,
             label: 'Các biển báo',
-            color: Colors.blue,
-            onTap: () => Navigator.pushNamed(context, '/signs'),
+            color: AppHomeColors.blue,
+            onTap: () => Navigator.pushNamed(context, AppRoutes.signs),
           ),
-          _buildFeatureButton(
-            context,
+          FeatureButton(
             icon: Icons.extension,
             label: 'Mẹo ghi nhớ',
-            color: Colors.purple,
-            onTap: () => Navigator.pushNamed(context, '/tips'),
+            color: AppHomeColors.purple,
+            onTap: () => Navigator.pushNamed(context, AppRoutes.tips),
           ),
-          _buildFeatureButton(
-            context,
+          FeatureButton(
             icon: Icons.timer,
-            label: 'Thi sa hình',
-            color: Colors.brown,
-            onTap: () => Navigator.pushNamed(context, '/practical'),
+            label: '$deadPointsLength Câu điểm liệt',
+            color: AppHomeColors.brown,
+            onTap: () {
+              Navigator.pushNamed(
+                context,
+                AppRoutes.deadpointQuestions,
+                arguments: deadpointsId,
+              );
+            },
           ),
-          _buildFeatureButton(
-            context,
+          FeatureButton(
             icon: Icons.star,
-            label: 'Top 50 câu sai',
-            color: Colors.blueGrey,
-            onTap: () => Navigator.pushNamed(context, '/top-mistakes'),
+            label: 'Top 50 câu hay sai',
+            color: AppHomeColors.blueGrey,
+            onTap: () {},
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildFeatureButton(
-    BuildContext context, {
-    required IconData icon,
-    required String label,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return Material(
-      color: color,
-      borderRadius: BorderRadius.circular(8),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              size: 40,
-              color: Colors.white,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
       ),
     );
   }
