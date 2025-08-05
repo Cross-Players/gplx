@@ -25,7 +25,6 @@ class HomeController extends _$HomeController {
         .fetchPostDetail(userId: userId);
 
     state = state.copyWith(postList: asyncPosts);
-    return null;
   }
 
   void increment() => state = state.copyWith(number: state.number + 1);
