@@ -1,7 +1,7 @@
 # Add fvm before if project use fvm to manage flutter project
 
 .PHONY: init
-init: pub-get assets-gen build-runner 
+init: pub-get build-runner 
 
 .PHONY: pub-get 
 pub-get:
