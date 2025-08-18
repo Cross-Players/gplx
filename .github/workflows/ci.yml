@@ -15,7 +15,11 @@ jobs:
         with:
           channel: "stable"
           # flutter-version: "3.19.0" # Specify the exact Flutter version
+<<<<<<< HEAD
       - run: make init
+=======
+      - run: flutter pub get
+>>>>>>> c4161eb (add ci config)
       - run: flutter test
       - run: flutter analyze
       - run: flutter build apk --release
