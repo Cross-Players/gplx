@@ -30,7 +30,7 @@ class App extends ConsumerWidget {
               color: Colors.white,
               fontWeight: FontWeight.bold,
             )),
-        tabBarTheme: const TabBarTheme(
+        tabBarTheme: const TabBarThemeData(
           indicatorColor: AppStyles.primaryColor,
           labelColor: AppStyles.primaryColor,
           labelPadding: EdgeInsets.symmetric(horizontal: 16.0),
