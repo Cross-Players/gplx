@@ -11,7 +11,7 @@ final apiServiceProvider = Provider<ApiService>((ref) => ApiService(ref));
 
 class ApiService {
   final Dio _dio;
-  final ProviderRef<ApiService>? _ref;
+  final Ref<ApiService>? _ref;
 
   ApiService([this._ref])
       : _dio = Dio(
