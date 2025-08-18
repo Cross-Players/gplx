@@ -26,7 +26,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               // Save settings
               Navigator.pop(context);
             },
-            child: const Text('Done'),
+            child: const Text('Lưu'),
           ),
         ],
       ),
