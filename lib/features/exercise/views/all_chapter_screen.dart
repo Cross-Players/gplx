@@ -1,11 +1,101 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gplx/core/constants/app_styles.dart';
-import 'package:gplx/features/test/models/vehicle.dart';
-import 'package:gplx/features/test/providers/quiz_providers.dart';
-import 'package:gplx/features/test/providers/vehicle_provider.dart';
-import 'package:gplx/features/test_sets/providers/answered_questions_provider.dart';
+import 'package:gplx/core/routes/app_routes.dart';
 import 'package:gplx/features/exercise/views/exercise_screen.dart';
+import 'package:gplx/features/home/controllers/dead_point_questions_count_provider.dart';
+import 'package:gplx/features/test/models/license_data.dart';
+import 'package:gplx/features/test/models/question.dart';
+import 'package:gplx/features/test_sets/controllers/test_controller.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+// Provider to fetch and group questions by chapter with caching
+final allChaptersProvider =
+    FutureProvider.autoDispose<Map<String, List<Question>>>((ref) async {
+  final licenseType = ref.watch(licenseTypeProvider);
+  final cacheKey = 'cached_questions_${licenseType.name}';
+
+  try {
+    // Try to load from cache first
+    final prefs = await SharedPreferences.getInstance();
+    final cachedData = prefs.getString(cacheKey);
+
+    if (cachedData != null) {
+      print('Loading questions from cache for ${licenseType.name}');
+      final Map<String, dynamic> decodedData = jsonDecode(cachedData);
+      final Map<String, List<Question>> chapterMap = {};
+
+      decodedData.forEach((chapter, questionsJson) {
+        final List<dynamic> questionsList = questionsJson as List<dynamic>;
+        chapterMap[chapter] = questionsList
+            .map(
+              (json) => Question.fromJson(json as Map<String, dynamic>),
+            )
+            .toList();
+      });
+
+      return chapterMap;
+    }
+  } catch (e) {
+    print('Failed to load from cache: $e');
+  }
+
+  // If cache failed or doesn't exist, fetch from network
+  print('Fetching questions from network for ${licenseType.name}');
+  final controller = TestController();
+  final allQuestions = <Question>[];
+  final totalTestSets = numberOfTestSetsBasedOnLicense(licenseType);
+
+  for (int testNumber = 1; testNumber <= totalTestSets; testNumber++) {
+    try {
+      final questions = await controller.fetchQuestionsByTestSets(
+        licenseType,
+        testNumber,
+      );
+      allQuestions.addAll(questions);
+    } catch (e) {
+      // Continue with next test set if one fails
+      print('Failed to fetch test set $testNumber: $e');
+    }
+  }
+
+  // Also fetch dead point questions
+  try {
+    final deadPointQuestions = await controller.fetchDeadPointQuestions(
+      licenseType,
+    );
+    allQuestions.addAll(deadPointQuestions);
+  } catch (e) {
+    print('Failed to fetch dead point questions: $e');
+  }
+
+  // Group questions by chapter
+  final chapterMap = <String, List<Question>>{};
+  for (final question in allQuestions) {
+    final chapter = question.chapter ?? 'Không xác định';
+    if (!chapterMap.containsKey(chapter)) {
+      chapterMap[chapter] = [];
+    }
+    chapterMap[chapter]!.add(question);
+  }
+
+  // Cache the result
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final Map<String, dynamic> cacheData = {};
+    chapterMap.forEach((chapter, questions) {
+      cacheData[chapter] = questions.map((q) => q.toJson()).toList();
+    });
+    await prefs.setString(cacheKey, jsonEncode(cacheData));
+    print('Successfully cached questions for ${licenseType.name}');
+  } catch (e) {
+    print('Failed to cache questions: $e');
+  }
+
+  return chapterMap;
+});
 
 class AllChapterScreen extends ConsumerStatefulWidget {
   const AllChapterScreen({super.key});
@@ -29,139 +119,346 @@ class _AllChapterScreenState extends ConsumerState<AllChapterScreen> {
     super.dispose();
   }
 
+  // Function to remove duplicate questions based on question.number
+  List<Question> _removeDuplicateQuestions(List<Question> questions) {
+    final seen = <int>{};
+    final uniqueQuestions = <Question>[];
+
+    for (final question in questions) {
+      final questionNumber = question.number;
+
+      if (questionNumber != null && !seen.contains(questionNumber)) {
+        seen.add(questionNumber);
+        uniqueQuestions.add(question);
+      } else if (questionNumber == null) {
+        // Keep questions without number
+        uniqueQuestions.add(question);
+      }
+      // Skip duplicate questions (when questionNumber != null && seen.contains(questionNumber))
+    }
+
+    return uniqueQuestions;
+  }
+
+  // Method to clear cache and refresh data
+  Future<void> _clearCacheAndRefresh() async {
+    try {
+      final licenseType = ref.read(licenseTypeProvider);
+      final prefs = await SharedPreferences.getInstance();
+      final cacheKey = 'cached_questions_${licenseType.name}';
+
+      await prefs.remove(cacheKey);
+
+      // Refresh the provider
+      ref.invalidate(allChaptersProvider);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Đã làm mới dữ liệu câu hỏi'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      print('Failed to clear cache: $e');
+    }
+  }
+
+  // Method to clear all cache for all license types
+  Future<void> _clearAllCache() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final keys = prefs.getKeys();
+
+      for (final key in keys) {
+        if (key.startsWith('cached_questions_')) {
+          await prefs.remove(key);
+        }
+      }
+
+      ref.invalidate(allChaptersProvider);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Đã xóa toàn bộ cache câu hỏi'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      print('Failed to clear all cache: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final vehicle = ref.watch(selectedVehicleTypeProvider);
-    final vehicleType = vehicle.vehicleType;
-    final questionLength = ref
-        .watch(vehicleRepositoryProvider)
-        .getAllQuestions(vehicleType)
-        .length;
-
-    final allChapters =
-        ref.watch(vehicleRepositoryProvider).getAllChapters(vehicle);
+    final licenseType = ref.watch(licenseTypeProvider);
+    final chaptersAsync = ref.watch(allChaptersProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Hạng $vehicleType - Ôn $questionLength câu'),
+        title: Text('Hạng ${licenseType.name} - Ôn tập theo chương'),
+        actions: [
+          PopupMenuButton<String>(
+            onSelected: (value) {
+              switch (value) {
+                case 'refresh':
+                  _clearCacheAndRefresh();
+                  break;
+                case 'clear_all':
+                  _clearAllCache();
+                  break;
+              }
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'refresh',
+                child: Row(
+                  children: [
+                    Icon(Icons.refresh),
+                    SizedBox(width: 8),
+                    Text('Làm mới dữ liệu hạng này'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'clear_all',
+                child: Row(
+                  children: [
+                    Icon(Icons.clear_all),
+                    SizedBox(width: 8),
+                    Text('Xóa toàn bộ cache'),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Column(
-              children: [
-                SizedBox(
-                  width: double.infinity,
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(
-                        vertical: 10.0, horizontal: 10.0),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      borderRadius: BorderRadius.circular(16.0),
-                    ),
-                    child: TextField(
-                      onSubmitted: (searchText) {
-                        if (searchText.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Vui lòng nhập từ khóa tìm kiếm'),
-                              duration: Duration(seconds: 2),
+      body: chaptersAsync.when(
+        loading: () => const Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text('Đang tải câu hỏi...'),
+            ],
+          ),
+        ),
+        error: (error, stack) => Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error, size: 64, color: Colors.red),
+              const SizedBox(height: 16),
+              Text('Lỗi: $error'),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () => ref.refresh(allChaptersProvider),
+                child: const Text('Thử lại'),
+              ),
+            ],
+          ),
+        ),
+        data: (chapterMap) {
+          // Remove duplicates from each chapter
+          final cleanedChapterMap = <String, List<Question>>{};
+          for (final entry in chapterMap.entries) {
+            cleanedChapterMap[entry.key] = _removeDuplicateQuestions(
+              entry.value,
+            );
+          }
+
+          // Get total questions after removing duplicates
+          final totalQuestions = cleanedChapterMap.values.fold<int>(
+            0,
+            (sum, questions) => sum + questions.length,
+          );
+
+          return SafeArea(
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  Column(
+                    children: [
+                      SizedBox(
+                        width: double.infinity,
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(
+                            vertical: 10.0,
+                            horizontal: 10.0,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[200],
+                            borderRadius: BorderRadius.circular(16.0),
+                          ),
+                          child: TextField(
+                            onSubmitted: (searchText) {
+                              if (searchText.isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Vui lòng nhập từ khóa tìm kiếm',
+                                    ),
+                                    duration: Duration(seconds: 2),
+                                  ),
+                                );
+                                return;
+                              }
+                              searchText.toLowerCase();
+
+                              // Search through all questions
+                              final allQuestions = chapterMap.values
+                                  .expand((questions) => questions)
+                                  .toList();
+                              final searchResults =
+                                  allQuestions.where((question) {
+                                final content =
+                                    question.content?.toLowerCase() ?? '';
+                                return content.contains(
+                                  searchText.toLowerCase(),
+                                );
+                              }).toList();
+
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) {
+                                    return ExerciseScreen(
+                                      questions: Future.value(searchResults),
+                                      title:
+                                          'Kết quả tìm kiếm cho "$searchText"',
+                                    );
+                                  },
+                                ),
+                              );
+                            },
+                            decoration: InputDecoration(
+                              alignLabelWithHint: true,
+                              contentPadding: const EdgeInsets.all(0),
+                              hintText: 'Tìm kiếm câu hỏi...',
+                              hintStyle: const TextStyle(
+                                color: Colors.grey,
+                                fontSize: 16,
+                              ),
+                              prefixIcon: const Icon(
+                                Icons.search,
+                                color: Colors.grey,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8.0),
+                                borderSide: BorderSide.none,
+                              ),
                             ),
-                          );
-                          return;
-                        }
-                        searchText.toLowerCase();
-                        Navigator.push(context, MaterialPageRoute(
-                          builder: (context) {
-                            return ExerciseScreen(
-                              questions: ref
-                                  .read(questionRepositoryProvider)
-                                  .fetchQuestionsByName(searchText),
-                              title: 'Kết quả tìm kiếm cho "$searchText"',
-                            );
-                          },
-                        ));
-                      },
-                      decoration: InputDecoration(
-                        alignLabelWithHint: true,
-                        contentPadding: const EdgeInsets.all(0),
-                        hintText: 'Tìm kiếm câu hỏi...',
-                        hintStyle: const TextStyle(
-                          color: Colors.grey,
-                          fontSize: 16,
-                        ),
-                        prefixIcon: const Icon(
-                          Icons.search,
-                          color: Colors.grey,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8.0),
-                          borderSide: BorderSide.none,
+                          ),
                         ),
                       ),
-                    ),
+                      Divider(
+                        height: 0.5,
+                        thickness: 1,
+                        color: Colors.grey[400],
+                      ),
+                    ],
                   ),
-                ),
-                Divider(
-                  height: 0.5,
-                  thickness: 1,
-                  color: Colors.grey[400],
-                ),
-              ],
-            ),
-            _customListTile(
-              title: 'Toàn bộ $questionLength câu hỏi của Hạng $vehicleType',
-              subtitle: '$questionLength câu hỏi từ bộ 600 câu',
-              total: questionLength,
-              completed:
-                  ref.watch(answeredQuestionsProvider)['all-$vehicleType'] ?? 0,
-              context: context,
-              testSetId: 'all-$vehicleType',
-              ref: ref,
-            ),
-            ListView.builder(
-              padding: const EdgeInsets.all(0.0),
-              itemCount: allChapters.length,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemBuilder: (context, index) {
-                final chapter = allChapters[index];
-                final chapterKey = vehicle.chapters.entries
-                    .firstWhere((entry) => entry.value == chapter,
-                        orElse: () => MapEntry('unknown', chapter))
-                    .key;
-                final testSetId = 'practice-$chapterKey-$vehicleType';
+                  _customListTile(
+                    title:
+                        'Toàn bộ $totalQuestions câu hỏi của Hạng ${licenseType.name}',
+                    subtitle: '$totalQuestions câu hỏi từ bộ 600 câu',
+                    total: totalQuestions,
+                    completed: 0,
+                    context: context,
+                    questions: cleanedChapterMap.values
+                        .expand((questions) => questions)
+                        .toList(),
+                    ref: ref,
+                  ),
+                  ListView.builder(
+                    padding: const EdgeInsets.all(0.0),
+                    itemCount: cleanedChapterMap.length,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemBuilder: (context, index) {
+                      // Sort chapters by number (1, 2, 3, etc.)
+                      final sortedEntries = cleanedChapterMap.entries.toList()
+                        ..sort((a, b) {
+                          // Extract chapter numbers for sorting
+                          getChapterNumber(String chapter) {
+                            // Try to parse the chapter as a number directly
+                            final directNumber = int.tryParse(chapter);
+                            if (directNumber != null) return directNumber;
 
-                // Get the answered count from the provider
-                final answeredCount =
-                    ref.watch(answeredQuestionsProvider)[testSetId] ?? 0;
+                            // If not a direct number, try to extract from "Chapter X" format
+                            final match = RegExp(
+                              r'Chapter (\d+)',
+                            ).firstMatch(chapter);
+                            if (match != null) {
+                              return int.parse(match.group(1)!);
+                            }
 
-                return _customListTile(
-                  title: chapter.chapterName,
-                  subtitle: '${chapter.getQuestionCount()} câu hỏi',
-                  total: chapter.getQuestionCount(),
-                  completed: answeredCount,
-                  context: context,
-                  testSetId: testSetId,
-                  ref: ref,
-                );
-              },
+                            // If still no match, put at the end
+                            return 999;
+                          }
+
+                          return getChapterNumber(
+                            a.key,
+                          ).compareTo(getChapterNumber(b.key));
+                        });
+
+                      final entry = sortedEntries[index];
+                      final chapter = entry.key;
+                      final questions = entry.value;
+
+                      return _customListTile(
+                        title: chapter,
+                        subtitle: '${questions.length} câu hỏi',
+                        total: questions.length,
+                        completed: 0,
+                        context: context,
+                        questions: questions,
+                        ref: ref,
+                      );
+                    },
+                  ),
+                  // Add dead point questions separately if they exist
+                  Builder(
+                    builder: (context) {
+                      final deadPointQuestionsCount = ref.watch(
+                        deadPointQuestionsCountProvider,
+                      );
+
+                      return deadPointQuestionsCount.when(
+                        data: (count) {
+                          if (count == 0) {
+                            return const SizedBox.shrink();
+                          }
+
+                          return _customListTile(
+                            title:
+                                '$count câu hỏi về xử lý tình huống mất an toàn giao thông nghiêm trọng',
+                            subtitle:
+                                '$count câu điểm liệt bắt buộc phải trả lời đúng',
+                            total: count,
+                            completed: 0,
+                            context: context,
+                            questions: [], // Empty list since we're navigating to a different route
+                            ref: ref,
+                            isDeadPoint:
+                                true, // Flag to indicate this is dead point section
+                          );
+                        },
+                        loading: () => const SizedBox.shrink(),
+                        error: (_, __) => const SizedBox.shrink(),
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
-            _customListTile(
-              title:
-                  '${vehicle.deadPointQuestions.length} câu hỏi về xử lý tình huống mất an toàn giao thông nghiêm trọng',
-              subtitle:
-                  '${vehicle.deadPointQuestions.length} câu điểm liệt bắt buộc phải trả lời đúng',
-              total: vehicle.deadPointQuestions.length,
-              completed: ref.watch(
-                      answeredQuestionsProvider)['deadpoints-$vehicleType'] ??
-                  0,
-              context: context,
-              testSetId: 'deadpoints-$vehicleType',
-              ref: ref,
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -173,24 +470,25 @@ Widget _customListTile({
   required BuildContext context,
   required int completed,
   required int total,
-  required String testSetId,
+  required List<Question> questions,
   required WidgetRef ref,
+  bool isDeadPoint = false,
 }) {
   String titleBasedOnChapterType(String vehicleType) {
     switch (vehicleType) {
-      case 'Chapter 1':
+      case '1':
         return 'Chương I. Khái niệm và quy tắc giao thông đường bộ';
-      case 'Chapter 2':
+      case '2':
         return 'Chương II. Nghiệp vụ vận tải';
-      case 'Chapter 3':
+      case '3':
         return 'Chương III. Văn hóa, đạo đức người lái xe';
-      case 'Chapter 4':
+      case '4':
         return 'Chương IV. Kỹ thuật lái xe';
-      case 'Chapter 5':
+      case '5':
         return 'Chương V. Cấu tạo và sửa chữa xe';
-      case 'Chapter 6':
+      case '6':
         return 'Chương VI. Biển báo hiệu đường bộ';
-      case 'Chapter 7':
+      case '7':
         return 'Chương VII. Giải các thế sa hình và kỹ năng xử lý tình huống giao thông';
       default:
         return title;
@@ -199,21 +497,19 @@ Widget _customListTile({
 
   return GestureDetector(
     onTap: () {
-      Navigator.push(
+      if (isDeadPoint) {
+        Navigator.pushNamed(context, AppRoutes.deadpointQuestions);
+      } else {
+        Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (context) => ExerciseScreen(
-                    testSetId: testSetId,
-                    title: titleBasedOnChapterType(title),
-                  ))).then((_) {
-        // Refresh the page when coming back from ExerciseScreen
-        if (context.mounted) {
-          // Invalidate the answeredQuestionsProvider to make sure we get fresh data
-          ref.invalidate(answeredQuestionsProvider);
-          // Then rebuild the widget
-          (context as Element).markNeedsBuild();
-        }
-      });
+            builder: (context) => ExerciseScreen(
+              questions: Future.value(questions),
+              title: titleBasedOnChapterType(title),
+            ),
+          ),
+        );
+      }
     },
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -221,7 +517,10 @@ Widget _customListTile({
         ListTile(
           title: Text(titleBasedOnChapterType(title)),
           titleTextStyle: const TextStyle(
-              fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black),
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+            color: Colors.black,
+          ),
           subtitle: Text(subtitle),
         ),
         Padding(

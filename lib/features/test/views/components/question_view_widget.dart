@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:gplx/core/widgets/base64_image_widget.dart';
 import 'package:gplx/features/test/constants/quiz_constants.dart';
+import 'package:gplx/features/test/models/answer.dart';
 import 'package:gplx/features/test/models/question.dart';
-import 'package:gplx/features/test/services/quiz_logic_service.dart';
 import 'package:gplx/features/test/views/components/quiz_ui_components.dart';
 
 /// Widget for displaying a single answer option
@@ -98,10 +98,7 @@ class AnswerOptionWidget extends StatelessWidget {
 class AnswerFeedbackWidget extends StatelessWidget {
   final AnswerFeedback feedback;
 
-  const AnswerFeedbackWidget({
-    super.key,
-    required this.feedback,
-  });
+  const AnswerFeedbackWidget({super.key, required this.feedback});
 
   @override
   Widget build(BuildContext context) {
@@ -109,8 +106,12 @@ class AnswerFeedbackWidget extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: feedback.isCorrect
-            ? Colors.green.withValues(alpha: QuizConstants.correctAnswerOpacity)
-            : Colors.red.withValues(alpha: QuizConstants.wrongAnswerOpacity),
+            ? Colors.green.withValues(
+                alpha: QuizConstants.correctAnswerOpacity,
+              )
+            : Colors.red.withValues(
+                alpha: QuizConstants.wrongAnswerOpacity,
+              ),
         borderRadius: BorderRadius.circular(QuizConstants.borderRadius),
         border: Border.all(
           color: feedback.isCorrect ? Colors.green : Colors.red,
@@ -168,57 +169,62 @@ class QuestionViewWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isChecked = checkedQuestions[questionIndex] ?? false;
-
-    return Container(
-      padding: const EdgeInsets.all(QuizConstants.defaultPadding),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          QuestionHeaderWidget(
-            questionIndex: questionIndex,
-            isQuiz: isQuiz,
-            questionContent: question.content,
-            question: question, // Pass the question object
-          ),
-          const SizedBox(height: QuizConstants.defaultPadding),
-          if (question.imageUrl?.isNotEmpty == true)
-            Base64ImageWidget(base64String: question.imageUrl!),
-          Expanded(
-            child: ListView(
-              children: [
-                ..._buildAnswerOptions(),
-                const SizedBox(height: 20),
-                if (isChecked) _buildFeedback(),
-              ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: IntrinsicHeight(
+              child: Container(
+                padding: const EdgeInsets.all(QuizConstants.defaultPadding),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    QuestionHeaderWidget(
+                      questionIndex: questionIndex,
+                      isQuiz: isQuiz,
+                      questionContent: question.content ?? '',
+                      question: question,
+                    ),
+                    const SizedBox(height: QuizConstants.defaultPadding),
+                    if (question.imageUrl?.isNotEmpty == true)
+                      Center(
+                        child: Base64ImageWidget(
+                          base64String: question.imageUrl!,
+                        ),
+                      ),
+                    const SizedBox(height: QuizConstants.defaultPadding),
+                    // Answer options and feedback
+                    _buildAnswerOptions(),
+                    const SizedBox(height: 20),
+                    // if (isChecked) _buildFeedback(),
+                    const Spacer(),
+                  ],
+                ),
+              ),
             ),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
-  List<Widget> _buildAnswerOptions() {
-    return List.generate(
-      question.answers.length,
-      (index) => AnswerOptionWidget(
-        questionIndex: questionIndex,
-        optionIndex: index,
-        text: question.answers[index].answerContent,
-        isCorrect: question.answers[index].isCorrect,
-        isSelected: selectedAnswers[questionIndex] == index,
-        showResult: checkedQuestions[questionIndex] ?? false,
-        onAnswerSelected: onAnswerSelected,
+  Widget _buildAnswerOptions() {
+    final answers = question.answers ?? [];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: List.generate(
+        answers.length,
+        (index) => AnswerOptionWidget(
+          questionIndex: questionIndex,
+          optionIndex: index,
+          text: answers[index].content,
+          isCorrect: answers[index].isCorrect,
+          isSelected: selectedAnswers[questionIndex] == index,
+          showResult: checkedQuestions[questionIndex] ?? false,
+          onAnswerSelected: onAnswerSelected,
+        ),
       ),
     );
-  }
-
-  Widget _buildFeedback() {
-    final feedback = QuizLogicService.getAnswerFeedback(
-      isCorrect: isAnswerCorrect(questionIndex),
-      question: question,
-    );
-
-    return AnswerFeedbackWidget(feedback: feedback);
   }
 }

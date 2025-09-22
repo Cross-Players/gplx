@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gplx/core/constants/app_styles.dart';
-import 'package:gplx/core/data/local_storage.dart';
 import 'package:gplx/core/routes/app_routes.dart';
 import 'package:gplx/core/services/firebase/auth_services.dart';
+import 'package:gplx/features/test/models/license_data.dart';
 import 'package:gplx/features/test/models/vehicle.dart';
-import 'package:gplx/features/test/providers/vehicle_provider.dart';
+
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -18,9 +18,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   String selectedQuestionSet = '600 câu hỏi (Thử nghiệm)';
   @override
   Widget build(BuildContext context) {
-    final vehicleRepository = ref.watch(vehicleRepositoryProvider);
-    final availableVehicle = vehicleRepository.getAllVehicle();
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Thiết lập'),
@@ -62,29 +59,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
           const _SectionHeader(title: 'LOẠI BẰNG LÁI XE Ô TÔ'),
           ListView.builder(
-            itemCount: availableVehicle.length,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
+            itemCount: allVehicles.length,
             itemBuilder: (context, index) {
-              final vehicle = availableVehicle[index];
+              final vehicle = allVehicles[index];
+              final selectedType = ref.watch(licenseTypeProvider);
               return _VehicleOption(
                 vehicle: vehicle,
-                isSelected:
-                    ref.watch(selectedVehicleTypeProvider).vehicleType ==
-                        vehicle.vehicleType,
-                onTap: () {
-                  // Update state
-                  ref.read(selectedVehicleTypeProvider.notifier).state =
-                      vehicle;
-
-                  // Save to SharedPreferences
-                  ref
-                      .read(localStorageProvider)
-                      .saveSelectedVehicleType(vehicle.vehicleType);
-                  // ignore: avoid_print
-                  print(
-                      'Selected vehicle type: ${vehicle.vehicleType} - Saved to preferences');
-                },
+                isSelected: selectedType == vehicle.vehicleType,
+                onTap:
+                    () => ref
+                        .read(licenseTypeProvider.notifier)
+                        .setLicenseType(vehicle.vehicleType),
               );
             },
           ),
@@ -106,10 +93,7 @@ class _SectionHeader extends StatelessWidget {
     return Container(
       padding: AppSettingsPaddings.section,
       color: AppSettingsColors.sectionBg,
-      child: Text(
-        title,
-        style: AppSettingsTextStyles.section,
-      ),
+      child: Text(title, style: AppSettingsTextStyles.section),
     );
   }
 }
@@ -183,12 +167,18 @@ class _VehicleOption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      title: Text(vehicle.vehicleType),
-      subtitle:
-          Text(vehicle.description, style: AppSettingsTextStyles.vehicleDesc),
-      trailing: isSelected
-          ? const Icon(Icons.check, color: AppSettingsColors.vehicleSelected)
-          : null,
+      title: Text(vehicle.vehicleType.name),
+      subtitle: Text(
+        vehicle.description,
+        style: AppSettingsTextStyles.vehicleDesc,
+      ),
+      trailing:
+          isSelected
+              ? const Icon(
+                Icons.check,
+                color: AppSettingsColors.vehicleSelected,
+              )
+              : null,
       onTap: onTap,
     );
   }

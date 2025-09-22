@@ -2,8 +2,8 @@ import 'dart:convert';
 
 import 'package:firebase_database/firebase_database.dart';
 import 'package:gplx/core/services/cache_expiry_manager.dart';
-import 'package:gplx/features/test/controllers/vehicle_repository.dart';
 import 'package:gplx/features/test/models/answer.dart';
+import 'package:gplx/features/test/models/license_data.dart';
 import 'package:gplx/features/test/models/question.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -48,7 +48,9 @@ class QuestionRepository {
         if (questionData == null) continue;
 
         final question = _parseQuestionData(
-            Map<String, dynamic>.from(questionData as Map), i);
+          Map<String, dynamic>.from(questionData as Map),
+          i,
+        );
         if (question != null) {
           questions.add(question);
         }
@@ -79,14 +81,13 @@ class QuestionRepository {
       final answers = answersData.whereType<Map>().map((answerOption) {
         final answerMap = Map<String, dynamic>.from(answerOption);
         return Answer(
-          answerContent: answerMap['answer_content'] ?? '',
+          content: answerMap['answer_content'] ?? '',
           isCorrect: answerMap['is_correct'] ?? false,
         );
       }).toList();
 
       return Question(
         content: questionData['question_content'] ?? '',
-        explanation: questionData['question_explain'] ?? '',
         number: questionData['question_number'] ?? 0,
         answers: answers,
         imageUrl: questionData['question_image'] ?? '',
@@ -105,9 +106,11 @@ class QuestionRepository {
     try {
       final allQuestions = await fetchQuestions();
       return allQuestions
-          .where((question) => question.content
-              .toLowerCase()
-              .contains(questionName.toLowerCase()))
+          .where(
+            (question) => question.content!.toLowerCase().contains(
+                  questionName.toLowerCase(),
+                ),
+          )
           .toList();
     } catch (e, stackTrace) {
       print('Error fetching questions by name: $e\n$stackTrace');
@@ -115,28 +118,10 @@ class QuestionRepository {
     }
   }
 
-  // Get questions filtered by vehicle type excluding correctly answered ones
-  Future<List<Question>> fetchQuestionsByIsCorrect(String vehicle) async {
-    try {
-      final allQuestions = await fetchQuestions();
-      final vehicleQuestionNumbers =
-          VehicleRepository().getAllQuestions(vehicle);
-      final correctQuestionNumbers = await _getCorrectQuestionNumbers(vehicle);
-
-      return allQuestions
-          .where((question) =>
-              vehicleQuestionNumbers.contains(question.number) &&
-              !correctQuestionNumbers.contains(question.number))
-          .toList();
-    } catch (e, stackTrace) {
-      print('Error fetching questions by wrong answers: $e\n$stackTrace');
-      return [];
-    }
-  }
-
   // Load questions by specific numbers with maintained order
   Future<List<Question>> fetchQuestionsByNumbers(
-      List<int> questionNumbers) async {
+    List<int> questionNumbers,
+  ) async {
     if (questionNumbers.isEmpty) return [];
 
     try {
@@ -158,15 +143,17 @@ class QuestionRepository {
   }
 
   // Get set of correctly answered question numbers
-  Future<Set<int>> _getCorrectQuestionNumbers(String vehicle) async {
+  Future<Set<int>> _getCorrectQuestionNumbers(LicenseType vehicle) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final correctQuestionsJson =
-          prefs.getString('correct_questions_$vehicle');
+      final correctQuestionsJson = prefs.getString(
+        'correct_questions_${vehicle.name}',
+      );
 
       if (correctQuestionsJson != null) {
-        final List<dynamic> correctQuestionsList =
-            jsonDecode(correctQuestionsJson);
+        final List<dynamic> correctQuestionsList = jsonDecode(
+          correctQuestionsJson,
+        );
         return correctQuestionsList.map((e) => e as int).toSet();
       }
 
@@ -178,7 +165,8 @@ class QuestionRepository {
   }
 
   // Save question as correctly answered
-  Future<void> saveCorrectQuestion(int questionNumber, String vehicle) async {
+  Future<void> saveCorrectQuestion(
+      int questionNumber, LicenseType vehicle) async {
     try {
       final correctQuestions = await _getCorrectQuestionNumbers(vehicle);
       correctQuestions.add(questionNumber);
@@ -194,7 +182,8 @@ class QuestionRepository {
   }
 
   // Remove question from correctly answered list
-  Future<void> removeCorrectQuestion(int questionNumber, String vehicle) async {
+  Future<void> removeCorrectQuestion(
+      int questionNumber, LicenseType vehicle) async {
     try {
       final correctQuestions = await _getCorrectQuestionNumbers(vehicle);
       correctQuestions.remove(questionNumber);

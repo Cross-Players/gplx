@@ -1,25 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gplx/core/constants/app_styles.dart';
 import 'package:gplx/features/test/models/vehicle.dart';
 import 'package:gplx/features/test_sets/constants/test_sets_constants.dart';
 
 /// Dialog for confirming quiz start
-class StartQuizDialog extends StatelessWidget {
+class StartQuizDialog extends ConsumerWidget {
   final int testNumber;
-  final int questionCount;
-  final Vehicle vehicle;
   final VoidCallback onStart;
 
   const StartQuizDialog({
     super.key,
     required this.testNumber,
-    required this.questionCount,
-    required this.vehicle,
     required this.onStart,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final vehicle = ref.watch(selectedVehicleTypeProvider);
+    final questionCount = vehicle.totalQuestionsPerQuiz;
     return AlertDialog(
       title: Text('Đề thi số $testNumber'),
       content: Column(
@@ -28,10 +27,7 @@ class StartQuizDialog extends StatelessWidget {
         children: [
           Text(
             'Bạn sắp làm đề thi số $testNumber',
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 12),
           _QuizInfoRow(
@@ -77,10 +73,7 @@ class _QuizInfoRow extends StatelessWidget {
   final IconData icon;
   final String text;
 
-  const _QuizInfoRow({
-    required this.icon,
-    required this.text,
-  });
+  const _QuizInfoRow({required this.icon, required this.text});
 
   @override
   Widget build(BuildContext context) {
@@ -88,10 +81,7 @@ class _QuizInfoRow extends StatelessWidget {
       children: [
         Icon(icon, size: 18, color: Colors.grey),
         const SizedBox(width: 4),
-        Text(
-          text,
-          style: const TextStyle(color: Colors.grey),
-        ),
+        Text(text, style: const TextStyle(color: Colors.grey)),
       ],
     );
   }

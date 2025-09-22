@@ -4,12 +4,7 @@ import 'package:gplx/core/widgets/base64_image_widget.dart';
 import 'package:gplx/features/test/models/question.dart';
 import 'package:gplx/features/test/models/quiz_result.dart';
 
-enum QuestionFilter {
-  all,
-  correct,
-  wrong,
-  skipped,
-}
+enum QuestionFilter { all, correct, wrong, skipped }
 
 class QuizResultSummary extends StatefulWidget {
   final QuizResult quizResult;
@@ -72,17 +67,12 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
       child: ElevatedButton.icon(
         onPressed: widget.onRetakeQuiz,
         icon: const Icon(Icons.restart_alt),
-        label: const Text(
-          'Làm lại bài quiz',
-          style: TextStyle(fontSize: 16),
-        ),
+        label: const Text('Làm lại bài quiz', style: TextStyle(fontSize: 16)),
         style: ElevatedButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
           backgroundColor: AppStyles.primaryColor,
           foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
       ),
     );
@@ -236,8 +226,14 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
     );
   }
 
-  Widget _buildStatItem(String count, Color color, IconData icon,
-      String tooltip, QuestionFilter filter, bool isEnabled) {
+  Widget _buildStatItem(
+    String count,
+    Color color,
+    IconData icon,
+    String tooltip,
+    QuestionFilter filter,
+    bool isEnabled,
+  ) {
     final bool isActive = activeFilter == filter;
 
     final opacity = isEnabled ? 1.0 : 0.5;
@@ -293,8 +289,8 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
       final selectedAnswerIndex = widget.selectedAnswers[i];
       if (selectedAnswerIndex != null) {
         final isCorrect = selectedAnswerIndex >= 0 &&
-            selectedAnswerIndex < widget.questions[i].answers.length &&
-            widget.questions[i].answers[selectedAnswerIndex].isCorrect;
+            selectedAnswerIndex < widget.questions[i].answers!.length &&
+            widget.questions[i].answers![selectedAnswerIndex].isCorrect;
         questionResults[i] = isCorrect;
       }
     }
@@ -303,20 +299,25 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
 
     switch (activeFilter) {
       case QuestionFilter.all:
-        questionsToShow
-            .addAll(List.generate(widget.questions.length, (index) => index));
+        questionsToShow.addAll(
+          List.generate(widget.questions.length, (index) => index),
+        );
         break;
       case QuestionFilter.correct:
-        questionsToShow.addAll(questionResults.entries
-            .where((entry) => entry.value == true)
-            .map((entry) => entry.key)
-            .toList());
+        questionsToShow.addAll(
+          questionResults.entries
+              .where((entry) => entry.value == true)
+              .map((entry) => entry.key)
+              .toList(),
+        );
         break;
       case QuestionFilter.wrong:
-        questionsToShow.addAll(questionResults.entries
-            .where((entry) => entry.value == false)
-            .map((entry) => entry.key)
-            .toList());
+        questionsToShow.addAll(
+          questionResults.entries
+              .where((entry) => entry.value == false)
+              .map((entry) => entry.key)
+              .toList(),
+        );
         break;
       case QuestionFilter.skipped:
         for (int i = 0; i < widget.questions.length; i++) {
@@ -338,10 +339,7 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
               Text(
                 _getEmptyStateMessage(),
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey,
-                ),
+                style: const TextStyle(fontSize: 16, color: Colors.grey),
               ),
             ],
           ),
@@ -358,10 +356,7 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
             padding: const EdgeInsets.only(bottom: 8.0),
             child: Text(
               _getFilterTitle(),
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
           ),
           GridView.builder(
@@ -376,8 +371,9 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
             itemCount: questionsToShow.length,
             itemBuilder: (context, index) {
               final questionIndex = questionsToShow[index];
-              final bool isAnswered =
-                  questionResults.containsKey(questionIndex);
+              final bool isAnswered = questionResults.containsKey(
+                questionIndex,
+              );
               final bool isCorrect =
                   isAnswered ? questionResults[questionIndex]! : false;
 
@@ -394,8 +390,11 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
                 }
               } else {
                 backgroundColor = Colors.blue[50]!;
-                icon = const Icon(Icons.help_outline,
-                    color: Colors.orange, size: 18);
+                icon = const Icon(
+                  Icons.help_outline,
+                  color: Colors.orange,
+                  size: 18,
+                );
               }
 
               return InkWell(
@@ -483,8 +482,8 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
 
     final isCorrect = isAnswered &&
         selectedAnswerIndex >= 0 &&
-        selectedAnswerIndex < question.answers.length &&
-        question.answers[selectedAnswerIndex].isCorrect;
+        selectedAnswerIndex < question.answers!.length &&
+        question.answers![selectedAnswerIndex].isCorrect;
 
     showModalBottomSheet(
       context: context,
@@ -507,7 +506,9 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
                     children: [
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 5),
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
                         decoration: BoxDecoration(
                           color: isAnswered
                               ? (isCorrect
@@ -560,7 +561,7 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
               ),
               const SizedBox(height: 20),
               Text(
-                question.content,
+                question.content!,
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -569,19 +570,18 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
               const SizedBox(height: 20),
               if (question.imageUrl != null && question.imageUrl!.isNotEmpty)
                 Container(
-                    height: 150,
-                    width: double.infinity,
-                    margin: const EdgeInsets.only(bottom: 20),
-                    child: Base64ImageWidget(
-                      base64String: question.imageUrl!,
-                    )),
+                  height: 150,
+                  width: double.infinity,
+                  margin: const EdgeInsets.only(bottom: 20),
+                  child: Base64ImageWidget(base64String: question.imageUrl!),
+                ),
               ListView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                itemCount: question.answers.length,
+                itemCount: question.answers!.length,
                 itemBuilder: (context, index) {
                   final bool isCorrectOption =
-                      question.answers[index].isCorrect;
+                      question.answers![index].isCorrect;
                   final bool isSelected = selectedAnswerIndex == index;
 
                   return Container(
@@ -589,11 +589,15 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
                     padding: const EdgeInsets.all(15),
                     decoration: BoxDecoration(
                       color: _getAnswerBackgroundColor(
-                          isSelected, isCorrectOption),
+                        isSelected,
+                        isCorrectOption,
+                      ),
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
-                        color:
-                            _getAnswerBorderColor(isSelected, isCorrectOption),
+                        color: _getAnswerBorderColor(
+                          isSelected,
+                          isCorrectOption,
+                        ),
                         width: 1.5,
                       ),
                     ),
@@ -605,7 +609,9 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: _getAnswerCircleColor(
-                                isSelected, isCorrectOption),
+                              isSelected,
+                              isCorrectOption,
+                            ),
                             border: isSelected || isCorrectOption
                                 ? null
                                 : Border.all(color: Colors.grey),
@@ -617,7 +623,7 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
                         const SizedBox(width: 15),
                         Expanded(
                           child: Text(
-                            question.answers[index].answerContent,
+                            question.answers![index].content,
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: isSelected || isCorrectOption
@@ -636,52 +642,6 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
                   );
                 },
               ),
-              if (question.explanation.isNotEmpty) ...[
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.blue.shade50,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: Colors.blue.shade200,
-                      width: 1,
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.lightbulb_outline,
-                            color: Colors.blue.shade700,
-                            size: 20,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Giải thích:',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blue.shade700,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        question.explanation,
-                        style: const TextStyle(
-                          fontSize: 15,
-                          height: 1.5,
-                          color: Colors.black87,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
             ],
           ),
         );

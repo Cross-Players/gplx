@@ -1,6 +1,5 @@
 import 'package:gplx/features/test/constants/quiz_constants.dart';
 import 'package:gplx/features/test/models/question.dart';
-import 'package:gplx/features/test/models/quiz_result.dart';
 
 /// Service for quiz business logic
 class QuizLogicService {
@@ -15,9 +14,12 @@ class QuizLogicService {
     final selectedAnswerIndex = selectedAnswers[questionIndex]!;
     final question = questions[questionIndex];
 
-    if (selectedAnswerIndex >= question.answers.length) return false;
+    if (question.answers == null ||
+        selectedAnswerIndex >= question.answers!.length) {
+      return false;
+    }
 
-    return question.answers[selectedAnswerIndex].isCorrect;
+    return question.answers![selectedAnswerIndex].isCorrect;
   }
 
   /// Check if critical questions failed
@@ -39,18 +41,6 @@ class QuizLogicService {
         return true;
       }
     }
-
-    // Check unanswered critical questions
-    for (int i = 0; i < questions.length; i++) {
-      final question = questions[i];
-      final isCritical = question.isDeadPoint ?? false;
-      final isAnswered = selectedAnswers.containsKey(i);
-
-      if (isCritical && !isAnswered) {
-        return true;
-      }
-    }
-
     return false;
   }
 
@@ -72,41 +62,10 @@ class QuizLogicService {
     return passedCriticalQuestions && passedScoreThreshold;
   }
 
-  /// Process unprocessed answers and update quiz result
-  static QuizResult processUnprocessedAnswers({
-    required List<Question> questions,
-    required Map<int, int> selectedAnswers,
-    required Map<int, bool> checkedQuestions,
-    required QuizResult currentResult,
-  }) {
-    int correctCount = currentResult.correctAnswers;
-    int wrongCount = currentResult.wrongAnswers;
-
-    selectedAnswers.forEach((questionIndex, selectedAnswerIndex) {
-      if (!(checkedQuestions[questionIndex] ?? false)) {
-        final isCorrect = isAnswerCorrect(
-          questions: questions,
-          questionIndex: questionIndex,
-          selectedAnswers: selectedAnswers,
-        );
-
-        if (isCorrect) {
-          correctCount++;
-        } else {
-          wrongCount++;
-        }
-      }
-    });
-
-    return currentResult.copyWith(
-      correctAnswers: correctCount,
-      wrongAnswers: wrongCount,
-    );
-  }
-
   /// Convert selected answers for saving
   static Map<String, int> convertSelectedAnswersForSaving(
-      Map<int, int> selectedAnswers) {
+    Map<int, int> selectedAnswers,
+  ) {
     final result = <String, int>{};
     selectedAnswers.forEach((key, value) {
       result[key.toString()] = value;
@@ -119,33 +78,38 @@ class QuizLogicService {
     required bool isCorrect,
     required Question question,
   }) {
-    final correctAnswer = question.answers.firstWhere(
-      (a) => a.isCorrect,
-      orElse: () => question.answers.first,
-    );
+    final correctAnswer =
+        (question.answers != null && question.answers!.isNotEmpty)
+            ? question.answers!.firstWhere(
+                (a) => a.isCorrect,
+                orElse: () => question.answers!.first,
+              )
+            : null;
 
     return AnswerFeedback(
       isCorrect: isCorrect,
       feedbackText: isCorrect
           ? QuizConstants.correctFeedback
           : QuizConstants.wrongFeedback,
-      correctAnswerText:
-          '${QuizConstants.correctAnswerPrefix}${correctAnswer.answerContent}',
-      explanation: question.explanation.isNotEmpty
-          ? '${QuizConstants.explanationPrefix}${question.explanation}'
-          : null,
+      correctAnswerText: correctAnswer != null
+          ? '${QuizConstants.correctAnswerPrefix}${correctAnswer.content}'
+          : QuizConstants.correctAnswerPrefix,
     );
   }
 
   /// Check if question is answered
   static bool isQuestionAnswered(
-      int questionIndex, Map<int, int> selectedAnswers) {
+    int questionIndex,
+    Map<int, int> selectedAnswers,
+  ) {
     return selectedAnswers.containsKey(questionIndex);
   }
 
   /// Check if question is checked
   static bool isQuestionChecked(
-      int questionIndex, Map<int, bool> checkedQuestions) {
+    int questionIndex,
+    Map<int, bool> checkedQuestions,
+  ) {
     return checkedQuestions[questionIndex] ?? false;
   }
 

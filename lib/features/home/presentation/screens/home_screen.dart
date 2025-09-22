@@ -4,55 +4,64 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gplx/core/constants/app_styles.dart';
 import 'package:gplx/core/routes/app_routes.dart';
+import 'package:gplx/features/home/controllers/dead_point_questions_count_provider.dart';
 import 'package:gplx/features/home/presentation/widgets/feature_button.dart';
-import 'package:gplx/features/test/controllers/questions_repository.dart';
-import 'package:gplx/features/test/controllers/vehicle_repository.dart';
-import 'package:gplx/features/test/providers/vehicle_provider.dart';
+import 'package:gplx/features/settings/presentation/screens/settings_screen.dart';
+import 'package:gplx/features/test/models/license_data.dart';
+import 'package:gplx/features/test/models/vehicle.dart';
 import 'package:gplx/features/test/views/quiz_screen.dart';
-import 'package:gplx/features/test_sets/providers/test_sets_provider.dart';
+import 'package:gplx/features/test_sets/views/test_sets_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final vehicle = ref.watch(selectedVehicleTypeProvider);
-    final vehicleType = vehicle.vehicleType;
+    final licenseType = ref.watch(licenseTypeProvider);
     final vehicleTotalQuestions =
-        VehicleRepository().getTotalQuestions(vehicleType);
-    final deadPointsLength =
-        VehicleRepository().getDeadPointQuestions(vehicleType).length;
-    final deadpointsId = 'deadpoints-$vehicleType';
-    final wrongAnswerQuestions =
-        QuestionRepository().fetchQuestionsByIsCorrect(vehicleType);
+        ref.watch(selectedVehicleTypeProvider).totalQuestionsPerQuiz;
+    final deadPointQuestionsCount = ref.watch(deadPointQuestionsCountProvider);
+    // final vehicle = ref.watch(selectedVehicleTypeProvider);
+    // final vehicleType = vehicle.vehicleType;
+    // final vehicleTotalQuestions =
+    //     VehicleRepository().getTotalQuestions(vehicleType);
+    // final deadPointsLength =
+    //     VehicleRepository().getDeadPointQuestions(vehicleType).length;
+    // final deadpointsId = 'deadpoints-$vehicleType';
+    // final wrongAnswerQuestions =
+    //     QuestionRepository().fetchQuestionsByIsCorrect(vehicleType);
 
     bool isPortrait =
         MediaQuery.of(context).orientation == Orientation.portrait;
 
     Future<void> navigateToRandomTest() async {
       try {
-        final repository = ref.read(testSetRepositoryProvider);
-        final testSets = await repository.getTestSets(vehicleType);
-        if (testSets.isEmpty) {
+        final currentLicenseType = ref.read(licenseTypeProvider);
+        final totalTestSets = numberOfTestSetsBasedOnLicense(
+          currentLicenseType,
+        );
+
+        if (totalTestSets <= 0) {
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text(
-                    'Không có đề thi nào để thực hiện. Vui lòng tạo đề thi mới.'),
+                content: Text('Không có đề thi nào cho hạng xe này.'),
                 duration: Duration(seconds: 3),
               ),
             );
           }
           return;
         }
-        // Chọn ngẫu nhiên một Test set
+
+        // Chọn ngẫu nhiên một Test set (từ 1 đến totalTestSets)
         final random = Random();
-        final randomTestSet = testSets[random.nextInt(testSets.length)];
+        final randomTestNumber = random.nextInt(totalTestSets) + 1;
+        final testSetId = '$randomTestNumber-${currentLicenseType.name}';
         if (context.mounted) {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => QuizScreen(testSetId: randomTestSet.id),
+              builder: (context) => QuizScreen(testSetId: testSetId),
             ),
           );
         }
@@ -74,11 +83,16 @@ class HomeScreen extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
-              Navigator.pushNamed(context, '/settings');
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SettingsScreen()),
+              );
             },
           ),
         ],
-        title: Text('Hạng $vehicleType - $vehicleTotalQuestions câu 2025'),
+        title: Text(
+          'Hạng ${licenseType.name} - $vehicleTotalQuestions câu 2025',
+        ),
       ),
       body: GridView.count(
         padding: const EdgeInsets.all(16),
@@ -96,34 +110,37 @@ class HomeScreen extends ConsumerWidget {
             icon: Icons.assignment,
             label: 'Thi theo bộ đề',
             color: AppHomeColors.red,
-            onTap: () => Navigator.pushNamed(context, '/test-sets'),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const TestSetsScreen()),
+            ),
           ),
           FeatureButton(
             icon: Icons.person_outline,
             label: 'Xem câu bị sai',
             color: AppHomeColors.green,
             onTap: () async {
-              try {
-                if (context.mounted) {
-                  Navigator.pushNamed(
-                    context,
-                    AppRoutes.wrongAnswers,
-                    arguments: {
-                      'title': 'Các câu bị sai',
-                      'questions': wrongAnswerQuestions,
-                    },
-                  );
-                }
-              } catch (e) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Có lỗi xảy ra: $e'),
-                      duration: const Duration(seconds: 3),
-                    ),
-                  );
-                }
-              }
+              // try {
+              //   if (context.mounted) {
+              //     Navigator.pushNamed(
+              //       context,
+              //       AppRoutes.wrongAnswers,
+              //       arguments: {
+              //         'title': 'Các câu bị sai',
+              //         'questions': wrongAnswerQuestions,
+              //       },
+              //     );
+              //   }
+              // } catch (e) {
+              //   if (context.mounted) {
+              //     ScaffoldMessenger.of(context).showSnackBar(
+              //       SnackBar(
+              //         content: Text('Có lỗi xảy ra: $e'),
+              //         duration: const Duration(seconds: 3),
+              //       ),
+              //     );
+              //   }
+              // }
             },
           ),
           FeatureButton(
@@ -146,14 +163,14 @@ class HomeScreen extends ConsumerWidget {
           ),
           FeatureButton(
             icon: Icons.timer,
-            label: '$deadPointsLength Câu điểm liệt',
+            label: deadPointQuestionsCount.when(
+              data: (count) => '$count Câu điểm liệt',
+              loading: () => 'Đang tải...',
+              error: (_, __) => '0 Câu điểm liệt',
+            ),
             color: AppHomeColors.brown,
             onTap: () {
-              Navigator.pushNamed(
-                context,
-                AppRoutes.deadpointQuestions,
-                arguments: deadpointsId,
-              );
+              Navigator.pushNamed(context, AppRoutes.deadpointQuestions);
             },
           ),
           FeatureButton(

@@ -86,7 +86,7 @@ class QuizProgressService {
     return {
       QuizConstants.selectedAnswersKey: selectedAnswersMap,
       QuizConstants.checkedQuestionsKey: checkedQuestionsMap,
-      QuizConstants.quizResultKey: quizResult.toJson(),
+      // QuizConstants.quizResultKey: quizResult.toJson(),
       QuizConstants.lastSavedKey: DateTime.now().toIso8601String(),
     };
   }
