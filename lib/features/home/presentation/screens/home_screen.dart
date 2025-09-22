@@ -21,15 +21,6 @@ class HomeScreen extends ConsumerWidget {
     final vehicleTotalQuestions =
         ref.watch(selectedVehicleTypeProvider).totalQuestionsPerQuiz;
     final deadPointQuestionsCount = ref.watch(deadPointQuestionsCountProvider);
-    // final vehicle = ref.watch(selectedVehicleTypeProvider);
-    // final vehicleType = vehicle.vehicleType;
-    // final vehicleTotalQuestions =
-    //     VehicleRepository().getTotalQuestions(vehicleType);
-    // final deadPointsLength =
-    //     VehicleRepository().getDeadPointQuestions(vehicleType).length;
-    // final deadpointsId = 'deadpoints-$vehicleType';
-    // final wrongAnswerQuestions =
-    //     QuestionRepository().fetchQuestionsByIsCorrect(vehicleType);
 
     bool isPortrait =
         MediaQuery.of(context).orientation == Orientation.portrait;
@@ -53,7 +44,6 @@ class HomeScreen extends ConsumerWidget {
           return;
         }
 
-        // Chọn ngẫu nhiên một Test set (từ 1 đến totalTestSets)
         final random = Random();
         final randomTestNumber = random.nextInt(totalTestSets) + 1;
         final testSetId = '$randomTestNumber-${currentLicenseType.name}';
