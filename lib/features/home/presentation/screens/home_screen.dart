@@ -105,39 +105,55 @@ class HomeScreen extends ConsumerWidget {
               MaterialPageRoute(builder: (context) => const TestSetsScreen()),
             ),
           ),
-          FeatureButton(
-            icon: Icons.person_outline,
-            label: 'Xem câu bị sai',
-            color: AppHomeColors.green,
-            onTap: () async {
-              // try {
-              //   if (context.mounted) {
-              //     Navigator.pushNamed(
-              //       context,
-              //       AppRoutes.wrongAnswers,
-              //       arguments: {
-              //         'title': 'Các câu bị sai',
-              //         'questions': wrongAnswerQuestions,
-              //       },
-              //     );
-              //   }
-              // } catch (e) {
-              //   if (context.mounted) {
-              //     ScaffoldMessenger.of(context).showSnackBar(
-              //       SnackBar(
-              //         content: Text('Có lỗi xảy ra: $e'),
-              //         duration: const Duration(seconds: 3),
-              //       ),
-              //     );
-              //   }
-              // }
-            },
-          ),
+          // FeatureButton(
+          //   icon: Icons.person_outline,
+          //   label: 'Xem câu bị sai',
+          //   color: AppHomeColors.green,
+          //   onTap: () async {
+          //     try {
+          //       if (context.mounted) {
+          //         Navigator.pushNamed(
+          //           context,
+          //           AppRoutes.wrongAnswers,
+          //           arguments: {
+          //             'title': 'Các câu bị sai',
+          //             'questions': wrongAnswerQuestions,
+          //           },
+          //         );
+          //       }
+          //     } catch (e) {
+          //       if (context.mounted) {
+          //         ScaffoldMessenger.of(context).showSnackBar(
+          //           SnackBar(
+          //             content: Text('Có lỗi xảy ra: $e'),
+          //             duration: const Duration(seconds: 3),
+          //           ),
+          //         );
+          //       }
+          //     }
+          //   },
+          // ),
           FeatureButton(
             icon: Icons.book,
             label: 'Ôn tập câu hỏi',
             color: AppHomeColors.teal,
             onTap: () => Navigator.pushNamed(context, AppRoutes.allChapters),
+          ),
+          FeatureButton(
+            icon: Icons.timer,
+            label: deadPointQuestionsCount.when(
+              data: (count) => '$count Câu điểm liệt',
+              loading: () => 'Đang tải...',
+              error: (_, __) => '0 Câu điểm liệt',
+            ),
+            color: AppHomeColors.brown,
+            onTap: () {
+              Navigator.pushNamed(context, AppRoutes.deadpointQuestions,
+                  arguments: {
+                    'title': 'Câu điểm liệt của hạng ${licenseType.name}',
+                    'testSetId': 'deadpoints-${licenseType.name}',
+                  });
+            },
           ),
           FeatureButton(
             icon: Icons.traffic,
@@ -151,24 +167,13 @@ class HomeScreen extends ConsumerWidget {
             color: AppHomeColors.purple,
             onTap: () => Navigator.pushNamed(context, AppRoutes.tips),
           ),
-          FeatureButton(
-            icon: Icons.timer,
-            label: deadPointQuestionsCount.when(
-              data: (count) => '$count Câu điểm liệt',
-              loading: () => 'Đang tải...',
-              error: (_, __) => '0 Câu điểm liệt',
-            ),
-            color: AppHomeColors.brown,
-            onTap: () {
-              Navigator.pushNamed(context, AppRoutes.deadpointQuestions);
-            },
-          ),
-          FeatureButton(
-            icon: Icons.star,
-            label: 'Top 50 câu hay sai',
-            color: AppHomeColors.blueGrey,
-            onTap: () {},
-          ),
+
+          // FeatureButton(
+          //   icon: Icons.star,
+          //   label: 'Top 50 câu hay sai',
+          //   color: AppHomeColors.blueGrey,
+          //   onTap: () {},
+          // ),
         ],
       ),
     );

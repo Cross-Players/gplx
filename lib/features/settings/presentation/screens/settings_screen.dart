@@ -6,7 +6,6 @@ import 'package:gplx/core/services/firebase/auth_services.dart';
 import 'package:gplx/features/test/models/license_data.dart';
 import 'package:gplx/features/test/models/vehicle.dart';
 
-
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
@@ -15,7 +14,7 @@ class SettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
-  String selectedQuestionSet = '600 câu hỏi (Thử nghiệm)';
+  // String selectedQuestionSet = '600 câu hỏi (Thử nghiệm)';
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -36,27 +35,27 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ),
       body: ListView(
         children: [
-          const _SectionHeader(title: 'BỘ ĐỀ THI'),
-          RadioListTile(
-            title: const Text('450 câu hỏi'),
-            value: '450 câu hỏi',
-            groupValue: selectedQuestionSet,
-            onChanged: (value) {
-              setState(() {
-                selectedQuestionSet = value.toString();
-              });
-            },
-          ),
-          RadioListTile(
-            title: const Text('600 câu hỏi (Thử nghiệm)'),
-            value: '600 câu hỏi (Thử nghiệm)',
-            groupValue: selectedQuestionSet,
-            onChanged: (value) {
-              setState(() {
-                selectedQuestionSet = value.toString();
-              });
-            },
-          ),
+          // const _SectionHeader(title: 'BỘ ĐỀ THI'),
+          // RadioListTile(
+          //   title: const Text('450 câu hỏi'),
+          //   value: '450 câu hỏi',
+          //   groupValue: selectedQuestionSet,
+          //   onChanged: (value) {
+          //     setState(() {
+          //       selectedQuestionSet = value.toString();
+          //     });
+          //   },
+          // ),
+          // RadioListTile(
+          //   title: const Text('600 câu hỏi (Thử nghiệm)'),
+          //   value: '600 câu hỏi (Thử nghiệm)',
+          //   groupValue: selectedQuestionSet,
+          //   onChanged: (value) {
+          //     setState(() {
+          //       selectedQuestionSet = value.toString();
+          //     });
+          //   },
+          // ),
           const _SectionHeader(title: 'LOẠI BẰNG LÁI XE Ô TÔ'),
           ListView.builder(
             shrinkWrap: true,
@@ -68,10 +67,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               return _VehicleOption(
                 vehicle: vehicle,
                 isSelected: selectedType == vehicle.vehicleType,
-                onTap:
-                    () => ref
-                        .read(licenseTypeProvider.notifier)
-                        .setLicenseType(vehicle.vehicleType),
+                onTap: () => ref
+                    .read(licenseTypeProvider.notifier)
+                    .setLicenseType(vehicle.vehicleType),
               );
             },
           ),
@@ -172,13 +170,12 @@ class _VehicleOption extends StatelessWidget {
         vehicle.description,
         style: AppSettingsTextStyles.vehicleDesc,
       ),
-      trailing:
-          isSelected
-              ? const Icon(
-                Icons.check,
-                color: AppSettingsColors.vehicleSelected,
-              )
-              : null,
+      trailing: isSelected
+          ? const Icon(
+              Icons.check,
+              color: AppSettingsColors.vehicleSelected,
+            )
+          : null,
       onTap: onTap,
     );
   }

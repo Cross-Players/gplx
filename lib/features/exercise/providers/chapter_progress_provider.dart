@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -21,7 +22,7 @@ class AnsweredQuestionsNotifier extends StateNotifier<Map<String, int>> {
 
       state = progressMap;
     } catch (e) {
-      print('Error loading chapter progress: $e');
+      debugPrint('Error loading chapter progress: $e');
     }
   }
 
@@ -33,7 +34,7 @@ class AnsweredQuestionsNotifier extends StateNotifier<Map<String, int>> {
 
       state = {...state, chapter: answeredCount};
     } catch (e) {
-      print('Error updating chapter progress: $e');
+      debugPrint('Error updating chapter progress: $e');
     }
   }
 
@@ -85,7 +86,7 @@ class AnsweredQuestionsNotifier extends StateNotifier<Map<String, int>> {
 
       state = {...state, ...newState};
     } catch (e) {
-      print('Error recording answered questions: $e');
+      debugPrint('Error recording answered questions: $e');
     }
   }
 

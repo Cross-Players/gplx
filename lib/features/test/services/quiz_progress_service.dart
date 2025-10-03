@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
 import 'package:gplx/features/test/constants/quiz_constants.dart';
 import 'package:gplx/features/test/models/quiz_result.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -33,7 +34,7 @@ class QuizProgressService {
         jsonEncode(savedData),
       );
     } catch (e) {
-      print('${QuizConstants.saveProgressErrorMessage}$e');
+      debugPrint('${QuizConstants.saveProgressErrorMessage}$e');
       rethrow;
     }
   }
@@ -52,7 +53,7 @@ class QuizProgressService {
 
       return null;
     } catch (e) {
-      print('${QuizConstants.loadProgressErrorMessage}$e');
+      debugPrint('${QuizConstants.loadProgressErrorMessage}$e');
       return null;
     }
   }
@@ -63,7 +64,7 @@ class QuizProgressService {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('${QuizConstants.quizProgressPrefix}$testSetId');
     } catch (e) {
-      print('${QuizConstants.clearProgressErrorMessage}$e');
+      debugPrint('${QuizConstants.clearProgressErrorMessage}$e');
     }
   }
 

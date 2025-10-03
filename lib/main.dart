@@ -28,7 +28,7 @@ Future<void> main() async {
 
     runApp(const ProviderScope(child: App()));
   } catch (e) {
-    print('Error during initialization: $e');
+    debugPrint('Error during initialization: $e');
   } finally {
     // Remove splash screen when initialization is complete
     FlutterNativeSplash.remove();

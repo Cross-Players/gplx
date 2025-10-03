@@ -5,7 +5,6 @@ import 'package:gplx/features/home/presentation/screens/home_screen.dart';
 import 'package:gplx/features/login/login_page.dart';
 import 'package:gplx/features/settings/presentation/screens/settings_screen.dart';
 import 'package:gplx/features/signs/presentation/screens/traffic_signs_screen.dart';
-import 'package:gplx/features/test/views/quiz_screen.dart';
 import 'package:gplx/features/test_sets/views/test_sets_screen.dart';
 import 'package:gplx/features/tips/presentation/screens/memorization_tips.dart';
 
@@ -55,9 +54,12 @@ class AppRoutes {
           builder: (_) => const MemorizationTips(),
         );
       case deadpointQuestions:
-        final testSetId = route.arguments as String;
+        final args = route.arguments as Map<String, dynamic>;
         return MaterialPageRoute(
-          builder: (context) => QuizScreen(testSetId: testSetId),
+          builder: (context) => ExerciseScreen(
+            title: args['title'] as String,
+            testSetId: args['testSetId'] as String,
+          ),
         );
       case AppRoutes.wrongAnswers:
         final args = route.arguments as Map<String, dynamic>;

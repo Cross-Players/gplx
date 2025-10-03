@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gplx/core/constants/app_styles.dart';
 import 'package:gplx/core/routes/app_routes.dart';
 import 'package:gplx/features/exercise/views/exercise_screen.dart';
 import 'package:gplx/features/home/controllers/dead_point_questions_count_provider.dart';
@@ -23,7 +22,7 @@ final allChaptersProvider =
     final cachedData = prefs.getString(cacheKey);
 
     if (cachedData != null) {
-      print('Loading questions from cache for ${licenseType.name}');
+      debugPrint('Loading questions from cache for ${licenseType.name}');
       final Map<String, dynamic> decodedData = jsonDecode(cachedData);
       final Map<String, List<Question>> chapterMap = {};
 
@@ -39,11 +38,11 @@ final allChaptersProvider =
       return chapterMap;
     }
   } catch (e) {
-    print('Failed to load from cache: $e');
+    debugPrint('Failed to load from cache: $e');
   }
 
   // If cache failed or doesn't exist, fetch from network
-  print('Fetching questions from network for ${licenseType.name}');
+  debugPrint('Fetching questions from network for ${licenseType.name}');
   final controller = TestController();
   final allQuestions = <Question>[];
   final totalTestSets = numberOfTestSetsBasedOnLicense(licenseType);
@@ -57,7 +56,7 @@ final allChaptersProvider =
       allQuestions.addAll(questions);
     } catch (e) {
       // Continue with next test set if one fails
-      print('Failed to fetch test set $testNumber: $e');
+      debugPrint('Failed to fetch test set $testNumber: $e');
     }
   }
 
@@ -68,7 +67,7 @@ final allChaptersProvider =
     );
     allQuestions.addAll(deadPointQuestions);
   } catch (e) {
-    print('Failed to fetch dead point questions: $e');
+    debugPrint('Failed to fetch dead point questions: $e');
   }
 
   // Group questions by chapter
@@ -89,9 +88,9 @@ final allChaptersProvider =
       cacheData[chapter] = questions.map((q) => q.toJson()).toList();
     });
     await prefs.setString(cacheKey, jsonEncode(cacheData));
-    print('Successfully cached questions for ${licenseType.name}');
+    debugPrint('Successfully cached questions for ${licenseType.name}');
   } catch (e) {
-    print('Failed to cache questions: $e');
+    debugPrint('Failed to cache questions: $e');
   }
 
   return chapterMap;
@@ -140,58 +139,6 @@ class _AllChapterScreenState extends ConsumerState<AllChapterScreen> {
     return uniqueQuestions;
   }
 
-  // Method to clear cache and refresh data
-  Future<void> _clearCacheAndRefresh() async {
-    try {
-      final licenseType = ref.read(licenseTypeProvider);
-      final prefs = await SharedPreferences.getInstance();
-      final cacheKey = 'cached_questions_${licenseType.name}';
-
-      await prefs.remove(cacheKey);
-
-      // Refresh the provider
-      ref.invalidate(allChaptersProvider);
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Đã làm mới dữ liệu câu hỏi'),
-            duration: Duration(seconds: 2),
-          ),
-        );
-      }
-    } catch (e) {
-      print('Failed to clear cache: $e');
-    }
-  }
-
-  // Method to clear all cache for all license types
-  Future<void> _clearAllCache() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final keys = prefs.getKeys();
-
-      for (final key in keys) {
-        if (key.startsWith('cached_questions_')) {
-          await prefs.remove(key);
-        }
-      }
-
-      ref.invalidate(allChaptersProvider);
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Đã xóa toàn bộ cache câu hỏi'),
-            duration: Duration(seconds: 2),
-          ),
-        );
-      }
-    } catch (e) {
-      print('Failed to clear all cache: $e');
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final licenseType = ref.watch(licenseTypeProvider);
@@ -200,42 +147,6 @@ class _AllChapterScreenState extends ConsumerState<AllChapterScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Hạng ${licenseType.name} - Ôn tập theo chương'),
-        actions: [
-          PopupMenuButton<String>(
-            onSelected: (value) {
-              switch (value) {
-                case 'refresh':
-                  _clearCacheAndRefresh();
-                  break;
-                case 'clear_all':
-                  _clearAllCache();
-                  break;
-              }
-            },
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'refresh',
-                child: Row(
-                  children: [
-                    Icon(Icons.refresh),
-                    SizedBox(width: 8),
-                    Text('Làm mới dữ liệu hạng này'),
-                  ],
-                ),
-              ),
-              const PopupMenuItem(
-                value: 'clear_all',
-                child: Row(
-                  children: [
-                    Icon(Icons.clear_all),
-                    SizedBox(width: 8),
-                    Text('Xóa toàn bộ cache'),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
       ),
       body: chaptersAsync.when(
         loading: () => const Center(
@@ -368,7 +279,8 @@ class _AllChapterScreenState extends ConsumerState<AllChapterScreen> {
                         'Toàn bộ $totalQuestions câu hỏi của Hạng ${licenseType.name}',
                     subtitle: '$totalQuestions câu hỏi từ bộ 600 câu',
                     total: totalQuestions,
-                    completed: 0,
+                    // completed: 0,
+                    completed: 0, // Progress tracking disabled
                     context: context,
                     questions: cleanedChapterMap.values
                         .expand((questions) => questions)
@@ -415,7 +327,8 @@ class _AllChapterScreenState extends ConsumerState<AllChapterScreen> {
                         title: chapter,
                         subtitle: '${questions.length} câu hỏi',
                         total: questions.length,
-                        completed: 0,
+                        // completed: 0,
+                        completed: 0, // Progress tracking disabled
                         context: context,
                         questions: questions,
                         ref: ref,
@@ -441,7 +354,8 @@ class _AllChapterScreenState extends ConsumerState<AllChapterScreen> {
                             subtitle:
                                 '$count câu điểm liệt bắt buộc phải trả lời đúng',
                             total: count,
-                            completed: 0,
+                            // completed: 0,
+                            completed: 0, // Progress tracking disabled
                             context: context,
                             questions: [], // Empty list since we're navigating to a different route
                             ref: ref,
@@ -498,7 +412,10 @@ Widget _customListTile({
   return GestureDetector(
     onTap: () {
       if (isDeadPoint) {
-        Navigator.pushNamed(context, AppRoutes.deadpointQuestions);
+        Navigator.pushNamed(context, AppRoutes.deadpointQuestions, arguments: {
+          'title': title,
+          'testSetId': 'deadpoints-${ref.read(licenseTypeProvider).name}',
+        });
       } else {
         Navigator.push(
           context,
@@ -511,58 +428,73 @@ Widget _customListTile({
         );
       }
     },
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ListTile(
-          title: Text(titleBasedOnChapterType(title)),
-          titleTextStyle: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-            color: Colors.black,
+    child: Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ListTile(
+                      title: Text(titleBasedOnChapterType(title)),
+                      titleTextStyle: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: Colors.black,
+                      ),
+                      subtitle: Text(subtitle),
+                    ),
+                    // Padding(
+                    //   padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 8.0),
+                    //   child: _buildProgressBar(completed, total),
+                    // ),
+                  ],
+                ),
+              ),
+              Text('Làm ngay', style: TextStyle(color: Colors.blue[700])),
+              const SizedBox(width: 16),
+            ],
           ),
-          subtitle: Text(subtitle),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 8.0),
-          child: _buildProgressBar(completed, total),
-        ),
-        Divider(
-          indent: 20,
-          endIndent: 20,
-          height: 0.5,
-          thickness: 1,
-          color: Colors.grey[300],
-        ),
-      ],
+          Divider(
+            indent: 20,
+            endIndent: 20,
+            height: 0.5,
+            thickness: 1,
+            color: Colors.grey[300],
+          ),
+        ],
+      ),
     ),
   );
 }
 
-Widget _buildProgressBar(int completed, int total) {
-  final progress = total > 0 ? (completed / total).clamp(0.0, 1.0) : 0.0;
+// Widget _buildProgressBar(int completed, int total) {
+//   final progress = total > 0 ? (completed / total).clamp(0.0, 1.0) : 0.0;
 
-  return Row(
-    children: [
-      Expanded(
-        flex: 2,
-        child: LinearProgressIndicator(
-          value: progress,
-          backgroundColor: Colors.grey[300],
-          valueColor: const AlwaysStoppedAnimation<Color>(Colors.green),
-          minHeight: 4.0,
-          borderRadius: BorderRadius.circular(3.0),
-        ),
-      ),
-      const SizedBox(width: AppStyles.horizontalSpace / 2),
-      Text(
-        '$completed/$total',
-        style: const TextStyle(
-          color: Colors.green,
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-    ],
-  );
-}
+//   return Row(
+//     children: [
+//       Expanded(
+//         flex: 2,
+//         child: LinearProgressIndicator(
+//           value: progress,
+//           backgroundColor: Colors.grey[300],
+//           valueColor: const AlwaysStoppedAnimation<Color>(Colors.green),
+//           minHeight: 4.0,
+//           borderRadius: BorderRadius.circular(3.0),
+//         ),
+//       ),
+//       const SizedBox(width: AppStyles.horizontalSpace / 2),
+//       Text(
+//         '$completed/$total',
+//         style: const TextStyle(
+//           color: Colors.green,
+//           fontSize: 14,
+//           fontWeight: FontWeight.w500,
+//         ),
+//       ),
+//     ],
+//   );
+// }

@@ -128,6 +128,12 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen>
     });
 
     try {
+      // Check if this is a dead point questions quiz
+      if (widget.testSetId != null &&
+          widget.testSetId!.startsWith('deadpoints-')) {
+        await _loadDeadPointQuestions();
+        return;
+      }
       // Parse testSetId, ví dụ: '01-A1' hoặc '01-A'
       final parts = (widget.testSetId ?? '').split('-');
       int testNumber = 1;
@@ -181,6 +187,80 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen>
         _isLoading = false;
       });
       print('Error loading Test set and questions: $e');
+    }
+  }
+
+  /// Load dead point questions for the selected license type
+  Future<void> _loadDeadPointQuestions() async {
+    try {
+      // Extract license type from testSetId (format: 'deadpoints-A1')
+      final parts = (widget.testSetId ?? '').split('-');
+      String vehicleStr = '';
+      if (parts.length > 1) {
+        vehicleStr = parts.sublist(1).join('-');
+      }
+
+      // Resolve license type from string
+      LicenseType licenseType;
+      try {
+        licenseType = LicenseType.values.firstWhere(
+          (e) => e.name == vehicleStr,
+        );
+      } catch (_) {
+        // fallback to selected vehicle provider's type
+        licenseType = ref.read(licenseTypeProvider);
+      }
+
+      // Fetch dead point questions via controller
+      final controller = TestController();
+      final questions = await controller.fetchDeadPointQuestions(licenseType);
+
+      if (questions.isEmpty) {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
+        return;
+      }
+
+      _questions.clear();
+      _questions.addAll(questions);
+
+      // Sort questions by question number in ascending order
+      _questions.sort((a, b) {
+        final aNumber = a.number ?? 0;
+        final bNumber = b.number ?? 0;
+        return aNumber.compareTo(bNumber);
+      });
+
+      // setup controller and timer (no time limit for dead point questions)
+      _tabController.dispose();
+      _tabController = TabController(length: _questions.length, vsync: this);
+      _tabController.addListener(() {
+        if (_tabController.indexIsChanging) {
+          setState(() {
+            selectedAnswer = _selectedAnswers[_tabController.index];
+          });
+        }
+      });
+
+      // Load saved progress
+      await _loadSavedProgress();
+
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _questionsLoaded = true;
+        });
+      }
+    } catch (e) {
+      print('Lỗi khi tải câu hỏi điểm liệt: $e');
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 

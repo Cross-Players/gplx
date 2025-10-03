@@ -237,6 +237,13 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
       _questions.clear();
       _questions.addAll(questions);
 
+      // Sort questions by question number in ascending order
+      _questions.sort((a, b) {
+        final aNumber = a.number ?? 0;
+        final bNumber = b.number ?? 0;
+        return aNumber.compareTo(bNumber);
+      });
+
       // setup controller and timer (no time limit for dead point questions)
       _tabController.dispose();
       _tabController = TabController(length: _questions.length, vsync: this);

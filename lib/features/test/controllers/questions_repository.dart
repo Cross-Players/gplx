@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/material.dart';
 import 'package:gplx/core/services/cache_expiry_manager.dart';
 import 'package:gplx/features/test/models/answer.dart';
 import 'package:gplx/features/test/models/license_data.dart';
@@ -62,7 +63,7 @@ class QuestionRepository {
 
       return questions;
     } catch (e, stackTrace) {
-      print('Error fetching questions from Firebase: $e\n$stackTrace');
+      debugPrint('Error fetching questions from Firebase: $e\n$stackTrace');
       return <Question>[];
     }
   }
@@ -73,7 +74,7 @@ class QuestionRepository {
       // Validate answers format
       if (!questionData.containsKey('answers') ||
           questionData['answers'] is! List) {
-        print('Question $index has invalid answers format');
+        debugPrint('Question $index has invalid answers format');
         return null;
       }
 
@@ -94,7 +95,7 @@ class QuestionRepository {
         isDeadPoint: questionData['question_dead_point'] ?? false,
       );
     } catch (e) {
-      print('Error parsing question data at index $index: $e');
+      debugPrint('Error parsing question data at index $index: $e');
       return null;
     }
   }
@@ -113,7 +114,7 @@ class QuestionRepository {
           )
           .toList();
     } catch (e, stackTrace) {
-      print('Error fetching questions by name: $e\n$stackTrace');
+      debugPrint('Error fetching questions by name: $e\n$stackTrace');
       return [];
     }
   }
@@ -137,7 +138,7 @@ class QuestionRepository {
           .map((number) => questionMap[number]!)
           .toList();
     } catch (e, stackTrace) {
-      print('Error fetching questions by numbers: $e\n$stackTrace');
+      debugPrint('Error fetching questions by numbers: $e\n$stackTrace');
       return [];
     }
   }
@@ -159,7 +160,7 @@ class QuestionRepository {
 
       return <int>{};
     } catch (e) {
-      print('Error getting correct question numbers: $e');
+      debugPrint('Error getting correct question numbers: $e');
       return <int>{};
     }
   }
@@ -177,7 +178,7 @@ class QuestionRepository {
         jsonEncode(correctQuestions.toList()),
       );
     } catch (e) {
-      print('Error saving correct question: $e');
+      debugPrint('Error saving correct question: $e');
     }
   }
 
@@ -194,7 +195,7 @@ class QuestionRepository {
         jsonEncode(correctQuestions.toList()),
       );
     } catch (e) {
-      print('Error removing correct question: $e');
+      debugPrint('Error removing correct question: $e');
     }
   }
 
@@ -204,7 +205,7 @@ class QuestionRepository {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('correct_questions_$vehicle');
     } catch (e) {
-      print('Error clearing correct questions: $e');
+      debugPrint('Error clearing correct questions: $e');
     }
   }
 
@@ -214,9 +215,9 @@ class QuestionRepository {
       final jsonList = questions.map((question) => question.toJson()).toList();
       final jsonString = jsonEncode(jsonList);
       await CacheExpiryManager.setWithExpiry(_questionsKey, jsonString);
-      print('Questions saved to cache with 30-day expiry');
+      debugPrint('Questions saved to cache with 30-day expiry');
     } catch (e, stackTrace) {
-      print('Error saving questions to cache: $e\n$stackTrace');
+      debugPrint('Error saving questions to cache: $e\n$stackTrace');
     }
   }
 
@@ -226,15 +227,15 @@ class QuestionRepository {
       final jsonString = await CacheExpiryManager.getWithExpiry(_questionsKey);
 
       if (jsonString == null || jsonString.isEmpty) {
-        print('No cached questions found or cache expired');
+        debugPrint('No cached questions found or cache expired');
         return [];
       }
 
-      print('Loading questions from cache');
+      debugPrint('Loading questions from cache');
       final List<dynamic> jsonList = jsonDecode(jsonString);
       return jsonList.map((json) => Question.fromJson(json)).toList();
     } catch (e, stackTrace) {
-      print('Error loading questions from cache: $e\n$stackTrace');
+      debugPrint('Error loading questions from cache: $e\n$stackTrace');
       return [];
     }
   }
@@ -244,9 +245,9 @@ class QuestionRepository {
     _cachedQuestions = null;
     try {
       await CacheExpiryManager.remove(_questionsKey);
-      print('Questions cache cleared');
+      debugPrint('Questions cache cleared');
     } catch (e) {
-      print('Error clearing cached questions: $e');
+      debugPrint('Error clearing cached questions: $e');
     }
   }
 }
