@@ -1,5 +1,5 @@
 {
-    "APP_NAME": "[DEV] BASE",
+    "APP_NAME": "[DEV] GPLX",
     "APP_SUFFIX": ".dev",
     "API_END_POINT": "https://api.equateur.develop.bfast-vn.net/api",
     "REALTIME_API_END_POINT": "wss://warehouse-service-app.develop.bfast-vn.net/graphql",
