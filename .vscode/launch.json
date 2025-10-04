@@ -1,24 +1,79 @@
-// Configuration Flavros for VS Code IDE
 {
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Development",
+      "name": "[DEV] debug",
       "request": "launch",
       "type": "dart",
-      "args": ["--dart-define-from-file=lib/env/development.json"]
+      "args": [
+        "--dart-define-from-file",
+        "lib/env/development.json",
+        "--flavor",
+        "dev"
+      ]
     },
     {
-      "name": "Staging",
+      "name": "[DEV] release mode",
       "request": "launch",
       "type": "dart",
-      "args": ["--dart-define-from-file=lib/env/staging.json"]
+      "flutterMode": "release",
+      "args": [
+        "--dart-define-from-file",
+        "lib/env/development.json",
+        "--flavor",
+        "dev"
+      ]
     },
     {
-      "name": "Production",
+      "name": "[STG] debug",
       "request": "launch",
       "type": "dart",
-      "args": ["--dart-define-from-file=lib/env/production.json"]
+      "args": [
+        "--dart-define-from-file",
+        "lib/env/staging.json",
+        "--flavor",
+        "stg"
+      ]
+    },
+    {
+      "name": "[STG] release",
+      "request": "launch",
+      "type": "dart",
+      "flutterMode": "release",
+      "args": [
+        "--dart-define-from-file",
+        "lib/env/staging.json",
+        "--flavor",
+        "stg"
+      ]
+    },
+    {
+      "name": "[PROD] debug",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "args": [
+        "--dart-define-from-file",
+        "lib/env/production.json",
+        "--flavor",
+        "prod"
+      ]
+    },
+    {
+      "name": "[PROD] release",
+      "request": "launch",
+      "type": "dart",
+      "flutterMode": "release",
+      "program": "lib/main.dart",
+      "args": [
+        "--dart-define-from-file",
+        "lib/env/production.json",
+        "--flavor",
+        "prod"
+      ]
     }
   ]
 }

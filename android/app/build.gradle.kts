@@ -1,9 +1,18 @@
+// import java.util.Properties
+// import java.io.FileInputStream
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
+
+// val keystoreProperties = Properties()
+// val keystorePropertiesFile = rootProject.file("key.properties")
+// if (keystorePropertiesFile.exists()) {
+//     keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+// }
 
 android {
     namespace = "com.example.gplx"
@@ -30,11 +39,38 @@ android {
         versionName = flutter.versionName
     }
 
+    flavorDimensions += "environment"
+    productFlavors {
+        create("dev") {
+            dimension = "environment"
+            applicationId = "com.example.gplx.dev"
+            resValue("string", "app_name", "[D]Học GPLX Vạn Xuân")
+        }
+        create("stg") {
+            dimension = "environment"
+            applicationId = "com.example.gplx.stg"
+            resValue("string", "app_name", "[S]Học GPLX Vạn Xuân")
+        }
+        create("prod") {
+            dimension = "environment"
+            applicationId = "com.example.gplx"
+            resValue("string", "app_name", "Học GPLX Vạn Xuân")
+        }
+    }
+
+    //  signingConfigs {
+    //     create("release") {
+    //         keyAlias = keystoreProperties["keyAlias"] as String
+    //         keyPassword = keystoreProperties["keyPassword"] as String
+    //         storeFile = keystoreProperties["storeFile"]?.let { file(it) }
+    //         storePassword = keystoreProperties["storePassword"] as String
+    //     }
+    // }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
+            // signingConfig = signingConfigs.getByName("release")
         }
     }
 }
