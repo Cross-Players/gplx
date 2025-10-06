@@ -4,7 +4,7 @@ description: "Giao hang 247 User Mobile App"
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
-version: 0.1.0+1
+version: 1.0.0+1
 
 environment:
   sdk: ">=3.4.3 <4.0.0"
@@ -26,6 +26,12 @@ dependencies:
   riverpod_annotation: ^2.3.5
   curl_logger_dio_interceptor: ^1.0.0
   awesome_dio_interceptor: ^1.2.0
+  firebase_core: 3.13.0
+  firebase_database: 11.3.1
+  uuid: ^4.3.1
+  http: ^1.4.0
+  typed_data: ^1.4.0
+  firebase_auth: ^5.5.3
 
 dev_dependencies:
   flutter_test:
@@ -40,11 +46,6 @@ dev_dependencies:
   json_serializable: ^6.8.0
   flutter_launcher_icons: ^0.14.4
 
-flutter_icons:
-  android: true
-  ios: true
-  image_path: "assets/images/logo_vx.jpg"
-
 flutter_gen:
   output: lib/generated/
   line_length: 80
@@ -53,25 +54,23 @@ flutter_gen:
   integrations:
     flutter_svg: true
 
-flutter_native_splash:
-  color: "#FFFFFF"
-  image: assets/images/logo_vx.jpg
-  color_dark: "#121212"
-  image_dark: assets/images/logo_vx.jpg
-
-  android_12:
-    image: assets/images/logo_vx.jpg
-    icon_background_color: "#FFFFFF"
-    image_dark: assets/images/logo_vx.jpg
-    icon_background_color_dark: "#121212"
-
-  android: true
+flutter_launcher_icons:
+  android: "launcher_icon"
   ios: true
-  web: false
+  image_path: "assets/images/logo_vx.jpg"
+  adaptive_icon_background: "#ffffff"
+  adaptive_icon_foreground: "assets/images/logo_vx.jpg"
+  adaptive_icon_foreground_inset: 20
+  remove_alpha_ios: true
 
-  fullscreen: true
-  android_gravity: center
-  ios_content_mode: center
+flutter_native_splash:
+  color: "#ffffff"
+  image: assets/images/logo_vx.jpg
+  android: false
+  ios: true
+  android_gravity: "center"
+  ios_content_mode: "center"
+  web: false
 
 # TODO: update localization configuration
 # flutter_intl:

@@ -11,12 +11,12 @@ import 'package:gplx/core/services/api/errors/error_code.dart';
 
 class ApiInterceptor extends InterceptorsWrapper {
   ApiInterceptor({
-    required Ref<ApiService>? ref,
+    required ProviderRef<ApiService>? ref,
     Dio? dio,
   })  : _ref = ref,
         _dio = dio;
 
-  final Ref<ApiService>? _ref;
+  final ProviderRef<ApiService>? _ref;
   // ignore: unused_field
   final Dio? _dio;
 

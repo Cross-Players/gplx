@@ -1,5 +1,5 @@
 {
-    "APP_NAME": "[STG] BASE",
+    "APP_NAME": "[S]Học GPLX Vạn Xuân",
     "APP_SUFFIX": ".stg",
     "API_END_POINT": "https://api.equateur.staging-app.your-domain.com/api",
     "REALTIME_API_END_POINT": "wss://warehouse-service-app.staging-app.bfast-vn.net/graphql",
