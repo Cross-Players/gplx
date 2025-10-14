@@ -8,6 +8,7 @@ class QuizTimerService extends ChangeNotifier {
   int _remainingTimeInSeconds = 0;
   DateTime? _startTime;
   bool _isRunning = false;
+  bool _disposed = false;
 
   VoidCallback? _onTimerComplete;
 
@@ -31,12 +32,21 @@ class QuizTimerService extends ChangeNotifier {
     _startTime = DateTime.now();
 
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_disposed) {
+        timer.cancel();
+        return;
+      }
+
       if (_remainingTimeInSeconds > 0) {
         _remainingTimeInSeconds--;
-        notifyListeners();
+        if (!_disposed) {
+          notifyListeners();
+        }
       } else {
         stop();
-        _onTimerComplete?.call();
+        if (!_disposed) {
+          _onTimerComplete?.call();
+        }
       }
     });
   }
@@ -46,7 +56,9 @@ class QuizTimerService extends ChangeNotifier {
     _timer?.cancel();
     _timer = null;
     _isRunning = false;
-    notifyListeners();
+    if (!_disposed) {
+      notifyListeners();
+    }
   }
 
   /// Pause the timer
@@ -81,7 +93,9 @@ class QuizTimerService extends ChangeNotifier {
   /// Update remaining time (useful for loading saved progress)
   void updateRemainingTime(int seconds) {
     _remainingTimeInSeconds = seconds;
-    notifyListeners();
+    if (!_disposed) {
+      notifyListeners();
+    }
   }
 
   /// Format remaining time as MM:SS
@@ -93,6 +107,7 @@ class QuizTimerService extends ChangeNotifier {
 
   @override
   void dispose() {
+    _disposed = true;
     stop();
     super.dispose();
   }

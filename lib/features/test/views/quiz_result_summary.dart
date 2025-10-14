@@ -45,7 +45,6 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
         title: Text('Kết quả - ${widget.quizResult.quizTitle}'),
         backgroundColor: AppStyles.primaryColor,
         foregroundColor: Colors.white,
-        actions: [IconButton(onPressed: () {}, icon: const Icon(Icons.share))],
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -560,87 +559,99 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
                 ],
               ),
               const SizedBox(height: 20),
-              Text(
-                question.content!,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 20),
-              if (question.imageUrl != null && question.imageUrl!.isNotEmpty)
-                Container(
-                  height: 150,
-                  width: double.infinity,
-                  margin: const EdgeInsets.only(bottom: 20),
-                  child: Base64ImageWidget(base64String: question.imageUrl!),
-                ),
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: question.answers!.length,
-                itemBuilder: (context, index) {
-                  final bool isCorrectOption =
-                      question.answers![index].isCorrect;
-                  final bool isSelected = selectedAnswerIndex == index;
-
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 15),
-                    padding: const EdgeInsets.all(15),
-                    decoration: BoxDecoration(
-                      color: _getAnswerBackgroundColor(
-                        isSelected,
-                        isCorrectOption,
-                      ),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: _getAnswerBorderColor(
-                          isSelected,
-                          isCorrectOption,
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        question.content!,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
                         ),
-                        width: 1.5,
                       ),
-                    ),
-                    child: Row(
-                      children: [
+                      const SizedBox(height: 20),
+                      if (question.imageUrl != null &&
+                          question.imageUrl!.isNotEmpty)
                         Container(
-                          width: 30,
-                          height: 30,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: _getAnswerCircleColor(
-                              isSelected,
-                              isCorrectOption,
-                            ),
-                            border: isSelected || isCorrectOption
-                                ? null
-                                : Border.all(color: Colors.grey),
-                          ),
-                          child: Center(
-                            child: _getAnswerIcon(isSelected, isCorrectOption),
-                          ),
+                          height: 150,
+                          width: double.infinity,
+                          margin: const EdgeInsets.only(bottom: 20),
+                          child: Base64ImageWidget(
+                              base64String: question.imageUrl!),
                         ),
-                        const SizedBox(width: 15),
-                        Expanded(
-                          child: Text(
-                            question.answers![index].content,
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: isSelected || isCorrectOption
-                                  ? FontWeight.bold
-                                  : FontWeight.normal,
-                              color: isCorrectOption
-                                  ? Colors.green.shade800
-                                  : (isSelected && !isCorrectOption
-                                      ? Colors.red.shade800
-                                      : Colors.black87),
+                      ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: question.answers!.length,
+                        itemBuilder: (context, index) {
+                          final bool isCorrectOption =
+                              question.answers![index].isCorrect;
+                          final bool isSelected = selectedAnswerIndex == index;
+
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 15),
+                            padding: const EdgeInsets.all(15),
+                            decoration: BoxDecoration(
+                              color: _getAnswerBackgroundColor(
+                                isSelected,
+                                isCorrectOption,
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: _getAnswerBorderColor(
+                                  isSelected,
+                                  isCorrectOption,
+                                ),
+                                width: 1.5,
+                              ),
                             ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 30,
+                                  height: 30,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: _getAnswerCircleColor(
+                                      isSelected,
+                                      isCorrectOption,
+                                    ),
+                                    border: isSelected || isCorrectOption
+                                        ? null
+                                        : Border.all(color: Colors.grey),
+                                  ),
+                                  child: Center(
+                                    child: _getAnswerIcon(
+                                        isSelected, isCorrectOption),
+                                  ),
+                                ),
+                                const SizedBox(width: 15),
+                                Expanded(
+                                  child: Text(
+                                    question.answers![index].content,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: isSelected || isCorrectOption
+                                          ? FontWeight.bold
+                                          : FontWeight.normal,
+                                      color: isCorrectOption
+                                          ? Colors.green.shade800
+                                          : (isSelected && !isCorrectOption
+                                              ? Colors.red.shade800
+                                              : Colors.black87),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ],
           ),

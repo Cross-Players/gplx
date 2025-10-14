@@ -8,7 +8,6 @@ import 'package:gplx/features/home/controllers/dead_point_questions_count_provid
 import 'package:gplx/features/home/presentation/widgets/feature_button.dart';
 import 'package:gplx/features/settings/presentation/screens/settings_screen.dart';
 import 'package:gplx/features/test/models/license_data.dart';
-import 'package:gplx/features/test/models/vehicle.dart';
 import 'package:gplx/features/test/views/quiz_screen.dart';
 import 'package:gplx/features/test_sets/views/test_sets_screen.dart';
 
@@ -18,8 +17,6 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final licenseType = ref.watch(licenseTypeProvider);
-    final vehicleTotalQuestions =
-        ref.watch(selectedVehicleTypeProvider).totalQuestionsPerQuiz;
     final deadPointQuestionsCount = ref.watch(deadPointQuestionsCountProvider);
 
     bool isPortrait =
@@ -81,7 +78,7 @@ class HomeScreen extends ConsumerWidget {
           ),
         ],
         title: Text(
-          'Hạng ${licenseType.name} - $vehicleTotalQuestions câu 2025',
+          'Hạng ${licenseType.name} 2025',
         ),
       ),
       body: GridView.count(

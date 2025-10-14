@@ -15,7 +15,7 @@ plugins {
 // }
 
 android {
-    namespace = "com.example.gplx"
+    namespace = "com.crosstechedu.gplx"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = "27.0.12077973"
 
@@ -30,7 +30,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.gplx"
+        applicationId = "com.crosstechedu.gplx"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = 23
@@ -43,17 +43,17 @@ android {
     productFlavors {
         create("dev") {
             dimension = "environment"
-            applicationId = "com.example.gplx.dev"
+            applicationId = "com.crosstechedu.gplx.dev"
             resValue("string", "app_name", "[D]Học GPLX Vạn Xuân")
         }
         create("stg") {
             dimension = "environment"
-            applicationId = "com.example.gplx.stg"
+            applicationId = "com.crosstechedu.gplx.stg"
             resValue("string", "app_name", "[S]Học GPLX Vạn Xuân")
         }
         create("prod") {
             dimension = "environment"
-            applicationId = "com.example.gplx"
+            applicationId = "com.crosstechedu.gplx"
             resValue("string", "app_name", "Học GPLX Vạn Xuân")
         }
     }

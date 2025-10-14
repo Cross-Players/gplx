@@ -56,7 +56,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           //     });
           //   },
           // ),
-          const _SectionHeader(title: 'LOẠI BẰNG LÁI XE Ô TÔ'),
+          const _SectionHeader(title: 'CÁC LOẠI BẰNG LÁI XE'),
           ListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -75,6 +75,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
           const SizedBox(height: 16),
           const LogoutButton(),
+          const SizedBox(height: 16),
         ],
       ),
     );

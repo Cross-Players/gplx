@@ -284,16 +284,18 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
 
   /// Start quiz
   void _startQuiz() {
-    setState(() {
-      _isLoading = false;
-      _questionsLoaded = true;
-    });
-    _timerService.start();
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+        _questionsLoaded = true;
+      });
+      _timerService.start();
+    }
   }
 
   /// Tab changed handler
   void _onTabChanged() {
-    if (_tabController.indexIsChanging) {
+    if (_tabController.indexIsChanging && mounted) {
       setState(() {});
     }
   }
@@ -468,7 +470,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
       }).catchError((_) {});
     } catch (_) {}
 
-    // Reset local state to initial empty quiz
+    // Reset local state to initial empty quiz - check mounted before setState
     setState(() {
       _selectedAnswers.clear();
       _checkedQuestions.clear();
@@ -487,6 +489,9 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
       _timerService.reset(_testTime);
       _timerService.start();
     });
+
+    // Navigate back to quiz screen
+    Navigator.of(context).pop();
   }
 
   // UI Event handlers
@@ -494,16 +499,20 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
     final showResult = _checkedQuestions[questionIndex] ?? false;
     if (showResult) return;
 
-    setState(() {
-      _selectedAnswers[questionIndex] = optionIndex;
-    });
+    if (mounted) {
+      setState(() {
+        _selectedAnswers[questionIndex] = optionIndex;
+      });
+    }
   }
 
   void _onAnswerChecked(int questionIndex) {
-    setState(() {
-      _checkedQuestions[questionIndex] = true;
-      // _updateQuizResult(questionIndex, _isAnswerCorrect(questionIndex));
-    });
+    if (mounted) {
+      setState(() {
+        _checkedQuestions[questionIndex] = true;
+        // _updateQuizResult(questionIndex, _isAnswerCorrect(questionIndex));
+      });
+    }
   }
 
   void _navigateToQuestion(int index) {
