@@ -7,9 +7,7 @@
       "request": "launch",
       "type": "dart",
       "args": [
-        "--dart-define-from-file=lib/env/development.json",
-        "--flavor",
-        "dev"
+        "--dart-define-from-file=lib/env/development.json"
       ]
     },
     {
@@ -17,9 +15,7 @@
       "request": "launch",
       "type": "dart",
       "args": [
-        "--dart-define-from-file=lib/env/staging.json",
-        "--flavor",
-        "stg"
+        "--dart-define-from-file=lib/env/staging.json"
       ]
     },
     {
@@ -27,9 +23,7 @@
       "request": "launch",
       "type": "dart",
       "args": [
-        "--dart-define-from-file=lib/env/production.json",
-        "--flavor",
-        "prod"
+        "--dart-define-from-file=lib/env/production.json"
       ]
     }
   ]
