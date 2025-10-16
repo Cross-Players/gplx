@@ -1,7 +1,7 @@
 {
     "APP_NAME": "[S]Học GPLX Vạn Xuân",
     "APP_SUFFIX": ".stg",
-    "API_END_POINT": "https://api.equateur.staging-app.your-domain.com/api",
+    "API_END_POINT": "",
     "REALTIME_API_END_POINT": "wss://warehouse-service-app.staging-app.bfast-vn.net/graphql",
     "API_VERSION": "v1",
     "CONNECT_TIME_OUT": 20,

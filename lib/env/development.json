@@ -1,7 +1,7 @@
 {
     "APP_NAME": "[D]Học GPLX Vạn Xuân",
     "APP_SUFFIX": ".dev",
-    "API_END_POINT": "https://api.equateur.develop.bfast-vn.net/api",
+    "API_END_POINT": "",
     "REALTIME_API_END_POINT": "wss://warehouse-service-app.develop.bfast-vn.net/graphql",
     "API_VERSION": "v1",
     "CONNECT_TIME_OUT": 30,

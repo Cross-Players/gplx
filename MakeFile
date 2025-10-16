@@ -60,6 +60,8 @@ build-android-bundle:
 build-ios:
 	cd ios/ && pod repo update && pod install && cd ..
 	flutter build ios --$(MODE) --no-codesign --dart-define-from-file=lib/env/$(ENV).json
+#   flutter build ios --dart-define-from-file=lib/env/production.json
+
 
 .PHONY: build-ipa
 build-ipa:

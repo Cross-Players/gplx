@@ -55,7 +55,8 @@ class DefaultFirebaseOptions {
     appId: '1:1065587563292:android:b43aa2f303db69bc46b8d9',
     messagingSenderId: '1065587563292',
     projectId: 'luyen-thi-gplx-c3b7f',
-    databaseURL: 'https://luyen-thi-gplx-c3b7f-default-rtdb.asia-southeast1.firebasedatabase.app',
+    databaseURL:
+        'https://luyen-thi-gplx-c3b7f-default-rtdb.asia-southeast1.firebasedatabase.app',
     storageBucket: 'luyen-thi-gplx-c3b7f.firebasestorage.app',
   );
 
@@ -64,9 +65,10 @@ class DefaultFirebaseOptions {
     appId: '1:1065587563292:ios:137ead8135b487ac46b8d9',
     messagingSenderId: '1065587563292',
     projectId: 'luyen-thi-gplx-c3b7f',
-    databaseURL: 'https://luyen-thi-gplx-c3b7f-default-rtdb.asia-southeast1.firebasedatabase.app',
+    databaseURL:
+        'https://luyen-thi-gplx-c3b7f-default-rtdb.asia-southeast1.firebasedatabase.app',
     storageBucket: 'luyen-thi-gplx-c3b7f.firebasestorage.app',
-    iosBundleId: 'com.example.gplx',
+    iosBundleId: 'com.crosstechedu.gplx',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
@@ -75,7 +77,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '1065587563292',
     projectId: 'luyen-thi-gplx-c3b7f',
     storageBucket: 'luyen-thi-gplx-c3b7f.firebasestorage.app',
-    iosBundleId: 'com.example.gplx',
+    iosBundleId: 'com.crosstechedu.gplx',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
