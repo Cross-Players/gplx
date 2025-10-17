@@ -15,6 +15,67 @@ class SettingsScreen extends ConsumerStatefulWidget {
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   // String selectedQuestionSet = '600 câu hỏi (Thử nghiệm)';
+  late LicenseType _selectedType;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedType = ref.read(licenseTypeProvider);
+  }
+
+  Future<void> _showDeleteAccountDialog() async {
+    return showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text('Xóa tài khoản'),
+          content: const Text(
+            'Bạn có chắc chắn muốn xóa tài khoản không?\n\n'
+            'Hành động này không thể hoàn tác và tất cả dữ liệu của bạn sẽ bị xóa vĩnh viễn.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+              },
+              child: const Text('Hủy'),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.of(dialogContext).pop();
+                await _deleteAccount();
+              },
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.red,
+              ),
+              child: const Text('Xóa tài khoản'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _deleteAccount() async {
+    try {
+      await authServices.value.deleteAccount();
+      if (mounted) {
+        Navigator.pushNamedAndRemoveUntil(
+            context, AppRoutes.login, (route) => false);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi khi xóa tài khoản: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -23,7 +84,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         actions: [
           TextButton(
             onPressed: () {
-              // Save settings
+              ref
+                  .read(licenseTypeProvider.notifier)
+                  .setLicenseType(_selectedType);
               Navigator.pop(context);
             },
             child: const Text(
@@ -35,27 +98,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ),
       body: ListView(
         children: [
-          // const _SectionHeader(title: 'BỘ ĐỀ THI'),
-          // RadioListTile(
-          //   title: const Text('450 câu hỏi'),
-          //   value: '450 câu hỏi',
-          //   groupValue: selectedQuestionSet,
-          //   onChanged: (value) {
-          //     setState(() {
-          //       selectedQuestionSet = value.toString();
-          //     });
-          //   },
-          // ),
-          // RadioListTile(
-          //   title: const Text('600 câu hỏi (Thử nghiệm)'),
-          //   value: '600 câu hỏi (Thử nghiệm)',
-          //   groupValue: selectedQuestionSet,
-          //   onChanged: (value) {
-          //     setState(() {
-          //       selectedQuestionSet = value.toString();
-          //     });
-          //   },
-          // ),
           const _SectionHeader(title: 'CÁC LOẠI BẰNG LÁI XE'),
           ListView.builder(
             shrinkWrap: true,
@@ -63,18 +105,23 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             itemCount: allVehicles.length,
             itemBuilder: (context, index) {
               final vehicle = allVehicles[index];
-              final selectedType = ref.watch(licenseTypeProvider);
               return _VehicleOption(
                 vehicle: vehicle,
-                isSelected: selectedType == vehicle.vehicleType,
-                onTap: () => ref
-                    .read(licenseTypeProvider.notifier)
-                    .setLicenseType(vehicle.vehicleType),
+                isSelected: _selectedType == vehicle.vehicleType,
+                onTap: () {
+                  setState(() {
+                    _selectedType = vehicle.vehicleType;
+                  });
+                },
               );
             },
           ),
           const SizedBox(height: 16),
           const LogoutButton(),
+          const SizedBox(height: 16),
+          DeleteAccountButton(
+            onPressed: _showDeleteAccountDialog,
+          ),
           const SizedBox(height: 16),
         ],
       ),
@@ -178,6 +225,59 @@ class _VehicleOption extends StatelessWidget {
             )
           : null,
       onTap: onTap,
+    );
+  }
+}
+
+class DeleteAccountButton extends StatelessWidget {
+  final VoidCallback onPressed;
+
+  const DeleteAccountButton({
+    super.key,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onPressed,
+      child: Container(
+        width: double.infinity,
+        padding: AppSettingsPaddings.logout,
+        margin: AppSettingsPaddings.logoutMargin,
+        decoration: BoxDecoration(
+          color: Colors.red[50],
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Colors.red[300]!, width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withValues(alpha: 0.2),
+              spreadRadius: 2,
+              blurRadius: 5,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Xóa tài khoản',
+              style: TextStyle(
+                color: Colors.red[700],
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Icon(
+              Icons.delete_forever,
+              color: Colors.red[700],
+              size: 18,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

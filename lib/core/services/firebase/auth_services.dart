@@ -49,4 +49,22 @@ class AuthSevices {
     await currentUser!.reauthenticateWithCredential(credential);
     await currentUser!.updatePassword(newPassword);
   }
+
+  Future<void> deleteAccount() async {
+    try {
+      final user = currentUser;
+      if (user != null) {
+        await user.delete();
+      } else {
+        throw Exception('Không tìm thấy người dùng');
+      }
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'requires-recent-login') {
+        throw Exception(
+            'Vui lòng đăng nhập lại trước khi xóa tài khoản để xác nhận.');
+      } else {
+        throw Exception('Không thể xóa tài khoản (${e.code}): ${e.message}');
+      }
+    }
+  }
 }
