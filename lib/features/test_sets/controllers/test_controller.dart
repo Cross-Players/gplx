@@ -1,9 +1,22 @@
+import 'dart:convert';
+
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:gplx/features/test/models/license_data.dart';
 import 'package:gplx/features/test/models/question.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class TestController {
+  // In-memory cache for dead point questions (per license type)
+  static final Map<String, List<Question>> _deadPointQuestionsCache = {};
+
+  // Cache key prefix for SharedPreferences
+  static const String _cacheKeyPrefix = 'dead_point_questions_';
+  static const String _cacheExpiryPrefix = 'dead_point_expiry_';
+
+  // Cache expiry duration: 7 days
+  static const int _cacheDurationDays = 7;
+
   /// Convert special license types to the unified Firebase path
   String _getActualLicenseType(LicenseType licenseType) {
     final specialLicenses = [
@@ -37,7 +50,8 @@ class TestController {
         .child((testNumber - 1).toString())
         .child('questions');
 
-    debugPrint('🔍 Fetching questions for license: $licenseType, test: $testNumber');
+    debugPrint(
+        '🔍 Fetching questions for license: $licenseType, test: $testNumber');
     try {
       final snapshot = await database.get();
       if (snapshot.exists) {
@@ -84,17 +98,139 @@ class TestController {
     }
   }
 
-  /// Fetch all dead point questions (questions with question_dead_point = true) for a license type
+  /// Load cached dead point questions from SharedPreferences
+  Future<List<Question>?> _loadCachedDeadPointQuestions(
+      LicenseType licenseType) async {
+    try {
+      // 1. Check in-memory cache first
+      final cacheKey = licenseType.name;
+      if (_deadPointQuestionsCache.containsKey(cacheKey)) {
+        debugPrint('✅ Found in memory cache for $licenseType');
+        return _deadPointQuestionsCache[cacheKey];
+      }
+
+      // 2. Check SharedPreferences cache
+      final prefs = await SharedPreferences.getInstance();
+      final cachedJson = prefs.getString('$_cacheKeyPrefix${licenseType.name}');
+      final expiryTimestamp =
+          prefs.getInt('$_cacheExpiryPrefix${licenseType.name}');
+
+      if (cachedJson != null && expiryTimestamp != null) {
+        // Check if cache is still valid
+        final now = DateTime.now().millisecondsSinceEpoch;
+        if (now < expiryTimestamp) {
+          debugPrint('✅ Found valid cached data for $licenseType');
+          final List<dynamic> jsonList = jsonDecode(cachedJson);
+          final questions =
+              jsonList.map((json) => Question.fromJson(json)).toList();
+
+          // Store in memory cache for faster access
+          _deadPointQuestionsCache[cacheKey] = questions;
+
+          return questions;
+        } else {
+          debugPrint('⏰ Cache expired for $licenseType');
+        }
+      }
+
+      return null;
+    } catch (e) {
+      debugPrint('❌ Error loading cached data: $e');
+      return null;
+    }
+  }
+
+  /// Save dead point questions to cache
+  Future<void> _saveCachedDeadPointQuestions(
+      LicenseType licenseType, List<Question> questions) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final cacheKey = licenseType.name;
+
+      // 1. Save to memory cache
+      _deadPointQuestionsCache[cacheKey] = questions;
+
+      // 2. Save to SharedPreferences
+      final jsonList = questions.map((q) => q.toJson()).toList();
+      final jsonString = jsonEncode(jsonList);
+      await prefs.setString('$_cacheKeyPrefix${licenseType.name}', jsonString);
+
+      // 3. Save expiry timestamp (7 days from now)
+      final expiryTimestamp = DateTime.now()
+          .add(const Duration(days: _cacheDurationDays))
+          .millisecondsSinceEpoch;
+      await prefs.setInt(
+          '$_cacheExpiryPrefix${licenseType.name}', expiryTimestamp);
+
+      debugPrint(
+          '💾 Cached ${questions.length} dead point questions for $licenseType');
+    } catch (e) {
+      debugPrint('❌ Error saving cache: $e');
+    }
+  }
+
+  /// Clear cache for a specific license type
+  static Future<void> clearCache(LicenseType licenseType) async {
+    try {
+      // Clear memory cache
+      _deadPointQuestionsCache.remove(licenseType.name);
+
+      // Clear SharedPreferences cache
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('$_cacheKeyPrefix${licenseType.name}');
+      await prefs.remove('$_cacheExpiryPrefix${licenseType.name}');
+
+      debugPrint('🗑️ Cleared cache for $licenseType');
+    } catch (e) {
+      debugPrint('❌ Error clearing cache: $e');
+    }
+  }
+
+  /// Clear all dead point questions cache
+  static Future<void> clearAllCache() async {
+    try {
+      // Clear memory cache
+      _deadPointQuestionsCache.clear();
+
+      // Clear SharedPreferences cache
+      final prefs = await SharedPreferences.getInstance();
+      for (final type in LicenseType.values) {
+        await prefs.remove('$_cacheKeyPrefix${type.name}');
+        await prefs.remove('$_cacheExpiryPrefix${type.name}');
+      }
+
+      debugPrint('🗑️ Cleared all dead point questions cache');
+    } catch (e) {
+      debugPrint('❌ Error clearing all cache: $e');
+    }
+  }
+
+  /// Fetch dead point questions for a specific license type
   Future<List<Question>> fetchDeadPointQuestions(
       LicenseType licenseType) async {
+    // 1. Try to load from cache first
+    final cachedQuestions = await _loadCachedDeadPointQuestions(licenseType);
+    if (cachedQuestions != null && cachedQuestions.isNotEmpty) {
+      debugPrint(
+          '✅ Returning ${cachedQuestions.length} cached dead point questions for $licenseType');
+      return cachedQuestions;
+    }
+
+    // 2. If no cache, fetch from Firebase
     // Check if licenseType is one of the special licenses
     final actualLicenseType = _getActualLicenseType(licenseType);
 
-    debugPrint('💀 Fetching dead point questions for license: $licenseType');
+    // Get the number of test sets for this license type
+    final numberOfTestSets = numberOfTestSetsBasedOnLicense(licenseType);
+
+    debugPrint(
+        '💀 Fetching dead point questions for license: $licenseType ($numberOfTestSets test sets)');
     debugPrint('💀 Using actual license type: $actualLicenseType');
     try {
       final database = FirebaseDatabase.instance.ref(actualLicenseType);
-      final snapshot = await database.limitToFirst(10).orderByKey().get();
+      // Fetch only the number of test sets for this license type
+      final snapshot =
+          await database.limitToFirst(numberOfTestSets).orderByKey().get();
 
       if (!snapshot.exists) {
         debugPrint('❌ No data exists for license: $licenseType');
@@ -131,7 +267,8 @@ class TestController {
 
                 // Only add questions where isDeadPoint is true
                 if (question.isDeadPoint == true) {
-                  debugPrint('💀 Found dead point question: ${question.content}...');
+                  debugPrint(
+                      '💀 Found dead point question: ${question.content}...');
                   deadPointQuestions.add(question);
                 } else {
                   debugPrint(
@@ -158,8 +295,13 @@ class TestController {
         '🔄 After removing duplicates: ${uniqueDeadPointQuestions.length} unique dead point questions',
       );
 
+      // 3. Save to cache before returning
+      await _saveCachedDeadPointQuestions(
+          licenseType, uniqueDeadPointQuestions);
+
       return uniqueDeadPointQuestions;
     } catch (e) {
+      debugPrint('❌ Error fetching dead point questions: $e');
       return [];
     }
   }

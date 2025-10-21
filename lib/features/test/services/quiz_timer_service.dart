@@ -26,26 +26,37 @@ class QuizTimerService extends ChangeNotifier {
 
   /// Start the timer
   void start() {
-    if (_isRunning) return;
+    if (_isRunning || _disposed) return;
 
     _isRunning = true;
     _startTime = DateTime.now();
 
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      // Always check disposed first
       if (_disposed) {
         timer.cancel();
+        _isRunning = false;
         return;
       }
 
       if (_remainingTimeInSeconds > 0) {
         _remainingTimeInSeconds--;
-        if (!_disposed) {
-          notifyListeners();
-        }
+        notifyListeners();
       } else {
-        stop();
-        if (!_disposed) {
-          _onTimerComplete?.call();
+        // Timer completed
+        _isRunning = false;
+        timer.cancel();
+        _timer = null;
+
+        // Call completion callback
+        final callback = _onTimerComplete;
+        if (callback != null && !_disposed) {
+          // Schedule callback for next frame to avoid calling during build
+          Future.microtask(() {
+            if (!_disposed) {
+              callback();
+            }
+          });
         }
       }
     });

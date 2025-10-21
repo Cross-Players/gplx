@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gplx/core/constants/app_styles.dart';
 import 'package:gplx/core/routes/app_routes.dart';
-import 'package:gplx/features/home/controllers/dead_point_questions_count_provider.dart';
 import 'package:gplx/features/home/presentation/widgets/feature_button.dart';
 import 'package:gplx/features/settings/presentation/screens/settings_screen.dart';
 import 'package:gplx/features/test/models/license_data.dart';
@@ -17,8 +16,6 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final licenseType = ref.watch(licenseTypeProvider);
-    final deadPointQuestionsCount = ref.watch(deadPointQuestionsCountProvider);
-
     bool isPortrait =
         MediaQuery.of(context).orientation == Orientation.portrait;
 
@@ -138,11 +135,7 @@ class HomeScreen extends ConsumerWidget {
           ),
           FeatureButton(
             icon: Icons.timer,
-            label: deadPointQuestionsCount.when(
-              data: (count) => '$count Câu điểm liệt',
-              loading: () => 'Đang tải...',
-              error: (_, __) => '0 Câu điểm liệt',
-            ),
+            label: 'Câu điểm liệt',
             color: AppHomeColors.brown,
             onTap: () {
               Navigator.pushNamed(context, AppRoutes.deadpointQuestions,

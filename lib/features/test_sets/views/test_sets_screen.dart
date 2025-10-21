@@ -160,6 +160,7 @@ class _TestSetsScreenState extends ConsumerState<TestSetsScreen>
                           if (result != null || mounted) {
                             await _loadSavedResults();
                           }
+                          return '';
                         },
                       ),
                     ),

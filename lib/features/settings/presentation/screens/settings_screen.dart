@@ -5,6 +5,7 @@ import 'package:gplx/core/routes/app_routes.dart';
 import 'package:gplx/core/services/firebase/auth_services.dart';
 import 'package:gplx/features/test/models/license_data.dart';
 import 'package:gplx/features/test/models/vehicle.dart';
+import 'package:gplx/features/test_sets/controllers/test_controller.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -55,6 +56,60 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         );
       },
     );
+  }
+
+  Future<void> _showClearCacheDialog() async {
+    return showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text('Xóa bộ nhớ đệm'),
+          content: const Text(
+            'Bạn có muốn xóa bộ nhớ đệm câu hỏi điểm liệt không?\n\n'
+            'Dữ liệu sẽ được tải lại từ máy chủ lần tới.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+              },
+              child: const Text('Hủy'),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.of(dialogContext).pop();
+                await _clearCache();
+              },
+              child: const Text('Xóa'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _clearCache() async {
+    try {
+      await TestController.clearAllCache();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Đã xóa bộ nhớ đệm thành công'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi khi xóa bộ nhớ đệm: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _deleteAccount() async {
@@ -118,6 +173,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
           const SizedBox(height: 16),
           const LogoutButton(),
+          const SizedBox(height: 16),
+          ClearCacheButton(
+            onPressed: _showClearCacheDialog,
+          ),
           const SizedBox(height: 16),
           DeleteAccountButton(
             onPressed: _showDeleteAccountDialog,
@@ -273,6 +332,59 @@ class DeleteAccountButton extends StatelessWidget {
             Icon(
               Icons.delete_forever,
               color: Colors.red[700],
+              size: 18,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class ClearCacheButton extends StatelessWidget {
+  final VoidCallback onPressed;
+
+  const ClearCacheButton({
+    super.key,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onPressed,
+      child: Container(
+        width: double.infinity,
+        padding: AppSettingsPaddings.logout,
+        margin: AppSettingsPaddings.logoutMargin,
+        decoration: BoxDecoration(
+          color: Colors.blue[50],
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Colors.blue[300]!, width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withValues(alpha: 0.2),
+              spreadRadius: 2,
+              blurRadius: 5,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Xóa bộ nhớ đệm',
+              style: TextStyle(
+                color: Colors.blue[700],
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Icon(
+              Icons.cleaning_services,
+              color: Colors.blue[700],
               size: 18,
             ),
           ],

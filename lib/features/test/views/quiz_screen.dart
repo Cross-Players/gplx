@@ -45,7 +45,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
 
   // State
   bool _isLoading = true;
-  bool _quizCompleted = false;
+  final bool _quizCompleted = false;
   bool _questionsLoaded = false;
 
   // Navigation
@@ -457,41 +457,21 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
     }
   }
 
-  /// Reset quiz
-  void _resetQuiz() {
-    // Clear persisted progress and saved result (best-effort, do not await)
+  /// Clear persisted data asynchronously (fire and forget)
+  Future<void> _clearPersistedData() async {
     try {
-      _progressService.clearProgress(widget.testSetId).catchError((_) {});
-    } catch (_) {}
+      // Clear progress
+      await _progressService.clearProgress(widget.testSetId).catchError((e) {
+        debugPrint('Error clearing progress: $e');
+        return; // Return void for catchError
+      });
 
-    try {
-      SharedPreferences.getInstance().then((prefs) {
-        prefs.remove('quiz_result_${widget.testSetId}');
-      }).catchError((_) {});
-    } catch (_) {}
-
-    // Reset local state to initial empty quiz - check mounted before setState
-    setState(() {
-      _selectedAnswers.clear();
-      _checkedQuestions.clear();
-      _quizCompleted = false;
-      _quizResult = QuizResult(
-        quizId: widget.testSetId,
-        quizTitle: _testSet?.title ?? widget.testSetId,
-        totalQuestions: _questions.length,
-        correctAnswers: 0,
-        wrongAnswers: 0,
-        attemptDate: DateTime.now(),
-        minPoint: _minPoint,
-      );
-
-      _tabController.index = 0;
-      _timerService.reset(_testTime);
-      _timerService.start();
-    });
-
-    // Navigate back to quiz screen
-    Navigator.of(context).pop();
+      // Clear saved result
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('quiz_result_${widget.testSetId}');
+    } catch (e) {
+      debugPrint('Error in _clearPersistedData: $e');
+    }
   }
 
   // UI Event handlers
@@ -606,7 +586,12 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
         ref.invalidate(quizResultsProvider);
         Navigator.pop(context, _quizResult); // Return result when going back
       },
-      onRetakeQuiz: _resetQuiz,
+      onRetakeQuiz: () async {
+        // Clear data first
+        await _clearPersistedData();
+        // Return the testSetId so QuizResultSummary can handle navigation
+        return widget.testSetId;
+      },
     );
   }
 

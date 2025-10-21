@@ -3,6 +3,7 @@ import 'package:gplx/core/constants/app_styles.dart';
 import 'package:gplx/core/widgets/base64_image_widget.dart';
 import 'package:gplx/features/test/models/question.dart';
 import 'package:gplx/features/test/models/quiz_result.dart';
+import 'package:gplx/features/test/views/quiz_screen.dart';
 
 enum QuestionFilter { all, correct, wrong, skipped }
 
@@ -11,7 +12,7 @@ class QuizResultSummary extends StatefulWidget {
   final List<Question> questions;
   final Map<int, int> selectedAnswers;
   final VoidCallback onBackPressed;
-  final VoidCallback onRetakeQuiz;
+  final Future<String> Function() onRetakeQuiz;
   final Duration timeTaken;
 
   const QuizResultSummary({
@@ -64,7 +65,22 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: ElevatedButton.icon(
-        onPressed: widget.onRetakeQuiz,
+        onPressed: () async {
+          try {
+            // Call the callback to get testSetId and clear data
+            final testSetId = await widget.onRetakeQuiz();
+
+            if (!mounted) return;
+
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder: (_) => QuizScreen(testSetId: testSetId),
+              ),
+            );
+          } catch (e) {
+            debugPrint('Error retaking quiz: $e');
+          }
+        },
         icon: const Icon(Icons.restart_alt),
         label: const Text('Làm lại bài quiz', style: TextStyle(fontSize: 16)),
         style: ElevatedButton.styleFrom(

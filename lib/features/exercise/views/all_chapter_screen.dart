@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gplx/core/routes/app_routes.dart';
 import 'package:gplx/features/exercise/views/exercise_screen.dart';
-import 'package:gplx/features/home/controllers/dead_point_questions_count_provider.dart';
 import 'package:gplx/features/test/models/license_data.dart';
 import 'package:gplx/features/test/models/question.dart';
 import 'package:gplx/features/test_sets/controllers/test_controller.dart';
@@ -335,38 +334,16 @@ class _AllChapterScreenState extends ConsumerState<AllChapterScreen> {
                       );
                     },
                   ),
-                  // Add dead point questions separately if they exist
-                  Builder(
-                    builder: (context) {
-                      final deadPointQuestionsCount = ref.watch(
-                        deadPointQuestionsCountProvider,
-                      );
-
-                      return deadPointQuestionsCount.when(
-                        data: (count) {
-                          if (count == 0) {
-                            return const SizedBox.shrink();
-                          }
-
-                          return _customListTile(
-                            title:
-                                '$count câu hỏi về xử lý tình huống mất an toàn giao thông nghiêm trọng',
-                            subtitle:
-                                '$count câu điểm liệt bắt buộc phải trả lời đúng',
-                            total: count,
-                            // completed: 0,
-                            completed: 0, // Progress tracking disabled
-                            context: context,
-                            questions: [], // Empty list since we're navigating to a different route
-                            ref: ref,
-                            isDeadPoint:
-                                true, // Flag to indicate this is dead point section
-                          );
-                        },
-                        loading: () => const SizedBox.shrink(),
-                        error: (_, __) => const SizedBox.shrink(),
-                      );
-                    },
+                  // Add dead point questions section
+                  _customListTile(
+                    title: 'Câu hỏi điểm liệt',
+                    subtitle: 'Các câu hỏi bắt buộc phải trả lời đúng',
+                    total: 0,
+                    completed: 0,
+                    context: context,
+                    questions: [],
+                    ref: ref,
+                    isDeadPoint: true,
                   ),
                 ],
               ),
