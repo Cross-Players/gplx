@@ -131,12 +131,27 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
 
       _initializeServices();
 
-      // Fetch questions via controller
-      final controller = TestController();
-      final questions = await controller.fetchQuestionsByTestSets(
-        licenseType,
-        testNumber,
-      );
+      // If questions are cached locally, load from there
+      List<Question> questions = [];
+      final prefs = await SharedPreferences.getInstance();
+      final questionsKey = 'questions_${widget.testSetId}';
+      final cachedQuestions = prefs.getString(questionsKey);
+      if (cachedQuestions != null) {
+        final decoded = jsonDecode(cachedQuestions) as List;
+        questions = decoded.map((e) => Question.fromJson(e)).toList();
+      } else {
+        final controller = TestController();
+        questions = await controller.fetchQuestionsByTestSets(
+          licenseType,
+          testNumber,
+        );
+        try {
+          final encoded = jsonEncode(questions.map((e) => e.toJson()).toList());
+          await prefs.setString(questionsKey, encoded);
+        } catch (e) {
+          debugPrint('Lỗi lưu câu hỏi vào local: $e');
+        }
+      }
 
       if (questions.isEmpty) {
         _handleError(QuizConstants.noQuestionsMessage);
@@ -515,7 +530,15 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
   void dispose() {
     _timerService.dispose();
     if (!_quizCompleted) {
-      _saveProgress();
+      // Save questions to local storage on dispose
+      try {
+        final prefs = SharedPreferences.getInstance();
+        final questionsKey = 'questions_${widget.testSetId}';
+        final encoded = jsonEncode(_questions.map((e) => e.toJson()).toList());
+        prefs.then((p) => p.setString(questionsKey, encoded));
+      } catch (e) {
+        debugPrint('Lỗi lưu câu hỏi khi dispose: $e');
+      }
     }
     _tabController.dispose();
     super.dispose();

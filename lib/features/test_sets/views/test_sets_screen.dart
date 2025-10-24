@@ -117,15 +117,30 @@ class _TestSetsScreenState extends ConsumerState<TestSetsScreen>
                   final result = QuizResult.fromJson(map);
 
                   // try to load questions for this test to show in the summary
-                  List questions = <dynamic>[];
-                  try {
-                    final controller = TestController();
-                    questions = await controller.fetchQuestionsByTestSets(
-                      licenseType,
-                      testNumber,
-                    );
-                  } catch (_) {
-                    // ignore; show summary without questions if fetch fails
+
+                  List<Question> questions = [];
+                  final prefs = await SharedPreferences.getInstance();
+                  final questionsKey = 'questions_$formattedId';
+                  final cachedQuestions = prefs.getString(questionsKey);
+                  if (cachedQuestions != null) {
+                    // Lấy từ local
+                    final decoded = jsonDecode(cachedQuestions) as List;
+                    questions =
+                        decoded.map((e) => Question.fromJson(e)).toList();
+                  } else {
+                    // Lấy từ API và lưu vào local
+                    try {
+                      final controller = TestController();
+                      questions = await controller.fetchQuestionsByTestSets(
+                        licenseType,
+                        testNumber,
+                      );
+                      final encoded =
+                          jsonEncode(questions.map((e) => e.toJson()).toList());
+                      await prefs.setString(questionsKey, encoded);
+                    } catch (_) {
+                      // ignore; show summary without questions if fetch fails
+                    }
                   }
 
                   final selectedAnswers = TestSetsUtils.convertSelectedAnswers(
