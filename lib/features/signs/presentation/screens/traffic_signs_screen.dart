@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'package:gplx/core/constants/app_styles.dart';
-import 'package:gplx/core/widgets/primary_button.dart';
+import 'package:flutter/services.dart';
 import 'package:gplx/features/signs/domain/models/traffic_sign.dart';
+import 'package:microsoft_viewer/microsoft_viewer.dart';
+import 'package:path_provider/path_provider.dart';
 
 class TrafficSignsScreen extends StatefulWidget {
   const TrafficSignsScreen({super.key});
@@ -13,11 +16,14 @@ class TrafficSignsScreen extends StatefulWidget {
 class _TrafficSignsScreenState extends State<TrafficSignsScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  final Map<SignType, File?> _docxFiles = {};
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 6, vsync: this);
+    _tabController = TabController(length: SignType.values.length, vsync: this);
+    _loadDocxFiles();
   }
 
   @override
@@ -26,53 +32,38 @@ class _TrafficSignsScreenState extends State<TrafficSignsScreen>
     super.dispose();
   }
 
-  final List<TrafficSign> _signs = [
-    const TrafficSign(
-      code: '101',
-      name: 'Đường cấm',
-      description: 'Cấm tất cả các loại phương tiện đi lại cả hai hướng',
-      imageUrl: 'assets/images/signs/101.png',
-      type: SignType.prohibitory,
-    ),
-    const TrafficSign(
-      code: '106c',
-      name: 'Cấm ô tô tải chở hàng nguy hiểm',
-      description: 'Cấm ô tô tải chở hàng nguy hiểm',
-      imageUrl: 'assets/images/signs/101.png',
-      type: SignType.prohibitory,
-    ),
-    const TrafficSign(
-      code: '107',
-      name: 'Cấm ô tô khách và ô tô tải',
-      description: 'Cấm ô tô khách và ô tô tải',
-      imageUrl: 'assets/images/signs/101.png',
-      type: SignType.prohibitory,
-    ),
-    const TrafficSign(
-      code: '107a',
-      name: 'Cấm ô tô khách',
-      description: 'Cấm ô tô khách',
-      imageUrl: 'assets/images/signs/101.png',
-      type: SignType.prohibitory,
-    ),
-    const TrafficSign(
-      code: '107b',
-      name: 'Cấm xe taxi',
-      description: 'Cấm xe taxi',
-      imageUrl: 'assets/images/signs/101.png',
-      type: SignType.prohibitory,
-    ),
-    const TrafficSign(
-      code: '108',
-      name: 'Cấm ôtô kéo rơ móc',
-      description: 'Cấm ôtô kéo rơ móc',
-      imageUrl: 'assets/images/signs/101.png',
-      type: SignType.prohibitory,
-    ),
-  ];
+  Future<void> _loadDocxFiles() async {
+    final docxMap = {
+      SignType.prohibitory: 'bien_bao_cam.docx',
+      SignType.mandatory: 'bien_bao_hieu_lenh.docx',
+      SignType.warning: 'bien_bao_nguy_hiem_va_canh_bao.docx',
+      SignType.information: 'bien_bao_chi_dan.docx',
+      SignType.direction: 'bien_bao_phu.docx',
+    };
 
-  List<TrafficSign> _getFilteredSigns(SignType type) {
-    return _signs.where((sign) => sign.type == type).toList();
+    for (var entry in docxMap.entries) {
+      try {
+        final file = await _loadAssetFile('assets/docs/${entry.value}');
+        _docxFiles[entry.key] = file;
+      } catch (e) {
+        debugPrint('Error loading ${entry.value}: $e');
+      }
+    }
+
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<File> _loadAssetFile(String assetPath) async {
+    final byteData = await rootBundle.load(assetPath);
+    final tempDir = await getTemporaryDirectory();
+    final fileName = assetPath.split('/').last;
+    final file = File('${tempDir.path}/$fileName');
+    await file.writeAsBytes(byteData.buffer.asUint8List());
+    return file;
   }
 
   String _getTabTitle(SignType type) {
@@ -87,8 +78,6 @@ class _TrafficSignsScreenState extends State<TrafficSignsScreen>
         return 'Biển Báo Chỉ Dẫn';
       case SignType.direction:
         return 'Biển Báo Phụ';
-      case SignType.temporary:
-        return 'Vạch Kẻ Đường';
     }
   }
 
@@ -120,23 +109,34 @@ class _TrafficSignsScreenState extends State<TrafficSignsScreen>
             child: TabBarView(
               controller: _tabController,
               children: SignType.values.map((type) {
-                final signs = _getFilteredSigns(type);
-                return Column(
-                  children: [
-                    Expanded(
-                      child: signs.isEmpty
-                          ? const Center(
-                              child: Text(
-                                  'Không có biển báo nào trong danh mục này'))
-                          : ListView.builder(
-                              itemCount: signs.length,
-                              itemBuilder: (context, index) {
-                                final sign = signs[index];
-                                return _SignListItem(sign: sign);
-                              },
-                            ),
-                    ),
-                  ],
+                final docxFile = _docxFiles[type];
+
+                if (_isLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (docxFile == null) {
+                  return const Center(
+                    child: Text(
+                        'Không tìm thấy file tài liệu cho loại biển báo này'),
+                  );
+                }
+
+                return FutureBuilder<Uint8List>(
+                  future: docxFile.readAsBytes(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+
+                    if (snapshot.hasError || !snapshot.hasData) {
+                      return Center(
+                        child: Text('Lỗi khi tải tài liệu: ${snapshot.error}'),
+                      );
+                    }
+
+                    return MicrosoftViewer(snapshot.data!);
+                  },
                 );
               }).toList(),
             ),
@@ -145,130 +145,4 @@ class _TrafficSignsScreenState extends State<TrafficSignsScreen>
       ),
     );
   }
-}
-
-class _SignListItem extends StatelessWidget {
-  final TrafficSign sign;
-
-  const _SignListItem({required this.sign});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        ListTile(
-          contentPadding: const EdgeInsets.all(AppStyles.horizontalSpace),
-          leading: Image.asset(
-            sign.imageUrl,
-            width: 48,
-            height: 48,
-          ),
-          title: Text.rich(
-            TextSpan(
-              children: [
-                TextSpan(
-                  text: '${sign.code}\n',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Color.fromRGBO(46, 93, 137, 1),
-                  ),
-                ),
-                TextSpan(
-                  text: sign.name,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          onTap: () => showCustomModalBottomSheet(context, sign),
-        ),
-        Padding(
-          padding:
-              const EdgeInsets.symmetric(horizontal: AppStyles.horizontalSpace),
-          child: Divider(
-            height: 1,
-            color: Colors.grey[400],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-void showCustomModalBottomSheet(
-  BuildContext context,
-  TrafficSign sign,
-) {
-  showModalBottomSheet(
-    shape: const RoundedRectangleBorder(
-      borderRadius:
-          BorderRadius.vertical(top: Radius.circular(AppStyles.buttonRadiusM)),
-    ),
-    backgroundColor: Colors.white,
-    context: context,
-    enableDrag: true,
-    showDragHandle: true,
-    isScrollControlled: true, // Allows the modal to be larger
-    builder: (BuildContext context) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header with sign code and close button
-            Text(
-              'Biển báo ${sign.code}',
-              style: AppStyles.textBold.copyWith(
-                fontSize: 18,
-              ),
-            ),
-            // Sign name
-            Text(
-              sign.name,
-              style: const TextStyle(
-                  fontSize: 18, color: AppStyles.fontSecondaryColor),
-            ),
-            // Sign image
-            Center(
-              child: Container(
-                width: 150,
-                height: 150,
-                padding: const EdgeInsets.all(8),
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                ),
-                child: Image.asset(
-                  sign.imageUrl,
-                  fit: BoxFit.fill,
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            Text(
-              sign.description,
-              style: const TextStyle(
-                fontSize: 16,
-                color: Colors.black,
-              ),
-            ),
-            const SizedBox(height: 16),
-            // Close button
-            PrimaryButton(
-              content: "Đóng",
-              onPressed: () {
-                Navigator.pop(context);
-              },
-            ),
-            SizedBox(height: MediaQuery.of(context).viewInsets.bottom),
-          ],
-        ),
-      );
-    },
-  );
 }
