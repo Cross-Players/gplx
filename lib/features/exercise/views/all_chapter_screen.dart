@@ -14,9 +14,9 @@ final allChaptersProvider =
   final licenseType = ref.watch(licenseTypeProvider);
 
   final String prefix;
-  if (licenseType == LicenseType.A1 ||
-      licenseType == LicenseType.A ||
-      licenseType == LicenseType.B1) {
+  if (licenseType == LicenseType.A1 || licenseType == LicenseType.A) {
+    prefix = 'A1';
+  } else if (licenseType == LicenseType.B1) {
     prefix = licenseType.name;
   } else {
     prefix = 'overall';
