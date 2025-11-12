@@ -1,0 +1,411 @@
+{
+  "license_type": "A",
+  "chapter": "deadpoint",
+  "total_questions": 20,
+  "questions": [
+    {
+      "answers": [
+        {
+          "answer_content": "Sử dụng xe đạp đi trên các tuyến quốc lộ.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Rải vật sắc nhọn, đổ chất gây trơn trượt trên đường bộ.",
+          "is_correct": true
+        },
+        {
+          "answer_content": "Cả hai ý trên.",
+          "is_correct": false
+        }
+      ],
+      "question_chapter": 1,
+      "question_content": "Hành vi nào dưới đây bị nghiêm cấm?",
+      "question_dead_point": true,
+      "question_number": 19
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Không có chứng nhận kiểm định an toàn kỹ thuật và bảo vệ môi trường.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Hết niên hạn sử dụng.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Cả hai ý trên.",
+          "is_correct": true
+        }
+      ],
+      "question_chapter": 1,
+      "question_content": "Hành vi đưa xe cơ giới, xe máy chuyên dùng tham gia giao thông đường bộ nào dưới đây bị cấm?",
+      "question_dead_point": true,
+      "question_number": 20
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Trên đường phố không có người qua lại.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Được người dân ủng hộ.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Được cơ quan có thẩm quyền cấp phép.",
+          "is_correct": true
+        }
+      ],
+      "question_chapter": 1,
+      "question_content": "Tổ chức đua xe được phép thực hiện khi nào?",
+      "question_dead_point": true,
+      "question_number": 21
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Chỉ bị nhắc nhở.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Tùy theo mức độ của hành vi vi phạm có thể bị xử lý hành chính hoặc xử lý hình sự.",
+          "is_correct": true
+        }
+      ],
+      "question_chapter": 1,
+      "question_content": "Hành vi đua xe trái phép bị xử lý như thế nào?",
+      "question_dead_point": true,
+      "question_number": 22
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Bị nghiêm cấm.",
+          "is_correct": true
+        },
+        {
+          "answer_content": "Không bị nghiêm cấm.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Không bị nghiêm cấm, nếu nồng độ cồn trong máu ở mức nhẹ, có thể điều khiển phương tiện tham gia giao thông.",
+          "is_correct": false
+        }
+      ],
+      "question_chapter": 1,
+      "question_content": "Người điều khiển phương tiện tham gia giao thông đường bộ mà trong máu hoặc hơi thở có nồng độ cồn có bị nghiêm cấm không?",
+      "question_dead_point": true,
+      "question_number": 24
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Người điều khiển xe ô tô, xe mô tô, xe đạp, xe gắn máy.",
+          "is_correct": true
+        },
+        {
+          "answer_content": "Người được chở trên xe cơ giới.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Cả hai ý trên.",
+          "is_correct": false
+        }
+      ],
+      "question_chapter": 1,
+      "question_content": "Theo Luật Phòng chống tác hại của rượu, bia, đối tượng nào dưới đây bị cấm sử dụng rượu, bia khi tham gia giao thông?",
+      "question_dead_point": true,
+      "question_number": 26
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Người chưa đủ tuổi theo quy định.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Người không có giấy phép lái xe.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Người có giấy phép lái xe nhưng đã bị trừ hết 12 điểm.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Cả ba ý trên.",
+          "is_correct": true
+        }
+      ],
+      "question_chapter": 1,
+      "question_content": "Hành vi giao xe ô tô, mô tô cho người nào sau đây tham gia giao thông đường bộ bị nghiêm cấm?",
+      "question_dead_point": true,
+      "question_number": 27
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Điều khiển xe cơ giới lạng lách, đánh võng, rú ga liên tục khi tham gia giao thông trên đường.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Xúc phạm, đe dọa, cản trở, chống đối hoặc không chấp hành hiệu lệnh, hướng dẫn, yêu cầu kiểm tra, kiểm soát của người thi hành công vụ về bảo đảm trật tự, an toàn giao thông đường bộ.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Cả hai ý trên.",
+          "is_correct": true
+        }
+      ],
+      "question_chapter": 1,
+      "question_content": "Hành vi nào sau đây bị nghiêm cấm?",
+      "question_dead_point": true,
+      "question_number": 28
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Lắp đặt, sử dụng thiết bị âm thanh, ánh sáng trên xe cơ giới, xe máy chuyên dùng gây mất trật tự, an toàn giao thông đường bộ.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Cản trở người, phương tiện tham gia giao thông trên đường bộ; ném gạch, đất, đá, cát hoặc vật thể khác vào người, phương tiện đang tham gia giao thông trên đường bộ.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Cả hai ý trên.",
+          "is_correct": true
+        }
+      ],
+      "question_chapter": 1,
+      "question_content": "Hành vi nào sau đây bị cấm?",
+      "question_dead_point": true,
+      "question_number": 30
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Được phép vượt khi đường vắng.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Không được phép vượt.",
+          "is_correct": true
+        },
+        {
+          "answer_content": "Được phép vượt khi có việc gấp.",
+          "is_correct": false
+        }
+      ],
+      "question_chapter": 1,
+      "question_content": "Người lái xe được phép vượt xe trên cầu hẹp có một làn đường, đường cong có tầm nhìn bị hạn chế hay không?",
+      "question_dead_point": true,
+      "question_number": 47
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Bấm còi liên tục để xe phía trước biết xe mình xin vượt.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Rú ga liên tục để xe phía trước biết xe mình xin vượt.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Báo hiệu nhấp nháy bằng đèn chiếu sáng phía trước hoặc còi.",
+          "is_correct": true
+        }
+      ],
+      "question_chapter": 1,
+      "question_content": "Muốn vượt xe phía trước, người lái xe mô tô phải có tín hiệu như thế nào dưới đây để bảo đảm an toàn?",
+      "question_dead_point": true,
+      "question_number": 48
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Dùng tay cầm và sử dụng điện thoại hoặc thiết bị điện tử khác.",
+          "is_correct": true
+        },
+        {
+          "answer_content": "Chỉ được chở người trên thùng xe ô tô chở hàng trong trường hợp chở người đi làm nhiệm vụ cứu nạn, cứu hộ, phòng, chống thiên tai, dịch bệnh hoặc thực hiện nhiệm vụ khẩn cấp.",
+          "is_correct": false
+        }
+      ],
+      "question_chapter": 1,
+      "question_content": "Khi điều khiển phương tiện tham gia giao thông, hành vi nào sau đây bị cấm?",
+      "question_dead_point": true,
+      "question_number": 52
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Trên cầu hẹp có một làn đường; nơi đường giao nhau, đường bộ giao nhau cùng mức với đường sắt; khi gặp xe ưu tiên.",
+          "is_correct": true
+        },
+        {
+          "answer_content": "Trên cầu có từ 02 làn xe trở lên.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Trên đường có 02 làn đường được phân chia làn bằng vạch kẻ nét đứt.",
+          "is_correct": false
+        }
+      ],
+      "question_chapter": 1,
+      "question_content": "Người lái xe không được vượt xe khác khi gặp trường hợp nào dưới đây?",
+      "question_dead_point": true,
+      "question_number": 53
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Được phép.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Nếu phương tiện được kéo, đẩy có khối lượng nhỏ hơn phương tiện của mình.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Tùy trường hợp.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Không được phép.",
+          "is_correct": true
+        }
+      ],
+      "question_chapter": 1,
+      "question_content": "Người điều khiển xe mô tô hai bánh, xe mô tô ba bánh, xe gắn máy có được phép sử dụng xe để kéo hoặc đẩy các phương tiện khác khi tham gia giao thông không?",
+      "question_dead_point": true,
+      "question_number": 63
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Buông cả hai tay; đứng, nằm trên xe điều khiển xe; sử dụng chân chống hoặc vật khác quệt xuống đường khi xe đang chạy.",
+          "is_correct": true
+        },
+        {
+          "answer_content": "Chở tối đa hai người phía sau khi chở người bệnh đi cấp cứu, áp giải người có hành vi vi phạm pháp luật, trẻ em dưới 12 tuổi và người già yếu hoặc người khuyết tật.",
+          "is_correct": false
+        }
+      ],
+      "question_chapter": 1,
+      "question_content": "Khi điều khiển xe mô tô hai bánh, xe mô tô ba bánh, xe gắn máy, những hành vi nào sau đây không được phép?",
+      "question_dead_point": true,
+      "question_number": 64
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Buông cả hai tay; sử dụng xe để kéo, đẩy xe khác, vật khác; sử dụng chân chống hoặc vật khác quệt xuống đường khi xe đang chạy.",
+          "is_correct": true
+        },
+        {
+          "answer_content": "Sử dụng xe để chở người hoặc hàng hóa; để chân chạm xuống đất khi khởi hành.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Đội mũ bảo hiểm; chạy xe đúng tốc độ quy định và chấp hành đúng quy tắc giao thông đường bộ.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Chở người ngồi sau dưới 16 tuổi.",
+          "is_correct": false
+        }
+      ],
+      "question_chapter": 1,
+      "question_content": "Khi điều khiển xe mô tô hai bánh, xe mô tô ba bánh, xe gắn máy, những hành vi nào sau đây không được phép?",
+      "question_dead_point": true,
+      "question_number": 65
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Đội mũ bảo hiểm theo đúng quy chuẩn kỹ thuật quốc gia và cài quai đúng quy cách.",
+          "is_correct": true
+        },
+        {
+          "answer_content": "Người lái xe phải đội mũ bảo hiểm, người được chở trên xe không nhất thiết phải đội mũ bảo hiểm.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Phải đội mũ bảo hiểm nhưng không nhất thiết phải cài quai.",
+          "is_correct": false
+        }
+      ],
+      "question_chapter": 1,
+      "question_content": "Người lái xe, người được chở trên xe mô tô hai bánh, xe mô tô ba bánh, xe gắn máy phải thực hiện quy định nào dưới đây?",
+      "question_dead_point": true,
+      "question_number": 68
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Đi xe dàn hàng ngang; buông cả hai tay.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Sử dụng xe để kéo, đẩy xe khác, vật khác, dẫn dắt vật nuôi, mang, vác và chở vật cồng kềnh; chở người đứng trên xe, giá đèo hàng hoặc ngồi trên tay lái; xếp hàng hóa trên xe quá giới hạn quy định.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Ngồi về một bên điều khiển xe; đứng, nằm trên xe điều khiển xe; thay người lái xe khi xe đang chạy; quay người về phía sau để điều khiển xe hoặc bịt mắt điều khiển xe; sử dụng chân chống hoặc vật khác quệt xuống đường khi xe đang chạy.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Cả ba ý trên.",
+          "is_correct": true
+        }
+      ],
+      "question_chapter": 1,
+      "question_content": "Người lái xe mô tô hai bánh, xe mô tô ba bánh, xe gắn máy không được thực hiện các hành vi nào dưới đây?",
+      "question_dead_point": true,
+      "question_number": 70
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Đi xe dàn hàng ngang; đi xe vào phần đường dành cho người đi bộ và phương tiện khác.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Sử dụng ô, thiết bị âm thanh, trừ thiết bị trợ thính.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Cả hai ý trên.",
+          "is_correct": true
+        }
+      ],
+      "question_chapter": 1,
+      "question_content": "Người lái xe mô tô hai bánh, xe mô tô ba bánh, xe gắn máy không được thực hiện các hành vi nào sau đây?",
+      "question_dead_point": true,
+      "question_number": 71
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Đi trên phần đường, làn đường quy định, chấp hành hiệu lệnh của người điều khiển giao thông, đèn tín hiệu giao thông.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Đi xe dàn hàng ngang, đi xe vào phần đường dành cho người đi bộ.",
+          "is_correct": true
+        },
+        {
+          "answer_content": "Cả hai ý trên.",
+          "is_correct": false
+        }
+      ],
+      "question_chapter": 1,
+      "question_content": "Người lái xe mô tô hai bánh, xe mô tô ba bánh, xe gắn máy không được thực hiện hành vi nào sau đây?",
+      "question_dead_point": true,
+      "question_number": 72
+    }
+  ]
+}

@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gplx/core/constants/app_styles.dart';
+import 'package:gplx/features/exercise/controllers/deadpoint_questions_provider.dart';
 import 'package:gplx/features/exercise/providers/chapter_progress_provider.dart';
 import 'package:gplx/features/test/controllers/questions_repository.dart';
 import 'package:gplx/features/test/models/license_data.dart';
@@ -211,9 +212,10 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen>
         licenseType = ref.read(licenseTypeProvider);
       }
 
-      // Fetch dead point questions via controller
-      final controller = TestController();
-      final questions = await controller.fetchDeadPointQuestions(licenseType);
+      // Load dead point questions from local assets via provider
+      final questions = await ref.read(
+        deadpointQuestionsForLicenseProvider(licenseType).future,
+      );
 
       if (questions.isEmpty) {
         if (mounted) {

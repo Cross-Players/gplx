@@ -1,0 +1,500 @@
+{
+  "license_type": "overall",
+  "chapter": "chapter2",
+  "total_questions": 25,
+  "questions": [
+    {
+      "answers": [
+        {
+          "answer_content": "Được khách hàng, xã hội tôn trọng; được đồng nghiệp quý mến, giúp đỡ; được doanh nghiệp tin dùng và đóng góp nhiều cho xã hội; thu hút được khách hàng, góp phần quan trọng trong xây dựng thương hiệu, kinh doanh có hiệu quả cao.",
+          "is_correct": true
+        },
+        {
+          "answer_content": "Được cộng điểm vào giấy phép lái xe.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Cả hai ý trên.",
+          "is_correct": false
+        }
+      ],
+      "question_chapter": 2,
+      "question_content": "Người lái xe kinh doanh vận tải khi thực hiện tốt việc rèn luyện, nâng cao trách nhiệm, đạo đức nghề nghiệp sẽ thu được kết quả như thế nào dưới đây?",
+      "question_number": 181
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Luôn tuân thủ pháp luật về trật tự, an toàn giao thông đường bộ, nhường nhịn và giúp đỡ người khác.",
+          "is_correct": true
+        },
+        {
+          "answer_content": "Đi nhanh, vượt đèn đỏ nếu không có lực lượng Công an.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Bấm còi và nháy đèn liên tục để cảnh báo xe khác.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Tránh nhường đường để đi nhanh hơn.",
+          "is_correct": false
+        }
+      ],
+      "question_chapter": 2,
+      "question_content": "Những hành vi nào sau đây thể hiện là người có văn hóa giao thông?",
+      "question_number": 182
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Quản lý và sử dụng xe tốt; bảo dưỡng xe đúng định kỳ; thực hành tiết kiệm vật tư, nhiên liệu; luôn tu dưỡng bản thân, có lối sống lành mạnh, tác phong làm việc công nghiệp.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Nắm vững và tự giác chấp hành các quy định của pháp luật về trật tự, an toàn giao thông đường bộ, lái xe an toàn; thực hiện đầy đủ trách nhiệm với khách hàng; có ý thức tổ chức kỷ luật và xây dựng doanh nghiệp vững mạnh; có tinh thần hợp tác, tương trợ, giúp đỡ đồng nghiệp.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Cả hai ý trên.",
+          "is_correct": true
+        }
+      ],
+      "question_chapter": 2,
+      "question_content": "Người lái xe kinh doanh vận tải cần thực hiện những công việc gì ghi ở dưới đây để thường xuyên rèn luyện nâng cao đạo đức nghề nghiệp?",
+      "question_number": 183
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Phải có thái độ lịch sự, tôn trọng, thân mật với hành khách; giúp đỡ những người có hoàn cảnh khó khăn, người già, người khuyết tật, phụ nữ có thai, có con nhỏ và trẻ em.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Luôn tu dưỡng bản thân, có lối sống lành mạnh, khiêm tốn, có tác phong làm việc công nghiệp, không tham gia vào các tệ nạn xã hội; tôn trọng người cùng tham gia giao thông đường bộ và có ý thức bảo vệ môi trường.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Cả hai ý trên.",
+          "is_correct": true
+        }
+      ],
+      "question_chapter": 2,
+      "question_content": "Người lái xe ô tô vận chuyển hành khách phải có những phẩm chất, đạo đức nghề nghiệp gì dưới đây?",
+      "question_number": 184
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Là sự hiểu biết và chấp hành nghiêm chỉnh pháp luật về giao thông, là ý thức trách nhiệm với cộng đồng khi tham gia giao thông.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Là sự tôn trọng, nhường nhịn, giúp đỡ và ứng xử có văn hóa giữa những người tham gia giao thông với nhau.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Cả hai ý trên.",
+          "is_correct": true
+        }
+      ],
+      "question_chapter": 2,
+      "question_content": "Khái niệm về văn hóa giao thông được hiểu như thế nào là đúng?",
+      "question_number": 185
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Cho xe chạy thật nhanh qua vũng nước.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Giảm tốc độ cho xe chạy chậm qua vũng nước.",
+          "is_correct": true
+        },
+        {
+          "answer_content": "Giảm tốc độ cho xe chạy qua làn đường dành cho mô tô để tránh vũng nước.",
+          "is_correct": false
+        }
+      ],
+      "question_chapter": 2,
+      "question_content": "Trên làn đường dành cho ô tô có vũng nước lớn, người lái xe ô tô bắt buộc phải đi qua vũng nước, trên làn đường bên cạnh có nhiều người đang lái xe mô tô tham gia giao thông, người lái xe ô tô xử lý như thế nào khi lái xe qua vũng nước là có văn hóa giao thông?",
+      "question_number": 186
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "nào trong các hành vi dưới đây?",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Là thiếu văn hóa giao thông, vi phạm pháp luật về trật tự, an toàn giao thông đường bộ.",
+          "is_correct": true
+        },
+        {
+          "answer_content": "Là thiếu văn hóa giao thông.",
+          "is_correct": false
+        }
+      ],
+      "question_chapter": 2,
+      "question_content": "Người lái xe không điều khiển xe đi đúng làn đường quy định, phóng nhanh, vượt ẩu, vượt đèn đỏ, đi vào đường cấm được coi là hành vi",
+      "question_number": 187
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Thực hiện cầm máu trực tiếp.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Thực hiện cầm máu không trực tiếp (chặn động mach).",
+          "is_correct": true
+        }
+      ],
+      "question_chapter": 2,
+      "question_content": "Khi sơ cứu người bị tai nạn giao thông đường bộ, có vết thương chảy máu ngoài, phun thành tia và phun mạnh khi mạch đập, bạn phải làm gì dưới đây?",
+      "question_number": 188
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Hiểu biết và chấp hành nghiêm chỉnh pháp luật về giao thông đường bộ; có ý thức trách nhiệm với cộng đồng khi tham gia giao thông; tôn trọng, nhường nhịn,",
+          "is_correct": true
+        },
+        {
+          "answer_content": "giúp đỡ và ứng xử có văn hóa với những người cùng tham gia giao thông.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Điều khiển xe vượt quá tốc độ, đi không đúng làn đường.",
+          "is_correct": false
+        }
+      ],
+      "question_chapter": 2,
+      "question_content": "Người lái xe có văn hóa giao thông khi tham gia giao thông đường bộ phải đáp ứng các điều kiện nào dưới đây?",
+      "question_number": 189
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Điều khiển xe đi trên phần đường, làn đường có ít phương tiện tham gia giao thông, chỉ đội mũ bảo hiểm ở nơi có biển báo bắt buộc đội mũ bảo hiểm.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Chấp hành hiệu lệnh, chỉ dẫn của người điều khiển giao thông, quy định về tốc độ, tín hiệu đèn, biển báo hiệu, vạch kẻ đường khi lái xe; nhường đường cho người đi bộ, người già, trẻ em, người khuyết tật.",
+          "is_correct": true
+        }
+      ],
+      "question_chapter": 2,
+      "question_content": "Người lái xe có văn hóa giao thông khi tham gia giao thông phải tuân thủ những quy định nào dưới đây?",
+      "question_number": 190
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Điều khiển xe đi bên phải theo chiều đi của mình; đi đúng phần đường, làn đường quy định; đội mũ bảo hiểm đúng quy chuẩn kỹ thuật quốc gia, cài quai đúng quy cách.",
+          "is_correct": true
+        },
+        {
+          "answer_content": "Điều khiển xe đi trên phần đường, làn đường có ít phương tiện tham gia giao thông.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Điều khiển xe và đội mũ bảo hiểm ở nơi có biển báo bắt buộc đội mũ bảo hiểm.",
+          "is_correct": false
+        }
+      ],
+      "question_chapter": 2,
+      "question_content": "Người lái xe mô tô có văn hóa giao thông khi tham gia giao thông phải tuân thủ những quy định nào dưới đây?",
+      "question_number": 191
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Điều khiển xe đi bên phải theo chiều đi của mình; đi đúng phần đường, làn đường quy định; dừng, đỗ xe đúng nơi quy định; đã uống rượu, bia thì không lái xe.",
+          "is_correct": true
+        },
+        {
+          "answer_content": "Điều khiển xe đi trên phần đường, làn đường có ít phương tiện giao thông; dừng xe, đỗ xe ở nơi thuận tiện hoặc theo yêu cầu của hành khách, của người thân.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Dừng và đỗ xe ở nơi thuận tiện cho việc chuyên chở hành khách và giao nhận hàng hóa; sử dụng ít rượu, bia thì có thể lái xe.",
+          "is_correct": false
+        }
+      ],
+      "question_chapter": 2,
+      "question_content": "Trong các hành vi dưới đây, người lái xe có văn hóa giao thông phải ứng xử như thế nào?",
+      "question_number": 192
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Chỉ bấm còi khi thật sự cần thiết, không bấm còi liên tục hoặc kéo dài, sử dụng còi với mức âm lượng theo quy định.",
+          "is_correct": true
+        },
+        {
+          "answer_content": "Bấm còi liên tục để các xe khác nhường đường.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Bấm còi to khi đi qua khu vực đông dân cư.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Không cần dùng còi, tránh gây tiếng ồn là văn minh.",
+          "is_correct": false
+        }
+      ],
+      "question_chapter": 2,
+      "question_content": "Khi tham gia giao thông việc sử dụng còi xe nên dùng như thế nào để thể hiện là người có văn hóa giao thông?",
+      "question_number": 193
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Dừng ngay phương tiện, cảnh báo nguy hiểm, giữ nguyên hiện trường, trợ giúp người bị nạn và báo tin cho cơ quan Công an, cơ sở khám bệnh, chữa bệnh.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Ở lại hiện trường vụ tai nạn giao thông đường bộ cho đến khi người của cơ quan Công an đến, trừ trường hợp phải đi cấp cứu, đưa người bị nạn đi cấp cứu hoặc xét thấy bị đe dọa đến tính mạng, sức khỏe nhưng phải đến trình báo ngay cơ quan Công an, Ủy ban nhân dân nơi gần nhất.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Cung cấp thông tin xác định danh tính về bản thân, người liên quan đến vụ tai nạn giao thông đường bộ và thông tin liên quan của vụ tai nạn giao thông đường bộ cho cơ quan có thẩm quyền.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Cả ba ý trên.",
+          "is_correct": true
+        }
+      ],
+      "question_chapter": 2,
+      "question_content": "Người điều khiển phương tiện tham giao thông đường bộ gây ra tai nạn giao thông đường bộ, người liên quan đến vụ tai nạn giao thông đường bộ có trách nhiệm gì dưới đây?",
+      "question_number": 194
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Giúp đỡ, cứu chữa kịp thời người bị nạn; báo tin ngay cho cơ quan Công an, cơ sở khám bệnh, chữa bệnh hoặc Ủy ban nhân dân nơi gần nhất; tham gia bảo vệ hiện trường; tham gia bảo vệ tài sản của người bị nạn; cung cấp thông tin liên quan về vụ tai nạn theo yêu cầu của cơ quan có thẩm quyền.",
+          "is_correct": true
+        },
+        {
+          "answer_content": "Chụp lại hình ảnh vụ tai nạn (nếu có thiết bị ghi hình) và nhanh chóng rời khỏi hiện trường vụ tai nạn.",
+          "is_correct": false
+        }
+      ],
+      "question_chapter": 2,
+      "question_content": "Người có mặt tại nơi xảy ra vụ tai giao thông đường bộ có trách nhiệm gì dưới đây?",
+      "question_number": 195
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Đặt nạn nhân nằm ngửa, khai thông đường thở của nạn nhân; thực hiện các biện pháp hô hấp nhân tạo.",
+          "is_correct": true
+        },
+        {
+          "answer_content": "Thực hiện các biện pháp hô hấp nhân tạo.",
+          "is_correct": false
+        }
+      ],
+      "question_chapter": 2,
+      "question_content": "Khi sơ cứu ban đầu cho người bị tai nạn giao thông đường bộ không còn hô hấp, người lái xe và người có mặt tại hiện trường vụ tai nạn phải thực hiện các công việc gì dưới đây?",
+      "question_number": 196
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Không bị nghiêm cấm.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Nghiêm cấm tuỳ từng trường hợp cụ thể.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Bị nghiêm cấm.",
+          "is_correct": true
+        }
+      ],
+      "question_chapter": 2,
+      "question_content": "Hành vi bỏ trốn sau khi gây tai nạn để trốn tránh trách nhiệm hoặc khi có điều kiện mà cố ý không cứu giúp người bị tai nạn giao thông có bị nghiêm cấm hay không?",
+      "question_dead_point": true,
+      "question_number": 197
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Giảm tốc độ và nhường đường cho người đi bộ.",
+          "is_correct": true
+        },
+        {
+          "answer_content": "Bấm còi để họ đi nhanh hơn.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Tiếp tục đi nếu đang vội.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Vượt qua nếu thấy khoảng trống đủ rộng.",
+          "is_correct": false
+        }
+      ],
+      "question_chapter": 2,
+      "question_content": "Khi đang lái xe, thấy một người đi bộ đang sang đường trên vạch kẻ đường dành cho người đi bộ, người lái xe nên làm gì?",
+      "question_dead_point": true,
+      "question_number": 198
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Chạy đi để tránh rắc rối.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Dừng xe, hỗ trợ nạn nhân và báo cho cơ quan chức năng.",
+          "is_correct": true
+        },
+        {
+          "answer_content": "Chỉ quan sát rồi tiếp tục di chuyển.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Chỉ giúp đỡ nếu có người thân trong vụ tai nạn.",
+          "is_correct": false
+        }
+      ],
+      "question_chapter": 2,
+      "question_content": "Khi gặp vụ tai nạn giao thông, người lái xe nên hành động như thế nào?",
+      "question_number": 199
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Cho xe lấn sang làn ngược chiều để nhanh chóng thoát khỏi nơi ùn tắc.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Điều khiển xe trên vỉa hè để nhanh chóng thoát khỏi nơi ùn tắc.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Kiên nhẫn tuân thủ hướng dẫn của người điều khiển giao thông hoặc tín hiệu đèn giao thông, di chuyển trên đúng phần đường bên phải theo chiều đi, nhường đường cho các phương tiện đi ngược chiều.",
+          "is_correct": true
+        }
+      ],
+      "question_chapter": 2,
+      "question_content": "Trong đoạn đường hai chiều tại khu đông dân cư đang ùn tắc, người điều khiển xe mô tô có văn hóa giao thông sẽ lựa chọn cách xử lý tình huống nào dưới đây?",
+      "question_number": 200
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Bấm còi liên tục thúc giục các phương tiện phía trước nhường đường; đi trên vỉa hè, tận dụng mọi khoảng trống để nhanh chóng thoát khỏi nơi ùn tắc; lấn sang trái đường cố gắng vượt lên xe khác.",
+          "is_correct": true
+        },
+        {
+          "answer_content": "Tuân thủ hướng dẫn của người điều khiển giao thông hoặc tín hiệu giao thông, đi đúng phần đường, làn đường quy định.",
+          "is_correct": false
+        }
+      ],
+      "question_chapter": 2,
+      "question_content": "Khi điều khiển phương tiện tham gia giao thông trên đoạn đường bộ đang xảy ra ùn tắc, những hành vi nào dưới đây là thiếu văn hóa?",
+      "question_number": 201
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Không lắp đặt thêm thiết bị điện, phụ kiện không đúng theo thiết kế của nhà sản xuất; tuân thủ quy trình vận hành bảo trì bảo dưỡng định kỳ; thường xuyên kiểm tra phương tiện, khi phát hiện thấy dấu hiệu khác lạ (khó nổ, có hơi xăng, có tiếng kêu bất thường, nhiệt độ của máy cao, có mùi khét) cần khắc phục ngay.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Khi để xe trong nhà, ở nơi trông giữ xe phải tắt khóa điện, để xa nguồn lửa, nguồn nhiệt; không mua xăng, dầu ở các điểm bán tự phát, không rõ nguồn gốc; không sử dụng các biện pháp “tiết kiệm xăng, dầu” khi chưa được kiểm chứng về mức độ an toàn có thể gây hỏng xe hoặc dẫn đến nguy cơ xảy ra cháy cao.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Không để các chất dễ cháy, dễ bắt lửa trong xe, dưới yên xe, trong cốp xe, trong khoang động cơ. Đối với xe điện cần chọn địa điểm sạc an toàn, sử dụng các thiết bị sạc đúng cách và giám sát quá trình sạc.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Cả ba ý trên.",
+          "is_correct": true
+        }
+      ],
+      "question_chapter": 2,
+      "question_content": "Người lái xe, chủ phương tiện giao thông cơ giới đường bộ nên thực hiện các biện pháp phòng cháy, chữa cháy như thế nào dưới đây?",
+      "question_number": 202
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Tắt khoá điện, hô hoán để mọi người đến trợ giúp chữa cháy, gọi Cảnh sát phòng cháy chữa cháy và cứu nạn cứu hộ (điện thoại 114).",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Nếu nhiên liệu chưa trào ra ngoài (ngọn lửa chưa cháy dữ dội) thì có thể sử dụng nước, hoặc bất kỳ chất, phương tiện chữa cháy có được để dập lửa; nếu nhiên liệu đã trào ra ngoài (ngọn lửa cháy dữ dội) thì phải sử dụng các bình chữa cháy, cát, chăn chiên, bao tải, vải nhúng nước để dập lửa.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Cả hai ý trên.",
+          "is_correct": true
+        }
+      ],
+      "question_chapter": 2,
+      "question_content": "Người điều khiển phương tiện cơ giới đường bộ phải thực hiện những biện pháp gì dưới đây để chữa cháy trong trường hợp phương tiện bị cháy, xét thấy có khả năng dập tắt đám cháy?",
+      "question_number": 203
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Bình tĩnh, đưa xe sát vào lề đường, tránh xa nơi có nhiều người, nhiều chất dễ cháy và tắt khóa điện, thực hiện các bước chữa cháy.",
+          "is_correct": true
+        },
+        {
+          "answer_content": "Hô hoán để mọi người đến trợ giúp chữa cháy, gọi Cảnh sát giao thông, Cảnh sát phòng cháy chữa cháy và cứu nạn, cứu hộ, lực lượng y tế để sẵn sàng hỗ trợ cứu người.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Nếu nhiên liệu trào ra ngoài, ngọn lửa chưa cháy dữ dội thì tiếp tục sử dụng nước, hoặc bất kỳ chất, phương tiện chữa cháy có được để dập lửa.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Cả ba ý trên.",
+          "is_correct": false
+        }
+      ],
+      "question_chapter": 2,
+      "question_content": "Khi phát hiện thấy có ngọn lửa, khói hoặc nhiệt độ cao bất thường từ phương tiện giao thông do mình điều khiển người lái xe phải làm gì trước tiên?",
+      "question_number": 204
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Gọi số 115 để thông báo về tình trạng tai nạn và yêu cầu hỗ trợ y tế ngay lập tức. Quan sát hiện trường để giúp nạn nhân, đồng thời tránh gây tổn thương cho mình.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Nhanh chóng loại bỏ nguyên nhân gây bỏng bằng cách tách nạn nhân khỏi vật gây cháy, cởi bỏ quần áo nếu bén lửa, ngâm vùng da bị bỏng vào nước sạch hoặc đắp khăn mát, lưu ý không dùng khăn hoặc nước quá lạnh.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Nếu nạn nhân còn tỉnh, cần cho uống bù nước. Trong thời tiết lạnh, cần giữ ấm cho cơ thể nạn nhân, sau đó nhanh chóng đưa đến cơ sở y tế gần nhất.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Cả ba ý trên.",
+          "is_correct": true
+        },
+        {
+          "answer_content": "CHƯƠNG III. KỸ THUẬT LÁI XE",
+          "is_correct": false
+        }
+      ],
+      "question_chapter": 2,
+      "question_content": "Khi gặp nạn nhân bị bỏng trong vụ tai nạn giao thông, người lái xe cần làm gì?",
+      "question_number": 205
+    }
+  ]
+}

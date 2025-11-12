@@ -96,5 +96,5 @@ class LicenseTypeNotifier extends StateNotifier<LicenseType> {
 // Default is A1 and persists selection across app restarts.
 final licenseTypeProvider =
     StateNotifierProvider<LicenseTypeNotifier, LicenseType>((ref) {
-      return LicenseTypeNotifier();
-    });
+  return LicenseTypeNotifier();
+});

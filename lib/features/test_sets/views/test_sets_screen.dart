@@ -186,7 +186,7 @@ class _TestSetsScreenState extends ConsumerState<TestSetsScreen>
                 // ignore storage/parse errors and fallback to quiz screen
               }
 
-              _showStartQuizDialog(context, testNumber, 12, formattedId);
+              _showStartQuizDialog(context, testNumber, formattedId);
             },
           );
         },
@@ -197,7 +197,6 @@ class _TestSetsScreenState extends ConsumerState<TestSetsScreen>
   void _showStartQuizDialog(
     BuildContext context,
     int testNumber,
-    int questionCount,
     String testSetId,
   ) {
     showDialog(

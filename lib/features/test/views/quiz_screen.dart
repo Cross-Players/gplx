@@ -7,6 +7,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gplx/core/constants/app_styles.dart';
 import 'package:gplx/core/widgets/countdown_timer.dart';
+import 'package:gplx/features/exercise/controllers/deadpoint_questions_provider.dart';
 import 'package:gplx/features/test/constants/quiz_constants.dart';
 import 'package:gplx/features/test/models/license_data.dart';
 import 'package:gplx/features/test/models/question.dart';
@@ -230,9 +231,10 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
 
       _initializeServices();
 
-      // Fetch dead point questions via controller
-      final controller = TestController();
-      final questions = await controller.fetchDeadPointQuestions(licenseType);
+      // Load dead point questions from local assets via provider
+      final questions = await ref.read(
+        deadpointQuestionsForLicenseProvider(licenseType).future,
+      );
 
       if (questions.isEmpty) {
         _handleError(
@@ -329,21 +331,6 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
     // ignore: avoid_print
     print(message);
     _setLoadingState(false);
-  }
-
-  /// Save progress
-  Future<void> _saveProgress() async {
-    try {
-      await _progressService.saveProgress(
-        testSetId: widget.testSetId,
-        selectedAnswers: _selectedAnswers,
-        checkedQuestions: _checkedQuestions,
-        quizResult: _quizResult,
-      );
-    } catch (e) {
-      // ignore: avoid_print
-      print('${QuizConstants.saveProgressErrorMessage} $e');
-    }
   }
 
   /// Check if answer is correct

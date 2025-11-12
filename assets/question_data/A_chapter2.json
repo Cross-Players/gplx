@@ -1,0 +1,205 @@
+{
+  "license_type": "A",
+  "chapter": "chapter2",
+  "total_questions": 10,
+  "questions": [
+    {
+      "answers": [
+        {
+          "answer_content": "Luôn tuân thủ pháp luật về trật tự, an toàn giao thông đường bộ, nhường nhịn và giúp đỡ người khác.",
+          "is_correct": true
+        },
+        {
+          "answer_content": "Đi nhanh, vượt đèn đỏ nếu không có lực lượng Công an.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Bấm còi và nháy đèn liên tục để cảnh báo xe khác.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Tránh nhường đường để đi nhanh hơn.",
+          "is_correct": false
+        }
+      ],
+      "question_chapter": 2,
+      "question_content": "Những hành vi nào sau đây thể hiện là người có văn hóa giao thông?",
+      "question_number": 182
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Là sự hiểu biết và chấp hành nghiêm chỉnh pháp luật về giao thông, là ý thức trách nhiệm với cộng đồng khi tham gia giao thông.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Là sự tôn trọng, nhường nhịn, giúp đỡ và ứng xử có văn hóa giữa những người tham gia giao thông với nhau.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Cả hai ý trên.",
+          "is_correct": true
+        }
+      ],
+      "question_chapter": 2,
+      "question_content": "Khái niệm về văn hóa giao thông được hiểu như thế nào là đúng?",
+      "question_number": 185
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "nào trong các hành vi dưới đây?",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Là thiếu văn hóa giao thông, vi phạm pháp luật về trật tự, an toàn giao thông đường bộ.",
+          "is_correct": true
+        },
+        {
+          "answer_content": "Là thiếu văn hóa giao thông.",
+          "is_correct": false
+        }
+      ],
+      "question_chapter": 2,
+      "question_content": "Người lái xe không điều khiển xe đi đúng làn đường quy định, phóng nhanh, vượt ẩu, vượt đèn đỏ, đi vào đường cấm được coi là hành vi",
+      "question_number": 187
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Hiểu biết và chấp hành nghiêm chỉnh pháp luật về giao thông đường bộ; có ý thức trách nhiệm với cộng đồng khi tham gia giao thông; tôn trọng, nhường nhịn,",
+          "is_correct": true
+        },
+        {
+          "answer_content": "giúp đỡ và ứng xử có văn hóa với những người cùng tham gia giao thông.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Điều khiển xe vượt quá tốc độ, đi không đúng làn đường.",
+          "is_correct": false
+        }
+      ],
+      "question_chapter": 2,
+      "question_content": "Người lái xe có văn hóa giao thông khi tham gia giao thông đường bộ phải đáp ứng các điều kiện nào dưới đây?",
+      "question_number": 189
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Điều khiển xe đi bên phải theo chiều đi của mình; đi đúng phần đường, làn đường quy định; đội mũ bảo hiểm đúng quy chuẩn kỹ thuật quốc gia, cài quai đúng quy cách.",
+          "is_correct": true
+        },
+        {
+          "answer_content": "Điều khiển xe đi trên phần đường, làn đường có ít phương tiện tham gia giao thông.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Điều khiển xe và đội mũ bảo hiểm ở nơi có biển báo bắt buộc đội mũ bảo hiểm.",
+          "is_correct": false
+        }
+      ],
+      "question_chapter": 2,
+      "question_content": "Người lái xe mô tô có văn hóa giao thông khi tham gia giao thông phải tuân thủ những quy định nào dưới đây?",
+      "question_number": 191
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Điều khiển xe đi bên phải theo chiều đi của mình; đi đúng phần đường, làn đường quy định; dừng, đỗ xe đúng nơi quy định; đã uống rượu, bia thì không lái xe.",
+          "is_correct": true
+        },
+        {
+          "answer_content": "Điều khiển xe đi trên phần đường, làn đường có ít phương tiện giao thông; dừng xe, đỗ xe ở nơi thuận tiện hoặc theo yêu cầu của hành khách, của người thân.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Dừng và đỗ xe ở nơi thuận tiện cho việc chuyên chở hành khách và giao nhận hàng hóa; sử dụng ít rượu, bia thì có thể lái xe.",
+          "is_correct": false
+        }
+      ],
+      "question_chapter": 2,
+      "question_content": "Trong các hành vi dưới đây, người lái xe có văn hóa giao thông phải ứng xử như thế nào?",
+      "question_number": 192
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Chỉ bấm còi khi thật sự cần thiết, không bấm còi liên tục hoặc kéo dài, sử dụng còi với mức âm lượng theo quy định.",
+          "is_correct": true
+        },
+        {
+          "answer_content": "Bấm còi liên tục để các xe khác nhường đường.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Bấm còi to khi đi qua khu vực đông dân cư.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Không cần dùng còi, tránh gây tiếng ồn là văn minh.",
+          "is_correct": false
+        }
+      ],
+      "question_chapter": 2,
+      "question_content": "Khi tham gia giao thông việc sử dụng còi xe nên dùng như thế nào để thể hiện là người có văn hóa giao thông?",
+      "question_number": 193
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Dừng ngay phương tiện, cảnh báo nguy hiểm, giữ nguyên hiện trường, trợ giúp người bị nạn và báo tin cho cơ quan Công an, cơ sở khám bệnh, chữa bệnh.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Ở lại hiện trường vụ tai nạn giao thông đường bộ cho đến khi người của cơ quan Công an đến, trừ trường hợp phải đi cấp cứu, đưa người bị nạn đi cấp cứu hoặc xét thấy bị đe dọa đến tính mạng, sức khỏe nhưng phải đến trình báo ngay cơ quan Công an, Ủy ban nhân dân nơi gần nhất.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Cung cấp thông tin xác định danh tính về bản thân, người liên quan đến vụ tai nạn giao thông đường bộ và thông tin liên quan của vụ tai nạn giao thông đường bộ cho cơ quan có thẩm quyền.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Cả ba ý trên.",
+          "is_correct": true
+        }
+      ],
+      "question_chapter": 2,
+      "question_content": "Người điều khiển phương tiện tham giao thông đường bộ gây ra tai nạn giao thông đường bộ, người liên quan đến vụ tai nạn giao thông đường bộ có trách nhiệm gì dưới đây?",
+      "question_number": 194
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Giúp đỡ, cứu chữa kịp thời người bị nạn; báo tin ngay cho cơ quan Công an, cơ sở khám bệnh, chữa bệnh hoặc Ủy ban nhân dân nơi gần nhất; tham gia bảo vệ hiện trường; tham gia bảo vệ tài sản của người bị nạn; cung cấp thông tin liên quan về vụ tai nạn theo yêu cầu của cơ quan có thẩm quyền.",
+          "is_correct": true
+        },
+        {
+          "answer_content": "Chụp lại hình ảnh vụ tai nạn (nếu có thiết bị ghi hình) và nhanh chóng rời khỏi hiện trường vụ tai nạn.",
+          "is_correct": false
+        }
+      ],
+      "question_chapter": 2,
+      "question_content": "Người có mặt tại nơi xảy ra vụ tai giao thông đường bộ có trách nhiệm gì dưới đây?",
+      "question_number": 195
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Cho xe lấn sang làn ngược chiều để nhanh chóng thoát khỏi nơi ùn tắc.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Điều khiển xe trên vỉa hè để nhanh chóng thoát khỏi nơi ùn tắc.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Kiên nhẫn tuân thủ hướng dẫn của người điều khiển giao thông hoặc tín hiệu đèn giao thông, di chuyển trên đúng phần đường bên phải theo chiều đi, nhường đường cho các phương tiện đi ngược chiều.",
+          "is_correct": true
+        }
+      ],
+      "question_chapter": 2,
+      "question_content": "Trong đoạn đường hai chiều tại khu đông dân cư đang ùn tắc, người điều khiển xe mô tô có văn hóa giao thông sẽ lựa chọn cách xử lý tình huống nào dưới đây?",
+      "question_number": 200
+    }
+  ]
+}

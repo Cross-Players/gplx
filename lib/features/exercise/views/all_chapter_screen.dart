@@ -1,95 +1,59 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gplx/core/routes/app_routes.dart';
+import 'package:gplx/features/exercise/controllers/deadpoint_questions_provider.dart';
 import 'package:gplx/features/exercise/views/exercise_screen.dart';
 import 'package:gplx/features/test/models/license_data.dart';
 import 'package:gplx/features/test/models/question.dart';
-import 'package:gplx/features/test_sets/controllers/test_controller.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-// Provider to fetch and group questions by chapter with caching
+// Provider to fetch and group questions by chapter from local assets
 final allChaptersProvider =
     FutureProvider.autoDispose<Map<String, List<Question>>>((ref) async {
   final licenseType = ref.watch(licenseTypeProvider);
-  final cacheKey = 'cached_questions_${licenseType.name}';
 
-  try {
-    // Try to load from cache first
-    final prefs = await SharedPreferences.getInstance();
-    final cachedData = prefs.getString(cacheKey);
-
-    if (cachedData != null) {
-      debugPrint('Loading questions from cache for ${licenseType.name}');
-      final Map<String, dynamic> decodedData = jsonDecode(cachedData);
-      final Map<String, List<Question>> chapterMap = {};
-
-      decodedData.forEach((chapter, questionsJson) {
-        final List<dynamic> questionsList = questionsJson as List<dynamic>;
-        chapterMap[chapter] = questionsList
-            .map(
-              (json) => Question.fromJson(json as Map<String, dynamic>),
-            )
-            .toList();
-      });
-
-      return chapterMap;
-    }
-  } catch (e) {
-    debugPrint('Failed to load from cache: $e');
+  final String prefix;
+  if (licenseType == LicenseType.A1 ||
+      licenseType == LicenseType.A ||
+      licenseType == LicenseType.B1) {
+    prefix = licenseType.name;
+  } else {
+    prefix = 'overall';
   }
 
-  // If cache failed or doesn't exist, fetch from network
-  debugPrint('Fetching questions from network for ${licenseType.name}');
-  final controller = TestController();
-  final allQuestions = <Question>[];
-  final totalTestSets = numberOfTestSetsBasedOnLicense(licenseType);
-
-  for (int testNumber = 1; testNumber <= totalTestSets; testNumber++) {
-    try {
-      final questions = await controller.fetchQuestionsByTestSets(
-        licenseType,
-        testNumber,
-      );
-      allQuestions.addAll(questions);
-    } catch (e) {
-      // Continue with next test set if one fails
-      debugPrint('Failed to fetch test set $testNumber: $e');
-    }
-  }
-
-  // Also fetch dead point questions
-  try {
-    final deadPointQuestions = await controller.fetchDeadPointQuestions(
-      licenseType,
-    );
-    allQuestions.addAll(deadPointQuestions);
-  } catch (e) {
-    debugPrint('Failed to fetch dead point questions: $e');
-  }
-
-  // Group questions by chapter
   final chapterMap = <String, List<Question>>{};
-  for (final question in allQuestions) {
-    final chapter = question.chapter ?? 'Không xác định';
-    if (!chapterMap.containsKey(chapter)) {
-      chapterMap[chapter] = [];
-    }
-    chapterMap[chapter]!.add(question);
-  }
 
-  // Cache the result
-  try {
-    final prefs = await SharedPreferences.getInstance();
-    final Map<String, dynamic> cacheData = {};
-    chapterMap.forEach((chapter, questions) {
-      cacheData[chapter] = questions.map((q) => q.toJson()).toList();
-    });
-    await prefs.setString(cacheKey, jsonEncode(cacheData));
-    debugPrint('Successfully cached questions for ${licenseType.name}');
-  } catch (e) {
-    debugPrint('Failed to cache questions: $e');
+  final chapterFiles = [
+    'chapter1',
+    'chapter2',
+    'chapter3',
+    'chapter4',
+    'chapter5',
+    'chapter6',
+  ];
+
+  for (final chapterFile in chapterFiles) {
+    try {
+      final assetPath = 'assets/question_data/${prefix}_$chapterFile.json';
+      final jsonString = await rootBundle.loadString(assetPath);
+      final Map<String, dynamic> jsonData = jsonDecode(jsonString);
+
+      // Extract questions array from the JSON object
+      final List<dynamic> jsonList = jsonData['questions'] as List<dynamic>;
+
+      final questions = jsonList
+          .map((json) => Question.fromJson(json as Map<String, dynamic>))
+          .toList();
+
+      if (questions.isNotEmpty) {
+        final chapterNumber = chapterFile.replaceAll('chapter', '');
+        final chapterName = chapterNumber;
+        chapterMap[chapterName] = questions;
+      }
+    } catch (e) {
+      debugPrint('Skipping $chapterFile: $e');
+    }
   }
 
   return chapterMap;
@@ -142,6 +106,7 @@ class _AllChapterScreenState extends ConsumerState<AllChapterScreen> {
   Widget build(BuildContext context) {
     final licenseType = ref.watch(licenseTypeProvider);
     final chaptersAsync = ref.watch(allChaptersProvider);
+    final deadpointAsync = ref.watch(deadpointQuestionsProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -182,11 +147,12 @@ class _AllChapterScreenState extends ConsumerState<AllChapterScreen> {
             );
           }
 
-          // Get total questions after removing duplicates
-          final totalQuestions = cleanedChapterMap.values.fold<int>(
-            0,
-            (sum, questions) => sum + questions.length,
+          final allQuestionsFromChapters = _removeDuplicateQuestions(
+            cleanedChapterMap.values.expand((questions) => questions).toList(),
           );
+
+          // Get total questions after removing duplicates
+          final totalQuestions = allQuestionsFromChapters.length;
 
           return SafeArea(
             child: SingleChildScrollView(
@@ -281,9 +247,7 @@ class _AllChapterScreenState extends ConsumerState<AllChapterScreen> {
                     // completed: 0,
                     completed: 0, // Progress tracking disabled
                     context: context,
-                    questions: cleanedChapterMap.values
-                        .expand((questions) => questions)
-                        .toList(),
+                    questions: allQuestionsFromChapters,
                     ref: ref,
                   ),
                   ListView.builder(
@@ -335,15 +299,33 @@ class _AllChapterScreenState extends ConsumerState<AllChapterScreen> {
                     },
                   ),
                   // Add dead point questions section
-                  _customListTile(
-                    title: 'Câu hỏi điểm liệt',
-                    subtitle: 'Các câu hỏi bắt buộc phải trả lời đúng',
-                    total: 0,
-                    completed: 0,
-                    context: context,
-                    questions: [],
-                    ref: ref,
-                    isDeadPoint: true,
+                  deadpointAsync.when(
+                    loading: () => const ListTile(
+                      leading: CircularProgressIndicator(),
+                      title: Text('Câu hỏi điểm liệt'),
+                      subtitle: Text('Đang tải...'),
+                    ),
+                    error: (error, stack) => ListTile(
+                      leading: const Icon(Icons.error, color: Colors.red),
+                      title: const Text('Câu hỏi điểm liệt'),
+                      subtitle: Text('Lỗi: $error'),
+                    ),
+                    data: (deadpointQuestions) {
+                      final cleanedDeadpointQuestions =
+                          _removeDuplicateQuestions(deadpointQuestions);
+                      return _customListTile(
+                        title: 'Câu hỏi điểm liệt',
+                        subtitle:
+                            'Các câu hỏi bắt buộc phải trả lời đúng (${cleanedDeadpointQuestions.length} câu)',
+                        total: cleanedDeadpointQuestions.length,
+                        completed: 0,
+                        context: context,
+                        questions: cleanedDeadpointQuestions,
+                        ref: ref,
+                        isDeadPoint:
+                            false, // Sử dụng ExerciseScreen thay vì navigate khác
+                      );
+                    },
                   ),
                 ],
               ),
@@ -388,22 +370,15 @@ Widget _customListTile({
 
   return GestureDetector(
     onTap: () {
-      if (isDeadPoint) {
-        Navigator.pushNamed(context, AppRoutes.deadpointQuestions, arguments: {
-          'title': title,
-          'testSetId': 'deadpoints-${ref.read(licenseTypeProvider).name}',
-        });
-      } else {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ExerciseScreen(
-              questions: Future.value(questions),
-              title: titleBasedOnChapterType(title),
-            ),
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ExerciseScreen(
+            questions: Future.value(questions),
+            title: titleBasedOnChapterType(title),
           ),
-        );
-      }
+        ),
+      );
     },
     child: Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
