@@ -88,7 +88,7 @@ class QuizNavigationWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(QuizConstants.defaultPadding),
       decoration: BoxDecoration(
-        color: AppStyles.primaryColor,
+        gradient: AppStyles.primaryGradient,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.2),

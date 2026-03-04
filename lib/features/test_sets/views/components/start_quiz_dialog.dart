@@ -58,7 +58,7 @@ class StartQuizDialog extends ConsumerWidget {
             onStart();
           },
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppStyles.primaryColor,
+            backgroundColor: AppStyles.primaryGradientStart,
             foregroundColor: Colors.white,
           ),
           child: const Text(TestSetsConstants.startButton),

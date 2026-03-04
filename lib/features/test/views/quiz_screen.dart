@@ -7,6 +7,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gplx/core/constants/app_styles.dart';
 import 'package:gplx/core/widgets/countdown_timer.dart';
+import 'package:gplx/core/widgets/gradient_app_bar.dart';
 import 'package:gplx/features/exercise/controllers/deadpoint_questions_provider.dart';
 import 'package:gplx/features/test/constants/quiz_constants.dart';
 import 'package:gplx/features/test/models/license_data.dart';
@@ -549,22 +550,18 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
   }
 
   Widget _buildLoadingScreen() {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(QuizConstants.loadingTitle),
-        backgroundColor: AppStyles.primaryColor,
-        foregroundColor: Colors.white,
+    return const Scaffold(
+      appBar: GradientAppBar(
+        title: Text(QuizConstants.loadingTitle),
       ),
-      body: const Center(child: CircularProgressIndicator()),
+      body: Center(child: CircularProgressIndicator()),
     );
   }
 
   Widget _buildErrorScreen() {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Quiz'),
-        backgroundColor: AppStyles.primaryColor,
-        foregroundColor: Colors.white,
+      appBar: const GradientAppBar(
+        title: Text('Quiz'),
       ),
       body: Center(
         child: Column(
@@ -614,9 +611,8 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
   }
 
   PreferredSizeWidget _buildAppBar() {
-    return AppBar(
-      centerTitle: true,
-      backgroundColor: AppStyles.primaryColor,
+    return GradientAppBar(
+      automaticallyImplyLeading: false,
       leading: Center(
         child: Container(
           margin: const EdgeInsets.only(left: 5.0),
@@ -671,8 +667,8 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
       controller: _tabController,
       isScrollable: true,
       indicatorWeight: 3,
-      indicatorColor: AppStyles.primaryColor,
-      labelColor: AppStyles.primaryColor,
+      indicatorColor: AppStyles.primaryGradientStart,
+      labelColor: AppStyles.primaryGradientStart,
       unselectedLabelColor: Colors.grey,
       tabs: List.generate(_questions.length, _buildQuestionTab),
     );

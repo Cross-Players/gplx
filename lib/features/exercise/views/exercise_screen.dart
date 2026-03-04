@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gplx/core/constants/app_styles.dart';
+import 'package:gplx/core/widgets/gradient_app_bar.dart';
 import 'package:gplx/features/exercise/controllers/deadpoint_questions_provider.dart';
 import 'package:gplx/features/exercise/providers/chapter_progress_provider.dart';
 import 'package:gplx/features/test/controllers/questions_repository.dart';
@@ -573,22 +574,18 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen>
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text('Đang tải bài quiz ...'),
-          backgroundColor: AppStyles.primaryColor,
-          foregroundColor: Colors.white,
+      return const Scaffold(
+        appBar: GradientAppBar(
+          title: Text('Đang tải bài quiz ...'),
         ),
-        body: const Center(child: CircularProgressIndicator()),
+        body: Center(child: CircularProgressIndicator()),
       );
     }
 
     if (_questions.isEmpty) {
       return Scaffold(
-        appBar: AppBar(
-          title: const Text('Quiz'),
-          backgroundColor: AppStyles.primaryColor,
-          foregroundColor: Colors.white,
+        appBar: const GradientAppBar(
+          title: Text('Quiz'),
         ),
         body: Center(
           child: Column(
@@ -613,10 +610,7 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen>
     }
 
     return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        primary: true,
-        backgroundColor: AppStyles.primaryColor,
+      appBar: GradientAppBar(
         title: widget.title != null
             ? Text(
                 widget.title!,
@@ -642,8 +636,8 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen>
             controller: _tabController,
             isScrollable: true,
             indicatorWeight: 3,
-            indicatorColor: AppStyles.primaryColor,
-            labelColor: AppStyles.primaryColor,
+            indicatorColor: AppStyles.primaryGradientEnd,
+            labelColor: AppStyles.primaryGradientEnd,
             unselectedLabelColor: Colors.grey,
             tabs: List.generate(_questions.length, (index) {
               final isChecked = _checkedQuestions[index] ?? false;

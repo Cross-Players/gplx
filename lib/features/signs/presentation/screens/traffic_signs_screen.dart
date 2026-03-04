@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:gplx/core/widgets/gradient_app_bar.dart';
 import 'package:gplx/features/signs/domain/models/traffic_sign.dart';
 import 'package:microsoft_viewer/microsoft_viewer.dart';
 import 'package:path_provider/path_provider.dart';
@@ -84,7 +85,7 @@ class _TrafficSignsScreenState extends State<TrafficSignsScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: GradientAppBar(
         leading: IconButton(
           icon: const Icon(
             Icons.arrow_back_ios,

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gplx/core/widgets/gradient_app_bar.dart';
 import 'package:gplx/features/exercise/controllers/deadpoint_questions_provider.dart';
 import 'package:gplx/features/exercise/views/exercise_screen.dart';
 import 'package:gplx/features/test/models/license_data.dart';
@@ -109,7 +110,7 @@ class _AllChapterScreenState extends ConsumerState<AllChapterScreen> {
     final deadpointAsync = ref.watch(deadpointQuestionsProvider);
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: GradientAppBar(
         title: Text('Hạng ${licenseType.name} - Ôn tập theo chương'),
       ),
       body: chaptersAsync.when(
