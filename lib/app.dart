@@ -18,7 +18,7 @@ class App extends ConsumerWidget {
           backButtonIconBuilder: (context) => const Icon(Icons.arrow_back_ios),
         ),
         appBarTheme: const AppBarTheme(
-            backgroundColor: AppStyles.primaryColor,
+            backgroundColor: AppStyles.primaryGradientStart,
             foregroundColor: Colors.black,
             elevation: 0,
             iconTheme: IconThemeData(color: Colors.white),
@@ -29,13 +29,14 @@ class App extends ConsumerWidget {
               fontWeight: FontWeight.bold,
             )),
         tabBarTheme: const TabBarThemeData(
-          indicatorColor: AppStyles.primaryColor,
-          labelColor: AppStyles.primaryColor,
+          indicatorColor: AppStyles.primaryGradientStart,
+          labelColor: AppStyles.primaryGradientStart,
           labelPadding: EdgeInsets.symmetric(horizontal: 16.0),
           indicatorSize: TabBarIndicatorSize.tab,
           tabAlignment: TabAlignment.start,
         ),
-        colorScheme: ColorScheme.fromSeed(seedColor: AppStyles.primaryColor),
+        colorScheme:
+            ColorScheme.fromSeed(seedColor: AppStyles.primaryGradientStart),
         useMaterial3: true,
       ),
       onGenerateRoute: AppRoutes.onGenerateRoute,
