@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gplx/core/constants/app_styles.dart';
+import 'package:gplx/core/widgets/gradient_app_bar.dart';
 import 'package:gplx/features/test/models/license_data.dart';
 import 'package:gplx/features/test/models/question.dart';
 import 'package:gplx/features/test/models/quiz_result.dart';
@@ -82,7 +83,9 @@ class _TestSetsScreenState extends ConsumerState<TestSetsScreen>
     final licenseType = ref.watch(licenseTypeProvider);
 
     return Scaffold(
-      appBar: AppBar(title: Text("Đề thi hạng ${licenseType.name}")),
+      appBar: GradientAppBar(
+        title: Text("Đề thi hạng ${licenseType.name}"),
+      ),
       body: GridView.builder(
         padding: const EdgeInsets.all(TestSetsConstants.gridPadding),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(

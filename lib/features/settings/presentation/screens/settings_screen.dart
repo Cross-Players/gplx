@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gplx/core/constants/app_styles.dart';
 import 'package:gplx/core/routes/app_routes.dart';
 import 'package:gplx/core/services/firebase/auth_services.dart';
+import 'package:gplx/core/widgets/gradient_app_bar.dart';
 import 'package:gplx/features/test/models/license_data.dart';
 import 'package:gplx/features/test/models/vehicle.dart';
 import 'package:gplx/features/test_sets/controllers/test_controller.dart';
@@ -134,7 +135,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: GradientAppBar(
         title: const Text('Thiết lập'),
         actions: [
           TextButton(

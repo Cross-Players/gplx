@@ -36,6 +36,17 @@ class AppStyles {
   static const buttonColor = Color.fromRGBO(0, 122, 255, 1);
   static const fontSecondaryColor = Color.fromRGBO(82, 82, 82, 1);
 
+  // Primary gradient (replaces primaryColor for backgrounds)
+  static const primaryGradient = LinearGradient(
+    colors: [Color(0xFF3B82F6), Color(0xFF2563EB)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  // Primary gradient colors for single color contexts
+  static const primaryGradientStart = Color(0xFF3B82F6);
+  static const primaryGradientEnd = Color(0xFF2563EB);
+
   // font
   static const String notoSansJP = 'NotoSansJP';
 

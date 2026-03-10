@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gplx/core/constants/app_styles.dart';
 import 'package:gplx/core/widgets/base64_image_widget.dart';
+import 'package:gplx/core/widgets/gradient_app_bar.dart';
 import 'package:gplx/features/test/models/question.dart';
 import 'package:gplx/features/test/models/quiz_result.dart';
 import 'package:gplx/features/test/views/quiz_screen.dart';
@@ -42,10 +43,8 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
     final isPassed = passedCriticalQuestions && isAboveMinScore;
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: GradientAppBar(
         title: Text('Kết quả - ${widget.quizResult.quizTitle}'),
-        backgroundColor: AppStyles.primaryColor,
-        foregroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -85,7 +84,7 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
         label: const Text('Làm lại bài quiz', style: TextStyle(fontSize: 16)),
         style: ElevatedButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-          backgroundColor: AppStyles.primaryColor,
+          backgroundColor: AppStyles.primaryGradientStart,
           foregroundColor: Colors.white,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),

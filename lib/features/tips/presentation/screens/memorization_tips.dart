@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gplx/core/widgets/gradient_app_bar.dart';
 
 class MemorizationTips extends StatelessWidget {
   const MemorizationTips({super.key});
@@ -6,11 +7,8 @@ class MemorizationTips extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Mẹo cần ghi nhớ',
-          style: TextStyle(fontWeight: FontWeight.w500),
-        ),
+      appBar: const GradientAppBar(
+        title: Text('Mẹo cần ghi nhớ'),
       ),
       body: ListView(
         padding:
