@@ -73,8 +73,8 @@ class _RegisterPageState extends State<RegisterPage> {
         // Tạo tài khoản mới
         final credential =
             await FirebaseAuth.instance.createUserWithEmailAndPassword(
-          email: emailController.text,
-          password: passwordController.text,
+          email: emailController.text.trim(),
+          password: passwordController.text.trim(),
         );
 
         if (mounted && credential.user != null) {
