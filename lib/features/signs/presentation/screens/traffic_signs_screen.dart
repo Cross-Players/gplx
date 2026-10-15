@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
+import 'package:gplx/core/constants/app_styles.dart';
 import 'package:gplx/core/widgets/gradient_app_bar.dart';
 import 'package:gplx/features/signs/domain/models/traffic_sign.dart';
 import 'package:path_provider/path_provider.dart';
@@ -91,30 +92,30 @@ class _TrafficSignsScreenState extends State<TrafficSignsScreen> {
   IconData _getIcon(SignType type) {
     switch (type) {
       case SignType.prohibitory:
-        return Icons.block;
+        return Icons.block_rounded;
       case SignType.warning:
         return Icons.warning_amber_rounded;
       case SignType.mandatory:
-        return Icons.arrow_circle_right;
+        return Icons.arrow_circle_right_rounded;
       case SignType.information:
-        return Icons.info_outline;
+        return Icons.info_rounded;
       case SignType.direction:
-        return Icons.signpost;
+        return Icons.signpost_rounded;
     }
   }
 
   Color _getColor(SignType type) {
     switch (type) {
       case SignType.prohibitory:
-        return Colors.red;
+        return const Color(0xFFDC2626);
       case SignType.warning:
-        return Colors.orange;
+        return const Color(0xFFD97706);
       case SignType.mandatory:
-        return Colors.blue;
+        return const Color(0xFF2563EB);
       case SignType.information:
-        return Colors.green;
+        return const Color(0xFF059669);
       case SignType.direction:
-        return Colors.purple;
+        return const Color(0xFF7C3AED);
     }
   }
 
@@ -141,79 +142,96 @@ class _TrafficSignsScreenState extends State<TrafficSignsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: GradientAppBar(
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios,
-          ),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text('Biển báo giao thông'),
+      appBar: const GradientAppBar(
+        title: Text('Biển báo giao thông'),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : ListView.builder(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.fromLTRB(
+                  16, 16, 16, 16 + MediaQuery.of(context).padding.bottom),
               itemCount: SignType.values.length,
               itemBuilder: (context, index) {
                 final type = SignType.values[index];
                 final color = _getColor(type);
 
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 16),
-                  elevation: 4,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(12),
-                    onTap: () => _openPdfViewer(type),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 60,
-                            height: 60,
-                            decoration: BoxDecoration(
-                              color: color.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Icon(
-                              _getIcon(type),
-                              color: color,
-                              size: 32,
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  _getTitle(type),
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Material(
+                    color: AppPalette.surface,
+                    borderRadius: BorderRadius.circular(AppPalette.radiusL),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(AppPalette.radiusL),
+                      onTap: () => _openPdfViewer(type),
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          borderRadius:
+                              BorderRadius.circular(AppPalette.radiusL),
+                          border: Border.all(color: AppPalette.border),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 56,
+                              height: 56,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    color.withValues(alpha: 0.85),
+                                    color,
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
                                 ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  _getDescription(type),
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
-                              ],
+                                borderRadius: BorderRadius.circular(18),
+                                boxShadow: AppPalette.softShadow(color),
+                              ),
+                              child: Icon(
+                                _getIcon(type),
+                                color: Colors.white,
+                                size: 28,
+                              ),
                             ),
-                          ),
-                          Icon(
-                            Icons.arrow_forward_ios,
-                            color: Colors.grey[400],
-                            size: 20,
-                          ),
-                        ],
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    _getTitle(type),
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppPalette.ink,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 3),
+                                  Text(
+                                    _getDescription(type),
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      color: AppPalette.inkMuted,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              width: 32,
+                              height: 32,
+                              decoration: const BoxDecoration(
+                                color: AppPalette.background,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.arrow_forward_ios_rounded,
+                                color: AppPalette.inkMuted,
+                                size: 14,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -238,10 +256,6 @@ class _PdfViewerScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: GradientAppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios),
-          onPressed: () => Navigator.pop(context),
-        ),
         title: Text(title),
       ),
       body: PDFView(

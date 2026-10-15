@@ -63,7 +63,7 @@ class QuizConstants {
   static const String wrongFeedback = 'Sai rồi!';
   static const String correctAnswerPrefix = 'Đáp án đúng: ';
   static const String explanationPrefix = 'Giải thích: ';
-  static const String questionPrefix = 'CÂU HỎI ';
+  static const String questionPrefix = 'Câu ';
   static const String questionTabPrefix = 'Câu ';
 
   // JSON Keys for saving/loading

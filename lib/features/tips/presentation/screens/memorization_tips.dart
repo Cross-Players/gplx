@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gplx/core/constants/app_styles.dart';
 import 'package:gplx/core/widgets/gradient_app_bar.dart';
 
 class MemorizationTips extends StatelessWidget {
@@ -11,17 +12,11 @@ class MemorizationTips extends StatelessWidget {
         title: Text('Mẹo cần ghi nhớ'),
       ),
       body: ListView(
-        padding:
-            const EdgeInsets.only(left: 16, right: 16, top: 20, bottom: 16),
+        padding: EdgeInsets.fromLTRB(
+            16, 16, 16, 16 + MediaQuery.of(context).padding.bottom),
         children: const [
-          Text(
-            'Mẹo 600 câu hỏi ôn thi GPLX',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          SizedBox(height: 15),
+          _TipsIntro(),
+          SizedBox(height: 16),
           SectionWidget(
             title: 'Cấp phép',
             content: [
@@ -351,33 +346,112 @@ class SectionWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16.0),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
+      decoration: BoxDecoration(
+        color: AppPalette.surface,
+        borderRadius: BorderRadius.circular(AppPalette.radiusM),
+        border: Border.all(color: AppPalette.border),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+          Row(
+            children: [
+              Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF9333EA).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.lightbulb_rounded,
+                  size: 16,
+                  color: Color(0xFF9333EA),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
+                    color: AppPalette.ink,
+                  ),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 8.0),
+          const SizedBox(height: 10),
           ...content.map((line) => Padding(
-                padding: const EdgeInsets.only(left: 15, bottom: 5),
+                padding: const EdgeInsets.only(bottom: 6),
                 child: line is Text
                     ? Text(
                         (line).data!,
-                        textAlign: TextAlign.justify,
                         style: (line).style?.copyWith(
                                   height: 1.5,
                                   fontSize: 14,
+                                  color: AppPalette.ink,
                                 ) ??
-                            const TextStyle(
+                            TextStyle(
                               height: 1.5,
                               fontSize: 14,
+                              color: AppPalette.ink.withValues(alpha: 0.8),
                             ),
                       )
                     : line,
               )),
+        ],
+      ),
+    );
+  }
+}
+
+class _TipsIntro extends StatelessWidget {
+  const _TipsIntro();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFFA855F7), Color(0xFF7E22CE)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(AppPalette.radiusL),
+      ),
+      child: Row(
+        children: [
+          const Text('🧠', style: TextStyle(fontSize: 30)),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Mẹo 600 câu hỏi ôn thi GPLX',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Ghi nhớ nhanh các quy tắc hay gặp trong đề thi',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.white.withValues(alpha: 0.85),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );

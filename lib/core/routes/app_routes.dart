@@ -2,14 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:gplx/features/exercise/views/all_chapter_screen.dart';
 import 'package:gplx/features/exercise/views/exercise_screen.dart';
 import 'package:gplx/features/home/presentation/screens/home_screen.dart';
-import 'package:gplx/features/login/login_page.dart';
 import 'package:gplx/features/settings/presentation/screens/settings_screen.dart';
 import 'package:gplx/features/signs/presentation/screens/traffic_signs_screen.dart';
 import 'package:gplx/features/test_sets/views/test_sets_screen.dart';
 import 'package:gplx/features/tips/presentation/screens/memorization_tips.dart';
 
 class AppRoutes {
-  static const String login = '/';
   static const String home = '/home';
   static const String settings = '/settings';
   static const String testSets = '/test-sets';
@@ -23,8 +21,8 @@ class AppRoutes {
 
   static Route<dynamic> onGenerateRoute(RouteSettings route) {
     switch (route.name) {
-      case login:
-        return MaterialPageRoute(builder: (_) => const LoginPage());
+      // Login is disabled, so '/' also opens the home screen.
+      case '/':
       case home:
         return MaterialPageRoute(
           builder: (_) => const HomeScreen(),

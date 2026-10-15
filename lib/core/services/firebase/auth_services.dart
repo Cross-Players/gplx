@@ -29,6 +29,20 @@ class AuthSevices {
     }
   }
 
+  /// Login is disabled in the app. If the backend still requires an
+  /// authenticated user, sign in anonymously so data can load. Never throws:
+  /// if the Anonymous provider is disabled the app simply continues as is.
+  Future<void> ensureGuestSession() async {
+    try {
+      // Wait for the persisted session to be restored before deciding.
+      final user = await authStateChanges.first;
+      if (user != null) return;
+      await firebaseAuth.signInAnonymously();
+    } catch (e) {
+      debugPrint('Anonymous sign-in skipped: $e');
+    }
+  }
+
   Future<void> signOut() async {
     await firebaseAuth.signOut();
   }

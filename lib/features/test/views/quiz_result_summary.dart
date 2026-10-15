@@ -47,10 +47,12 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
         title: Text('Kết quả - ${widget.quizResult.quizTitle}'),
       ),
       body: SingleChildScrollView(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).padding.bottom,
+        ),
         child: Column(
           children: [
             _buildStatusBanner(isPassed),
-            _buildTimerAndScoreRow(),
             _buildStatsSummary(),
             _buildQuestionGrid(),
             _buildRetakeTestButton(),
@@ -62,31 +64,28 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
 
   Widget _buildRetakeTestButton() {
     return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: ElevatedButton.icon(
-        onPressed: () async {
-          try {
-            // Call the callback to get testSetId and clear data
-            final testSetId = await widget.onRetakeQuiz();
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+      child: SizedBox(
+        width: double.infinity,
+        child: ElevatedButton.icon(
+          onPressed: () async {
+            try {
+              // Call the callback to get testSetId and clear data
+              final testSetId = await widget.onRetakeQuiz();
 
-            if (!mounted) return;
+              if (!mounted) return;
 
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(
-                builder: (_) => QuizScreen(testSetId: testSetId),
-              ),
-            );
-          } catch (e) {
-            debugPrint('Error retaking quiz: $e');
-          }
-        },
-        icon: const Icon(Icons.restart_alt),
-        label: const Text('Làm lại bài quiz', style: TextStyle(fontSize: 16)),
-        style: ElevatedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-          backgroundColor: AppStyles.primaryGradientStart,
-          foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(
+                  builder: (_) => QuizScreen(testSetId: testSetId),
+                ),
+              );
+            } catch (e) {
+              debugPrint('Error retaking quiz: $e');
+            }
+          },
+          icon: const Icon(Icons.restart_alt_rounded),
+          label: const Text('Làm lại bài thi'),
         ),
       ),
     );
@@ -96,96 +95,133 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
     String message;
 
     if (isPassed) {
-      message = 'ĐẠT: Chúc mừng bạn!';
+      message = 'Chúc mừng, bạn đã vượt qua bài thi!';
     } else {
       if (widget.quizResult.failedCriticalQuestion == true) {
-        message = 'KHÔNG ĐẠT: Câu điểm liệt sai!';
+        message = 'Bạn đã trả lời sai câu điểm liệt.';
       } else {
-        message = 'KHÔNG ĐẠT: Không đủ số lượng câu đúng.';
+        message = 'Chưa đủ số câu đúng tối thiểu.';
       }
     }
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-      color: isPassed ? Colors.green[100] : Colors.red[100],
-      child: Text(
-        message,
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          color: isPassed ? Colors.green[800] : Colors.red[800],
-          fontWeight: FontWeight.bold,
-          fontSize: 18,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTimerAndScoreRow() {
+    final total = widget.quizResult.totalQuestions;
+    final correct = widget.quizResult.correctAnswers;
+    final ratio = total == 0 ? 0.0 : correct / total;
     final minutes = widget.timeTaken.inMinutes;
     final seconds = widget.timeTaken.inSeconds % 60;
     final timeString = '$minutes:${seconds.toString().padLeft(2, '0')}';
 
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
+    final gradient = isPassed
+        ? const LinearGradient(
+            colors: [Color(0xFF22C55E), Color(0xFF15803D)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          )
+        : const LinearGradient(
+            colors: [Color(0xFFFB7185), Color(0xFFDC2626)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          );
+
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: gradient,
+        borderRadius: BorderRadius.circular(AppPalette.radiusL),
+        boxShadow: AppPalette.softShadow(gradient.colors.last),
+      ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.blue, width: 2),
+          SizedBox(
+            width: 92,
+            height: 92,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                CircularProgressIndicator(
+                  value: ratio,
+                  strokeWidth: 8,
+                  strokeCap: StrokeCap.round,
+                  color: Colors.white,
+                  backgroundColor: Colors.white.withValues(alpha: 0.25),
                 ),
-                child: const Icon(Icons.timer, color: Colors.blue, size: 24),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                timeString,
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.blue,
+                Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '$correct/$total',
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                        ),
+                      ),
+                      Text(
+                        '${(ratio * 100).toStringAsFixed(0)}%',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white.withValues(alpha: 0.85),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.green[100],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(Icons.check, color: Colors.green),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                '${widget.quizResult.correctAnswers}/${widget.quizResult.totalQuestions}',
-                style: TextStyle(
-                  fontSize: 22,
-                  color: Colors.green[700],
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.blue[50],
-              borderRadius: BorderRadius.circular(16),
+              ],
             ),
-            child: Text(
-              '${(widget.quizResult.correctAnswers / widget.quizResult.totalQuestions * 100).toStringAsFixed(0)}%',
-              style: const TextStyle(
-                fontSize: 18,
-                color: Colors.blue,
-                fontWeight: FontWeight.w500,
-              ),
+          ),
+          const SizedBox(width: 18),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  isPassed ? 'ĐẠT' : 'KHÔNG ĐẠT',
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.5,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  message,
+                  style: TextStyle(
+                    fontSize: 13.5,
+                    height: 1.35,
+                    color: Colors.white.withValues(alpha: 0.9),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.timer_outlined,
+                          size: 15, color: Colors.white),
+                      const SizedBox(width: 4),
+                      Text(
+                        timeString,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -201,36 +237,38 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           _buildStatItem(
-            '∑ ${widget.quizResult.totalQuestions}',
-            Colors.blue,
-            Icons.article,
-            'Tổng số câu',
+            '${widget.quizResult.totalQuestions}',
+            AppPalette.primary,
+            Icons.article_rounded,
+            'Tất cả',
             QuestionFilter.all,
             widget.quizResult.totalQuestions > 0,
           ),
+          const SizedBox(width: 8),
           _buildStatItem(
             '${widget.quizResult.correctAnswers}',
-            Colors.green,
-            Icons.check_circle_outline,
+            AppPalette.success,
+            Icons.check_circle_rounded,
             'Đúng',
             QuestionFilter.correct,
             widget.quizResult.correctAnswers > 0,
           ),
+          const SizedBox(width: 8),
           _buildStatItem(
             '${widget.quizResult.wrongAnswers}',
-            Colors.red,
-            Icons.cancel_outlined,
+            AppPalette.danger,
+            Icons.cancel_rounded,
             'Sai',
             QuestionFilter.wrong,
             widget.quizResult.wrongAnswers > 0,
           ),
+          const SizedBox(width: 8),
           _buildStatItem(
             '$skippedCount',
-            Colors.orange,
-            Icons.help_outline,
+            AppPalette.warning,
+            Icons.help_rounded,
             'Bỏ qua',
             QuestionFilter.skipped,
             skippedCount > 0,
@@ -244,53 +282,62 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
     String count,
     Color color,
     IconData icon,
-    String tooltip,
+    String label,
     QuestionFilter filter,
     bool isEnabled,
   ) {
     final bool isActive = activeFilter == filter;
 
-    final opacity = isEnabled ? 1.0 : 0.5;
-
-    return InkWell(
-      onTap: isEnabled
-          ? () {
-              setState(() {
-                activeFilter = filter;
-              });
-            }
-          : null,
-      borderRadius: BorderRadius.circular(8),
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Tooltip(
-          message: tooltip,
-          child: Column(
-            children: [
-              Row(
+    return Expanded(
+      child: Opacity(
+        opacity: isEnabled ? 1 : 0.45,
+        child: Material(
+          color: isActive ? color : AppPalette.surface,
+          borderRadius: BorderRadius.circular(AppPalette.radiusM),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(AppPalette.radiusM),
+            onTap: isEnabled
+                ? () {
+                    setState(() {
+                      activeFilter = filter;
+                    });
+                  }
+                : null,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(AppPalette.radiusM),
+                border: Border.all(
+                  color: isActive ? color : AppPalette.border,
+                ),
+              ),
+              child: Column(
                 children: [
-                  Icon(icon, color: color.withValues(alpha: opacity)),
-                  const SizedBox(width: 4),
+                  Icon(icon,
+                      size: 20, color: isActive ? Colors.white : color),
+                  const SizedBox(height: 4),
                   Text(
                     count,
                     style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: isActive ? FontWeight.w900 : FontWeight.bold,
-                      color: color.withValues(alpha: opacity),
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      color: isActive ? Colors.white : AppPalette.ink,
+                    ),
+                  ),
+                  Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w600,
+                      color: isActive
+                          ? Colors.white.withValues(alpha: 0.9)
+                          : AppPalette.inkMuted,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 4),
-              Container(
-                width: 60,
-                height: isActive ? 8 : 5,
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: isActive ? 0.7 : 0.3),
-                  borderRadius: isActive ? BorderRadius.circular(4) : null,
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -348,12 +395,14 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
           padding: const EdgeInsets.all(32.0),
           child: Column(
             children: [
-              const Icon(Icons.info_outline, size: 48, color: Colors.grey),
+              const Icon(Icons.inbox_rounded,
+                  size: 48, color: AppPalette.inkFaint),
               const SizedBox(height: 16),
               Text(
                 _getEmptyStateMessage(),
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 16, color: Colors.grey),
+                style: const TextStyle(
+                    fontSize: 15, color: AppPalette.inkMuted),
               ),
             ],
           ),
@@ -370,7 +419,11 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
             padding: const EdgeInsets.only(bottom: 8.0),
             child: Text(
               _getFilterTitle(),
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
+                color: AppPalette.ink,
+              ),
             ),
           ),
           GridView.builder(
@@ -396,43 +449,46 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
 
               if (isAnswered) {
                 if (isCorrect) {
-                  backgroundColor = Colors.green[200]!;
-                  icon = const Icon(Icons.check, color: Colors.green, size: 18);
+                  backgroundColor = AppPalette.successSoft;
+                  icon = const Icon(Icons.check_rounded,
+                      color: AppPalette.success, size: 16);
                 } else {
-                  backgroundColor = Colors.red[200]!;
-                  icon = const Icon(Icons.close, color: Colors.red, size: 18);
+                  backgroundColor = AppPalette.dangerSoft;
+                  icon = const Icon(Icons.close_rounded,
+                      color: AppPalette.danger, size: 16);
                 }
               } else {
-                backgroundColor = Colors.blue[50]!;
+                backgroundColor = AppPalette.warningSoft;
                 icon = const Icon(
-                  Icons.help_outline,
-                  color: Colors.orange,
-                  size: 18,
+                  Icons.remove_rounded,
+                  color: AppPalette.warning,
+                  size: 16,
                 );
               }
 
               return InkWell(
+                borderRadius: BorderRadius.circular(AppPalette.radiusS),
                 onTap: () {
                   _showQuestionDetail(context, questionIndex);
                 },
                 child: Container(
                   decoration: BoxDecoration(
                     color: backgroundColor,
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(AppPalette.radiusS),
                   ),
                   child: Stack(
                     children: [
                       Center(
                         child: Text(
-                          'Câu ${questionIndex + 1}',
+                          '${questionIndex + 1}',
                           style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 17,
                             color: isAnswered
                                 ? (isCorrect
-                                    ? Colors.green[800]
-                                    : Colors.red[800])
-                                : Colors.black87,
+                                    ? AppPalette.success
+                                    : AppPalette.danger)
+                                : const Color(0xFFB45309),
                           ),
                         ),
                       ),
@@ -447,9 +503,9 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
                           top: 4,
                           right: 4,
                           child: Icon(
-                            Icons.star,
-                            color: Colors.amber,
-                            size: 16,
+                            Icons.priority_high_rounded,
+                            color: AppPalette.danger,
+                            size: 14,
                           ),
                         ),
                     ],
@@ -502,10 +558,7 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+      showDragHandle: false,
       builder: (context) {
         return Container(
           height: MediaQuery.of(context).size.height * 0.85,
@@ -526,39 +579,39 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
                         decoration: BoxDecoration(
                           color: isAnswered
                               ? (isCorrect
-                                  ? Colors.green.shade100
-                                  : Colors.red.shade100)
-                              : Colors.grey.shade100,
-                          borderRadius: BorderRadius.circular(4),
+                                  ? AppPalette.successSoft
+                                  : AppPalette.dangerSoft)
+                              : AppPalette.warningSoft,
+                          borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
                           'Câu ${questionIndex + 1}',
                           style: TextStyle(
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w800,
                             color: isAnswered
                                 ? (isCorrect
-                                    ? Colors.green.shade800
-                                    : Colors.red.shade800)
-                                : Colors.grey.shade800,
+                                    ? AppPalette.success
+                                    : AppPalette.danger)
+                                : const Color(0xFFB45309),
                           ),
                         ),
                       ),
                       if (question.isDeadPoint == true)
-                        Padding(
-                          padding: const EdgeInsets.only(left: 8.0),
+                        const Padding(
+                          padding: EdgeInsets.only(left: 8.0),
                           child: Row(
                             children: [
-                              const Icon(
-                                Icons.star,
-                                color: Colors.amber,
-                                size: 20,
+                              Icon(
+                                Icons.warning_amber_rounded,
+                                color: AppPalette.danger,
+                                size: 18,
                               ),
-                              const SizedBox(width: 4),
+                              SizedBox(width: 4),
                               Text(
                                 'Câu điểm liệt',
                                 style: TextStyle(
-                                  color: Colors.amber[800],
-                                  fontWeight: FontWeight.bold,
+                                  color: AppPalette.danger,
+                                  fontWeight: FontWeight.w700,
                                   fontSize: 12,
                                 ),
                               ),
@@ -568,7 +621,7 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
                     ],
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close),
+                    icon: const Icon(Icons.close_rounded),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ],
@@ -582,8 +635,10 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
                       Text(
                         question.content!,
                         style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 17,
+                          height: 1.4,
+                          fontWeight: FontWeight.w700,
+                          color: AppPalette.ink,
                         ),
                       ),
                       const SizedBox(height: 20),
@@ -606,14 +661,15 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
                           final bool isSelected = selectedAnswerIndex == index;
 
                           return Container(
-                            margin: const EdgeInsets.only(bottom: 15),
-                            padding: const EdgeInsets.all(15),
+                            margin: const EdgeInsets.only(bottom: 12),
+                            padding: const EdgeInsets.all(14),
                             decoration: BoxDecoration(
                               color: _getAnswerBackgroundColor(
                                 isSelected,
                                 isCorrectOption,
                               ),
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius:
+                                  BorderRadius.circular(AppPalette.radiusM),
                               border: Border.all(
                                 color: _getAnswerBorderColor(
                                   isSelected,
@@ -625,17 +681,17 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
                             child: Row(
                               children: [
                                 Container(
-                                  width: 30,
-                                  height: 30,
+                                  width: 28,
+                                  height: 28,
                                   decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
+                                    borderRadius: BorderRadius.circular(9),
                                     color: _getAnswerCircleColor(
                                       isSelected,
                                       isCorrectOption,
                                     ),
                                     border: isSelected || isCorrectOption
                                         ? null
-                                        : Border.all(color: Colors.grey),
+                                        : Border.all(color: AppPalette.border),
                                   ),
                                   child: Center(
                                     child: _getAnswerIcon(
@@ -647,15 +703,16 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
                                   child: Text(
                                     question.answers![index].content,
                                     style: TextStyle(
-                                      fontSize: 16,
+                                      fontSize: 15,
+                                      height: 1.4,
                                       fontWeight: isSelected || isCorrectOption
-                                          ? FontWeight.bold
-                                          : FontWeight.normal,
+                                          ? FontWeight.w600
+                                          : FontWeight.w500,
                                       color: isCorrectOption
-                                          ? Colors.green.shade800
+                                          ? const Color(0xFF14532D)
                                           : (isSelected && !isCorrectOption
-                                              ? Colors.red.shade800
-                                              : Colors.black87),
+                                              ? const Color(0xFF7F1D1D)
+                                              : AppPalette.ink),
                                     ),
                                   ),
                                 ),
@@ -677,36 +734,36 @@ class _QuizResultSummaryState extends State<QuizResultSummary> {
 
   Color _getAnswerBackgroundColor(bool isSelected, bool isCorrect) {
     if (isCorrect) {
-      return Colors.green.shade50;
+      return AppPalette.successSoft;
     } else if (isSelected) {
-      return Colors.red.shade50;
+      return AppPalette.dangerSoft;
     }
-    return Colors.grey.shade50;
+    return AppPalette.surface;
   }
 
   Color _getAnswerBorderColor(bool isSelected, bool isCorrect) {
     if (isCorrect) {
-      return Colors.green;
+      return AppPalette.success;
     } else if (isSelected) {
-      return Colors.red;
+      return AppPalette.danger;
     }
-    return Colors.grey.shade300;
+    return AppPalette.border;
   }
 
   Color _getAnswerCircleColor(bool isSelected, bool isCorrect) {
     if (isCorrect) {
-      return Colors.green;
+      return AppPalette.success;
     } else if (isSelected) {
-      return Colors.red;
+      return AppPalette.danger;
     }
-    return Colors.transparent;
+    return AppPalette.background;
   }
 
   Widget? _getAnswerIcon(bool isSelected, bool isCorrect) {
     if (isCorrect) {
-      return const Icon(Icons.check, color: Colors.white, size: 20);
+      return const Icon(Icons.check_rounded, color: Colors.white, size: 18);
     } else if (isSelected) {
-      return const Icon(Icons.close, color: Colors.white, size: 20);
+      return const Icon(Icons.close_rounded, color: Colors.white, size: 18);
     }
     return null;
   }

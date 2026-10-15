@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gplx/core/constants/app_styles.dart';
-import 'package:gplx/core/routes/app_routes.dart';
-import 'package:gplx/core/services/firebase/auth_services.dart';
 import 'package:gplx/core/widgets/gradient_app_bar.dart';
 import 'package:gplx/features/test/models/license_data.dart';
 import 'package:gplx/features/test/models/vehicle.dart';
@@ -16,47 +14,12 @@ class SettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
-  // String selectedQuestionSet = '600 câu hỏi (Thử nghiệm)';
   late LicenseType _selectedType;
 
   @override
   void initState() {
     super.initState();
     _selectedType = ref.read(licenseTypeProvider);
-  }
-
-  Future<void> _showDeleteAccountDialog() async {
-    return showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          title: const Text('Xóa tài khoản'),
-          content: const Text(
-            'Bạn có chắc chắn muốn xóa tài khoản không?\n\n'
-            'Hành động này không thể hoàn tác và tất cả dữ liệu của bạn sẽ bị xóa vĩnh viễn.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-              },
-              child: const Text('Hủy'),
-            ),
-            TextButton(
-              onPressed: () async {
-                Navigator.of(dialogContext).pop();
-                await _deleteAccount();
-              },
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.red,
-              ),
-              child: const Text('Xóa tài khoản'),
-            ),
-          ],
-        );
-      },
-    );
   }
 
   Future<void> _showClearCacheDialog() async {
@@ -97,7 +60,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Đã xóa bộ nhớ đệm thành công'),
-            backgroundColor: Colors.green,
+            backgroundColor: AppPalette.success,
           ),
         );
       }
@@ -106,30 +69,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Lỗi khi xóa bộ nhớ đệm: $e'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppPalette.danger,
           ),
         );
       }
     }
   }
 
-  Future<void> _deleteAccount() async {
-    try {
-      await authServices.value.deleteAccount();
-      if (mounted) {
-        Navigator.pushNamedAndRemoveUntil(
-            context, AppRoutes.login, (route) => false);
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Lỗi khi xóa tài khoản: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
+  void _save() {
+    ref.read(licenseTypeProvider.notifier).setLicenseType(_selectedType);
+    Navigator.pop(context);
   }
 
   @override
@@ -139,50 +88,42 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         title: const Text('Thiết lập'),
         actions: [
           TextButton(
-            onPressed: () {
-              ref
-                  .read(licenseTypeProvider.notifier)
-                  .setLicenseType(_selectedType);
-              Navigator.pop(context);
-            },
+            onPressed: _save,
             child: const Text(
-              'Done',
-              style: TextStyle(color: Colors.white, fontSize: 16),
+              'Xong',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
         ],
       ),
       body: ListView(
+        padding: EdgeInsets.fromLTRB(
+            20, 8, 20, 24 + MediaQuery.of(context).padding.bottom),
         children: [
-          const _SectionHeader(title: 'CÁC LOẠI BẰNG LÁI XE'),
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: allVehicles.length,
-            itemBuilder: (context, index) {
-              final vehicle = allVehicles[index];
-              return _VehicleOption(
-                vehicle: vehicle,
-                isSelected: _selectedType == vehicle.vehicleType,
-                onTap: () {
-                  setState(() {
-                    _selectedType = vehicle.vehicleType;
-                  });
-                },
-              );
-            },
+          const _SectionHeader(title: 'Hạng bằng lái'),
+          for (final vehicle in allVehicles) ...[
+            _VehicleOption(
+              vehicle: vehicle,
+              isSelected: _selectedType == vehicle.vehicleType,
+              onTap: () {
+                setState(() {
+                  _selectedType = vehicle.vehicleType;
+                });
+              },
+            ),
+            const SizedBox(height: 10),
+          ],
+          const _SectionHeader(title: 'Dữ liệu'),
+          _ActionTile(
+            icon: Icons.cleaning_services_rounded,
+            title: 'Xóa bộ nhớ đệm',
+            subtitle: 'Tải lại câu hỏi từ máy chủ',
+            onTap: _showClearCacheDialog,
           ),
-          const SizedBox(height: 16),
-          const LogoutButton(),
-          const SizedBox(height: 16),
-          ClearCacheButton(
-            onPressed: _showClearCacheDialog,
-          ),
-          const SizedBox(height: 16),
-          DeleteAccountButton(
-            onPressed: _showDeleteAccountDialog,
-          ),
-          const SizedBox(height: 16),
         ],
       ),
     );
@@ -196,63 +137,15 @@ class _SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: AppSettingsPaddings.section,
-      color: AppSettingsColors.sectionBg,
-      child: Text(title, style: AppSettingsTextStyles.section),
-    );
-  }
-}
-
-class LogoutButton extends StatelessWidget {
-  const LogoutButton({
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () async {
-        try {
-          await authServices.value.signOut();
-          if (context.mounted) {
-            Navigator.pushNamedAndRemoveUntil(
-                context, AppRoutes.login, (route) => false);
-          }
-        } catch (e) {
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Lỗi khi đăng xuất: $e'),
-                backgroundColor: Colors.red,
-              ),
-            );
-          }
-        }
-      },
-      child: Container(
-        width: double.infinity,
-        padding: AppSettingsPaddings.logout,
-        margin: AppSettingsPaddings.logoutMargin,
-        decoration: BoxDecoration(
-          color: AppSettingsColors.logoutBg,
-          borderRadius: BorderRadius.circular(10),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withValues(alpha: 0.2),
-              spreadRadius: 2,
-              blurRadius: 5,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: const Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text('Đăng xuất', style: AppSettingsTextStyles.logout),
-            SizedBox(width: 8),
-            Icon(Icons.logout, color: AppSettingsColors.logoutIcon, size: 18),
-          ],
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(4, 20, 4, 12),
+      child: Text(
+        title.toUpperCase(),
+        style: const TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 1.1,
+          color: AppPalette.inkMuted,
         ),
       ),
     );
@@ -272,124 +165,116 @@ class _VehicleOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      title: Text(vehicle.vehicleType.name),
-      subtitle: Text(
-        vehicle.description,
-        style: AppSettingsTextStyles.vehicleDesc,
+    return Material(
+      color: isSelected ? AppPalette.primarySoft : AppPalette.surface,
+      borderRadius: BorderRadius.circular(AppPalette.radiusM),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppPalette.radiusM),
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppPalette.radiusM),
+            border: Border.all(
+              color: isSelected ? AppPalette.primary : AppPalette.border,
+              width: isSelected ? 1.5 : 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? AppPalette.primary
+                      : AppPalette.background,
+                  borderRadius: BorderRadius.circular(AppPalette.radiusS),
+                ),
+                child: Text(
+                  vehicle.vehicleType.name,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    color: isSelected ? Colors.white : AppPalette.ink,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Hạng ${vehicle.vehicleType.name}',
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: AppPalette.ink,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      vehicle.description,
+                      style: const TextStyle(
+                        fontSize: 12.5,
+                        height: 1.35,
+                        color: AppPalette.inkMuted,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 180),
+                child: isSelected
+                    ? const Icon(Icons.check_circle_rounded,
+                        key: ValueKey(true), color: AppPalette.primary)
+                    : const Icon(Icons.circle_outlined,
+                        key: ValueKey(false), color: AppPalette.border),
+              ),
+            ],
+          ),
+        ),
       ),
-      trailing: isSelected
-          ? const Icon(
-              Icons.check,
-              color: AppSettingsColors.vehicleSelected,
-            )
-          : null,
-      onTap: onTap,
     );
   }
 }
 
-class DeleteAccountButton extends StatelessWidget {
-  final VoidCallback onPressed;
+class _ActionTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
 
-  const DeleteAccountButton({
-    super.key,
-    required this.onPressed,
+  const _ActionTile({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onPressed,
-      child: Container(
-        width: double.infinity,
-        padding: AppSettingsPaddings.logout,
-        margin: AppSettingsPaddings.logoutMargin,
-        decoration: BoxDecoration(
-          color: Colors.red[50],
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: Colors.red[300]!, width: 1),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withValues(alpha: 0.2),
-              spreadRadius: 2,
-              blurRadius: 5,
-              offset: const Offset(0, 3),
-            ),
-          ],
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: ListTile(
+        onTap: onTap,
+        leading: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: AppPalette.primarySoft,
+            borderRadius: BorderRadius.circular(AppPalette.radiusS),
+          ),
+          child: Icon(icon, color: AppPalette.primary, size: 22),
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'Xóa tài khoản',
-              style: TextStyle(
-                color: Colors.red[700],
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Icon(
-              Icons.delete_forever,
-              color: Colors.red[700],
-              size: 18,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class ClearCacheButton extends StatelessWidget {
-  final VoidCallback onPressed;
-
-  const ClearCacheButton({
-    super.key,
-    required this.onPressed,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onPressed,
-      child: Container(
-        width: double.infinity,
-        padding: AppSettingsPaddings.logout,
-        margin: AppSettingsPaddings.logoutMargin,
-        decoration: BoxDecoration(
-          color: Colors.blue[50],
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: Colors.blue[300]!, width: 1),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withValues(alpha: 0.2),
-              spreadRadius: 2,
-              blurRadius: 5,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'Xóa bộ nhớ đệm',
-              style: TextStyle(
-                color: Colors.blue[700],
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Icon(
-              Icons.cleaning_services,
-              color: Colors.blue[700],
-              size: 18,
-            ),
-          ],
-        ),
+        title: Text(title),
+        subtitle: Text(subtitle),
+        trailing: const Icon(Icons.chevron_right_rounded),
       ),
     );
   }

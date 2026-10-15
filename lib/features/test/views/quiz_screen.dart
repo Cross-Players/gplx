@@ -313,7 +313,9 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
 
   /// Tab changed handler
   void _onTabChanged() {
-    if (_tabController.indexIsChanging && mounted) {
+    // Rebuild on taps and on swipes so the active tab chip and the
+    // previous/next buttons stay in sync.
+    if (mounted) {
       setState(() {});
     }
   }
@@ -356,7 +358,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
               onPressed: () => Navigator.of(context).pop(),
               child: const Text(
                 QuizConstants.cancelButtonText,
-                style: TextStyle(color: Colors.black),
+                style: TextStyle(color: AppPalette.inkMuted),
               ),
             ),
             TextButton(
@@ -613,40 +615,65 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
   PreferredSizeWidget _buildAppBar() {
     return GradientAppBar(
       automaticallyImplyLeading: false,
+      leadingWidth: 76,
       leading: Center(
         child: Container(
-          margin: const EdgeInsets.only(left: 5.0),
+          margin: const EdgeInsets.only(left: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.18),
+            borderRadius: BorderRadius.circular(20),
+          ),
           child: Text(
             '$_answeredCount/${_questions.length}',
             style: const TextStyle(
-              fontSize: QuizConstants.counterFontSize,
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
               color: Colors.white,
             ),
           ),
         ),
       ),
-      title: ListenableBuilder(
-        listenable: _timerService,
-        builder: (context, child) {
-          return CountdownTimer(
-            duration: Duration(seconds: _timerService.remainingTimeInSeconds),
-            textStyle: const TextStyle(
-              color: Colors.white,
-              fontSize: QuizConstants.timerFontSize,
+      title: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.timer_outlined,
+                size: 18, color: AppPalette.primary),
+            const SizedBox(width: 6),
+            ListenableBuilder(
+              listenable: _timerService,
+              builder: (context, child) {
+                return CountdownTimer(
+                  duration:
+                      Duration(seconds: _timerService.remainingTimeInSeconds),
+                  textStyle: const TextStyle(
+                    color: AppPalette.primaryDeep,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                    fontFeatures: [FontFeature.tabularFigures()],
+                  ),
+                  onTimerComplete: _completeQuiz,
+                );
+              },
             ),
-            onTimerComplete: _completeQuiz,
-          );
-        },
+          ],
+        ),
       ),
       actions: [
         Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.only(right: 8),
           child: TextButton(
             onPressed: _showConfirmationDialog,
             child: Text(
               QuizConstants.completeButtonText,
               style: AppStyles.textBold.copyWith(
-                fontSize: 16,
+                fontSize: 15,
                 color: Colors.white,
               ),
             ),
@@ -663,14 +690,17 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
   }
 
   Widget _buildTabBar() {
-    return TabBar(
-      controller: _tabController,
-      isScrollable: true,
-      indicatorWeight: 3,
-      indicatorColor: AppStyles.primaryGradientStart,
-      labelColor: AppStyles.primaryGradientStart,
-      unselectedLabelColor: Colors.grey,
-      tabs: List.generate(_questions.length, _buildQuestionTab),
+    return Container(
+      color: AppPalette.surface,
+      child: TabBar(
+        controller: _tabController,
+        isScrollable: true,
+        dividerColor: AppPalette.border,
+        indicator: const BoxDecoration(),
+        labelPadding: const EdgeInsets.symmetric(horizontal: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        tabs: List.generate(_questions.length, _buildQuestionTab),
+      ),
     );
   }
 
@@ -678,36 +708,40 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
     final isChecked = _checkedQuestions[index] ?? false;
     final hasSelection = _selectedAnswers.containsKey(index);
     final isCorrect = isChecked ? _isAnswerCorrect(index) : false;
+    final isCurrent = _tabController.index == index;
 
-    Color? backgroundColor;
-    Color? textColor;
+    Color backgroundColor = AppPalette.background;
+    Color textColor = AppPalette.inkMuted;
 
     if (isChecked) {
-      backgroundColor = isCorrect
-          ? Colors.green.withValues(
-              alpha: QuizConstants.correctAnswerOpacity,
-            )
-          : Colors.red.withValues(alpha: QuizConstants.wrongAnswerOpacity);
-      textColor = isCorrect ? Colors.green.shade700 : Colors.red.shade700;
+      backgroundColor =
+          isCorrect ? AppPalette.successSoft : AppPalette.dangerSoft;
+      textColor = isCorrect ? AppPalette.success : AppPalette.danger;
     } else if (hasSelection) {
-      backgroundColor = Colors.blue.withValues(
-        alpha: QuizConstants.selectedAnswerOpacity,
-      );
-      textColor = Colors.blue.shade700;
+      backgroundColor = AppPalette.primarySoft;
+      textColor = AppPalette.primaryDeep;
+    }
+
+    if (isCurrent) {
+      backgroundColor = AppPalette.primary;
+      textColor = Colors.white;
     }
 
     return Tab(
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      height: 36,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
           color: backgroundColor,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
         ),
         child: Text(
           '${QuizConstants.questionTabPrefix}${index + 1}',
           style: TextStyle(
+            fontSize: 13,
             color: textColor,
-            fontWeight: hasSelection ? FontWeight.bold : null,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ),
@@ -733,21 +767,15 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
   }
 
   Widget _buildBottomNavigation() {
-    return Stack(
-      alignment: Alignment.topCenter,
-      children: [
-        QuizNavigationWidget(
-          canGoPrevious: _tabController.index > 0,
-          canGoNext: _tabController.index < _questions.length - 1,
-          onPrevious: _navigatePrevious,
-          onNext: _navigateNext,
-          onShowQuestionIndex: () => _showQuestionIndex(context),
-        ),
-        if (_shouldShowCheckButton())
-          CheckAnswerButtonWidget(
-            onPressed: () => _onAnswerChecked(_tabController.index),
-          ),
-      ],
+    return QuizNavigationWidget(
+      canGoPrevious: _tabController.index > 0,
+      canGoNext: _tabController.index < _questions.length - 1,
+      onPrevious: _navigatePrevious,
+      onNext: _navigateNext,
+      onShowQuestionIndex: () => _showQuestionIndex(context),
+      onCheck: _shouldShowCheckButton()
+          ? () => _onAnswerChecked(_tabController.index)
+          : null,
     );
   }
 

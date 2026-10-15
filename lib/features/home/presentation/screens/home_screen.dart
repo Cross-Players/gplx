@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gplx/core/constants/app_styles.dart';
 import 'package:gplx/core/routes/app_routes.dart';
 import 'package:gplx/features/settings/presentation/screens/settings_screen.dart';
 import 'package:gplx/features/test/models/license_data.dart';
@@ -57,25 +58,17 @@ class HomeScreen extends ConsumerWidget {
       }
     }
 
+    void openSettings() => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const SettingsScreen()),
+        );
+
     final features = [
       _FeatureData(
-        title: 'Đề ngẫu nhiên',
-        icon: Icons.shuffle,
-        gradient: const LinearGradient(
-          colors: [Color(0xFFFB923C), Color(0xFFEA580C)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        onTap: () => navigateToRandomTest(),
-      ),
-      _FeatureData(
         title: 'Thi theo bộ đề',
-        icon: Icons.assignment,
-        gradient: const LinearGradient(
-          colors: [Color(0xFFFB7185), Color(0xFFE11D48)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        subtitle: 'Đề chính thức',
+        icon: Icons.assignment_rounded,
+        color: const Color(0xFFE11D48),
         onTap: () => Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const TestSetsScreen()),
@@ -83,22 +76,16 @@ class HomeScreen extends ConsumerWidget {
       ),
       _FeatureData(
         title: 'Ôn tập câu hỏi',
-        icon: Icons.book,
-        gradient: const LinearGradient(
-          colors: [Color(0xFF2DD4BF), Color(0xFF0D9488)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        subtitle: 'Theo chương',
+        icon: Icons.menu_book_rounded,
+        color: const Color(0xFF0D9488),
         onTap: () => Navigator.pushNamed(context, AppRoutes.allChapters),
       ),
       _FeatureData(
         title: 'Câu điểm liệt',
-        icon: Icons.timer,
-        gradient: const LinearGradient(
-          colors: [Color(0xFFFBBF24), Color(0xFFB45309)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        subtitle: 'Không được sai',
+        icon: Icons.warning_amber_rounded,
+        color: const Color(0xFFD97706),
         onTap: () {
           Navigator.pushNamed(context, AppRoutes.deadpointQuestions,
               arguments: {
@@ -109,222 +96,239 @@ class HomeScreen extends ConsumerWidget {
       ),
       _FeatureData(
         title: 'Các biển báo',
-        icon: Icons.traffic,
-        gradient: const LinearGradient(
-          colors: [Color(0xFF60A5FA), Color(0xFF2563EB)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        subtitle: 'Tra cứu nhanh',
+        icon: Icons.traffic_rounded,
+        color: const Color(0xFF2563EB),
         onTap: () => Navigator.pushNamed(context, AppRoutes.signs),
       ),
       _FeatureData(
         title: 'Mẹo ghi nhớ',
-        icon: Icons.lightbulb_outline,
-        gradient: const LinearGradient(
-          colors: [Color(0xFFC084FC), Color(0xFF9333EA)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        subtitle: 'Học nhanh, nhớ lâu',
+        icon: Icons.lightbulb_rounded,
+        color: const Color(0xFF9333EA),
         onTap: () => Navigator.pushNamed(context, AppRoutes.tips),
+      ),
+      _FeatureData(
+        title: 'Thiết lập',
+        subtitle: 'Đổi hạng bằng',
+        icon: Icons.tune_rounded,
+        color: const Color(0xFF475569),
+        onTap: openSettings,
       ),
     ];
 
+    final topInset = MediaQuery.of(context).padding.top;
+
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFFEFF6FF), Colors.white, Color(0xFFFAF5FF)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: SingleChildScrollView(
-          physics: const ClampingScrollPhysics(),
-          child: Column(
-            children: [
-              // Header
-              Container(
-                padding: const EdgeInsets.only(top: 40),
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Color(0xFF3B82F6), Color(0xFF2563EB)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                ),
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(16),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
-                                      blurRadius: 20,
-                                      offset: const Offset(0, 4),
-                                    ),
-                                  ],
-                                  border: Border.all(
-                                    color: Colors.white.withOpacity(0.5),
-                                    width: 2,
-                                  ),
-                                ),
-                                padding: const EdgeInsets.all(2),
-                                child: ClipRRect(
+      body: CustomScrollView(
+        physics: const ClampingScrollPhysics(),
+        slivers: [
+          // Header with the quick start card overlapping its bottom edge
+          SliverToBoxAdapter(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Padding(
+                  padding: EdgeInsets.zero,
+                  child: Container(
+                    padding: EdgeInsets.fromLTRB(24, topInset + 20, 24, 64),
+                    decoration: const BoxDecoration(
+                      gradient: AppPalette.heroGradient,
+                      borderRadius: BorderRadius.vertical(
+                        bottom: Radius.circular(32),
+                      ),
+                    ),
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        const Positioned(
+                          right: -60,
+                          top: -40,
+                          child: _Glow(size: 180),
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(14),
                                   child: Image.asset(
                                     'assets/images/logo_vx.jpg',
-                                    width: 55,
-                                    height: 55,
+                                    width: 44,
+                                    height: 44,
+                                    fit: BoxFit.cover,
                                   ),
                                 ),
-                              ),
-                              Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.2),
-                                  borderRadius: BorderRadius.circular(12),
+                                const SizedBox(width: 12),
+                                const Expanded(
+                                  child: Text(
+                                    'Ôn thi GPLX',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
                                 ),
-                                child: IconButton(
-                                  icon: const Icon(Icons.settings,
-                                      color: Colors.white),
-                                  onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                              const SettingsScreen()),
-                                    );
-                                  },
+                                _GlassIconButton(
+                                  icon: Icons.settings_rounded,
+                                  onTap: openSettings,
                                 ),
+                              ],
+                            ),
+                            const SizedBox(height: 28),
+                            Text(
+                              'Học lý thuyết\nGiấy phép lái xe',
+                              style: TextStyle(
+                                fontSize: 14,
+                                height: 1.4,
+                                color: Colors.white.withValues(alpha: 0.75),
                               ),
-                            ],
-                          ),
-                          const SizedBox(height: 24),
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                            ),
+                            const SizedBox(height: 6),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
-                                Text(
-                                  'Hạng ${licenseType.name} 2025',
-                                  style: const TextStyle(
-                                    fontSize: 28,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
+                                Flexible(
+                                  child: Text(
+                                    'Hạng ${licenseType.name}',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontSize: 34,
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: -1,
+                                      color: Colors.white,
+                                      height: 1.1,
+                                    ),
                                   ),
                                 ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  'Học lý thuyết Giấy phép lái xe',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.blue.shade100,
+                                const SizedBox(width: 10),
+                                GestureDetector(
+                                  onTap: openSettings,
+                                  child: Container(
+                                    margin: const EdgeInsets.only(bottom: 4),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10, vertical: 5),
+                                    decoration: BoxDecoration(
+                                      color:
+                                          Colors.white.withValues(alpha: 0.18),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: const Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          'Đổi',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        Icon(Icons.expand_more_rounded,
+                                            size: 16, color: Colors.white),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ],
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Content
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  children: [
-                    // Features Grid
-                    GridView.builder(
-                      shrinkWrap: true,
-                      padding: const EdgeInsets.symmetric(vertical: 24),
-                      physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        crossAxisSpacing: 16,
-                        mainAxisSpacing: 16,
-                        childAspectRatio: 1,
-                      ),
-                      itemCount: features.length,
-                      itemBuilder: (context, index) {
-                        final feature = features[index];
-                        return _FeatureCard(feature: feature);
-                      },
-                    ),
-
-                    // Bottom Info Card
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      margin: const EdgeInsets.only(bottom: 24),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            Colors.blue.shade50,
-                            Colors.purple.shade50,
                           ],
                         ),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.blue.shade100),
-                      ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF3B82F6),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: const Icon(
-                              Icons.lightbulb_outline,
-                              color: Colors.white,
-                              size: 20,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Mẹo học tập',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.black87,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Hãy ôn tập các câu điểm liệt trước khi thi để đạt kết quả tốt nhất!',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: Colors.grey.shade600,
-                                    height: 1.4,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
+                      ],
                     ),
-                  ],
+                  ),
+                ),
+                // Pull the card up so it overlaps the header bottom edge.
+                Transform.translate(
+                  offset: const Offset(0, -56),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: _QuickStartCard(onTap: navigateToRandomTest),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(24, 0, 24, 14),
+              child: Text(
+                'Luyện tập',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: AppPalette.ink,
+                  letterSpacing: -0.3,
                 ),
               ),
-            ],
+            ),
           ),
-        ),
+
+          // Features grid
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+            sliver: SliverGrid(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 14,
+                mainAxisSpacing: 14,
+                childAspectRatio: 1.15,
+              ),
+              delegate: SliverChildBuilderDelegate(
+                (context, index) => _FeatureCard(feature: features[index]),
+                childCount: features.length,
+              ),
+            ),
+          ),
+
+          // Tip card
+          SliverToBoxAdapter(
+            child: Container(
+              padding: const EdgeInsets.all(18),
+              margin: EdgeInsets.fromLTRB(
+                  20, 20, 20, 24 + MediaQuery.of(context).padding.bottom),
+              decoration: BoxDecoration(
+                color: AppPalette.warningSoft,
+                borderRadius: BorderRadius.circular(AppPalette.radiusM),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('💡', style: TextStyle(fontSize: 22)),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Mẹo học tập',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: AppPalette.ink,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Hãy ôn tập các câu điểm liệt trước khi thi để đạt kết quả tốt nhất!',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: AppPalette.ink.withValues(alpha: 0.7),
+                            height: 1.45,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -332,115 +336,227 @@ class HomeScreen extends ConsumerWidget {
 
 class _FeatureData {
   final String title;
+  final String subtitle;
   final IconData icon;
-  final Gradient gradient;
+  final Color color;
   final VoidCallback onTap;
 
   _FeatureData({
     required this.title,
+    required this.subtitle,
     required this.icon,
-    required this.gradient,
+    required this.color,
     required this.onTap,
   });
 }
 
-class _FeatureCard extends StatefulWidget {
+class _Glow extends StatelessWidget {
+  final double size;
+
+  const _Glow({required this.size});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.white.withValues(alpha: 0.08),
+      ),
+    );
+  }
+}
+
+class _GlassIconButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+
+  const _GlassIconButton({required this.icon, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.white.withValues(alpha: 0.16),
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(10),
+          child: Icon(icon, color: Colors.white, size: 22),
+        ),
+      ),
+    );
+  }
+}
+
+class _QuickStartCard extends StatelessWidget {
+  final VoidCallback onTap;
+
+  const _QuickStartCard({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return _Pressable(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: AppPalette.surface,
+          borderRadius: BorderRadius.circular(AppPalette.radiusL),
+          boxShadow: [
+            BoxShadow(
+              color: AppPalette.primaryDeep.withValues(alpha: 0.12),
+              blurRadius: 30,
+              offset: const Offset(0, 12),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFFF9F43), Color(0xFFFF6B3D)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child:
+                  const Icon(Icons.bolt_rounded, color: Colors.white, size: 32),
+            ),
+            const SizedBox(width: 16),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Thi thử ngẫu nhiên',
+                    style: TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w800,
+                      color: AppPalette.ink,
+                    ),
+                  ),
+                  SizedBox(height: 3),
+                  Text(
+                    'Bốc một đề bất kỳ và bấm giờ như thi thật',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: AppPalette.inkMuted,
+                      height: 1.35,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              width: 40,
+              height: 40,
+              decoration: const BoxDecoration(
+                color: AppPalette.primary,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.play_arrow_rounded,
+                  color: Colors.white, size: 24),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FeatureCard extends StatelessWidget {
   final _FeatureData feature;
 
   const _FeatureCard({required this.feature});
 
   @override
-  State<_FeatureCard> createState() => _FeatureCardState();
+  Widget build(BuildContext context) {
+    return _Pressable(
+      onTap: feature.onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppPalette.surface,
+          borderRadius: BorderRadius.circular(AppPalette.radiusL),
+          border: Border.all(color: AppPalette.border),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: feature.color.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(feature.icon, color: feature.color, size: 24),
+            ),
+            const Spacer(),
+            Text(
+              feature.title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: AppPalette.ink,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              feature.subtitle,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 12.5,
+                color: AppPalette.inkMuted,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
-class _FeatureCardState extends State<_FeatureCard> {
+/// Scales its child down slightly while pressed.
+class _Pressable extends StatefulWidget {
+  final Widget child;
+  final VoidCallback onTap;
+
+  const _Pressable({required this.child, required this.onTap});
+
+  @override
+  State<_Pressable> createState() => _PressableState();
+}
+
+class _PressableState extends State<_Pressable> {
   bool _isPressed = false;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTapDown: (_) => setState(() => _isPressed = true),
       onTapUp: (_) {
         setState(() => _isPressed = false);
-        widget.feature.onTap();
+        widget.onTap();
       },
       onTapCancel: () => setState(() => _isPressed = false),
       child: AnimatedScale(
-        scale: _isPressed ? 0.95 : 1.0,
-        duration: const Duration(milliseconds: 100),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: widget.feature.gradient,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: widget.feature.gradient.colors.first.withOpacity(0.3),
-                blurRadius: 20,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: Stack(
-            children: [
-              // Decorative circles
-              Positioned(
-                top: -32,
-                right: -32,
-                child: Container(
-                  width: 96,
-                  height: 96,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ),
-              Positioned(
-                bottom: -32,
-                left: -32,
-                child: Container(
-                  width: 96,
-                  height: 96,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ),
-              // Content
-              Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Icon(
-                        widget.feature.icon,
-                        size: 32,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      widget.feature.title,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                        height: 1.3,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
+        scale: _isPressed ? 0.97 : 1.0,
+        duration: const Duration(milliseconds: 120),
+        curve: Curves.easeOut,
+        child: widget.child,
       ),
     );
   }

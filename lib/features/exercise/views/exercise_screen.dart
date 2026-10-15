@@ -93,7 +93,8 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen>
         _tabController.dispose();
         _tabController = TabController(length: _questions.length, vsync: this);
         _tabController.addListener(() {
-          if (_tabController.indexIsChanging) {
+          // Also rebuild after swipes so the active chip stays in sync.
+          if (mounted) {
             setState(() {
               selectedAnswer = _selectedAnswers[_tabController.index];
             });
@@ -173,7 +174,8 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen>
         _tabController.dispose();
         _tabController = TabController(length: questions.length, vsync: this);
         _tabController.addListener(() {
-          if (_tabController.indexIsChanging) {
+          // Also rebuild after swipes so the active chip stays in sync.
+          if (mounted) {
             setState(() {
               selectedAnswer = _selectedAnswers[_tabController.index];
             });
@@ -241,7 +243,8 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen>
       _tabController.dispose();
       _tabController = TabController(length: _questions.length, vsync: this);
       _tabController.addListener(() {
-        if (_tabController.indexIsChanging) {
+        // Also rebuild after swipes so the active chip stays in sync.
+        if (mounted) {
           setState(() {
             selectedAnswer = _selectedAnswers[_tabController.index];
           });
@@ -472,7 +475,7 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen>
               Navigator.pop(context);
               _clearResults();
             },
-            child: const Text('XÓA', style: TextStyle(color: Colors.red)),
+            child: const Text('XÓA', style: TextStyle(color: AppPalette.danger)),
           ),
         ],
       ),
@@ -616,8 +619,8 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen>
                 widget.title!,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
-                  fontSize: AppStyles.fontSizeH,
-                  fontWeight: FontWeight.bold,
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
                   color: Colors.white,
                 ),
               )
@@ -625,58 +628,69 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen>
         actions: [
           IconButton(
             onPressed: () => _showClearConfirmationDialog(context),
-            icon: const Icon(Icons.refresh),
+            icon: const Icon(Icons.restart_alt_rounded),
             tooltip: 'Làm mới kết quả',
           ),
         ],
       ),
       body: Column(
         children: [
-          TabBar(
-            controller: _tabController,
-            isScrollable: true,
-            indicatorWeight: 3,
-            indicatorColor: AppStyles.primaryGradientEnd,
-            labelColor: AppStyles.primaryGradientEnd,
-            unselectedLabelColor: Colors.grey,
-            tabs: List.generate(_questions.length, (index) {
-              final isChecked = _checkedQuestions[index] ?? false;
-              final hasSelection = _selectedAnswers.containsKey(index);
-              final isCorrect = isChecked ? _isAnswerCorrect(index) : false;
+          Container(
+            color: AppPalette.surface,
+            child: TabBar(
+              controller: _tabController,
+              isScrollable: true,
+              dividerColor: AppPalette.border,
+              indicator: const BoxDecoration(),
+              labelPadding: const EdgeInsets.symmetric(horizontal: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              tabs: List.generate(_questions.length, (index) {
+                final isChecked = _checkedQuestions[index] ?? false;
+                final hasSelection = _selectedAnswers.containsKey(index);
+                final isCorrect = isChecked ? _isAnswerCorrect(index) : false;
+                final isCurrent = _tabController.index == index;
 
-              Color? backgroundColor;
-              Color? textColor;
-              if (isChecked) {
-                backgroundColor = isCorrect
-                    ? Colors.green.withValues(alpha: 0.2)
-                    : Colors.red.withValues(alpha: 0.2);
-                textColor =
-                    isCorrect ? Colors.green.shade700 : Colors.red.shade700;
-              } else if (hasSelection) {
-                backgroundColor = Colors.blue.withValues(alpha: 0.1);
-                textColor = Colors.blue.shade700;
-              }
+                Color backgroundColor = AppPalette.background;
+                Color textColor = AppPalette.inkMuted;
+                if (isChecked) {
+                  backgroundColor = isCorrect
+                      ? AppPalette.successSoft
+                      : AppPalette.dangerSoft;
+                  textColor =
+                      isCorrect ? AppPalette.success : AppPalette.danger;
+                } else if (hasSelection) {
+                  backgroundColor = AppPalette.primarySoft;
+                  textColor = AppPalette.primaryDeep;
+                }
+                if (isCurrent) {
+                  backgroundColor = AppPalette.primary;
+                  textColor = Colors.white;
+                }
 
-              return Tab(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: backgroundColor,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Text(
-                    'Câu ${_questions[index].number}',
-                    style: TextStyle(
-                      color: textColor,
-                      fontWeight: hasSelection ? FontWeight.bold : null,
+                return Tab(
+                  height: 36,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: backgroundColor,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      'Câu ${_questions[index].number}',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: textColor,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
-                ),
-              );
-            }),
+                );
+              }),
+            ),
           ),
           Expanded(
             child: TabBarView(
@@ -704,26 +718,20 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen>
           ),
         ],
       ),
-      bottomNavigationBar: Stack(
-        alignment: Alignment.topCenter,
-        children: [
-          QuizNavigationWidget(
-            canGoPrevious: _tabController.index > 0,
-            canGoNext: _tabController.index < _questions.length - 1,
-            onPrevious: () {
-              _tabController.animateTo(_tabController.index - 1);
-            },
-            onNext: () {
-              _tabController.animateTo(_tabController.index + 1);
-            },
-            onShowQuestionIndex: () => _showQuestionIndex(context),
-          ),
-          if (_selectedAnswers.containsKey(_tabController.index) &&
-              !(_checkedQuestions[_tabController.index] ?? false))
-            CheckAnswerButtonWidget(
-              onPressed: () => _onCheckAnswer(_tabController.index),
-            ),
-        ],
+      bottomNavigationBar: QuizNavigationWidget(
+        canGoPrevious: _tabController.index > 0,
+        canGoNext: _tabController.index < _questions.length - 1,
+        onPrevious: () {
+          _tabController.animateTo(_tabController.index - 1);
+        },
+        onNext: () {
+          _tabController.animateTo(_tabController.index + 1);
+        },
+        onShowQuestionIndex: () => _showQuestionIndex(context),
+        onCheck: _selectedAnswers.containsKey(_tabController.index) &&
+                !(_checkedQuestions[_tabController.index] ?? false)
+            ? () => _onCheckAnswer(_tabController.index)
+            : null,
       ),
     );
   }

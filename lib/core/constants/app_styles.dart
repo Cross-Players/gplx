@@ -1,6 +1,52 @@
 // Declare common constant style such as color, text style, dimension
 import 'package:flutter/material.dart';
 
+/// Design tokens for the modern UI. Prefer these over raw colors.
+class AppPalette {
+  AppPalette._();
+
+  // brand
+  static const primary = Color(0xFF3D5AFE);
+  static const primaryDeep = Color(0xFF2A3EB1);
+  static const primarySoft = Color(0xFFEEF1FF);
+  static const accent = Color(0xFF00C2A8);
+
+  // neutrals
+  static const ink = Color(0xFF0F172A);
+  static const inkMuted = Color(0xFF64748B);
+  static const inkFaint = Color(0xFF94A3B8);
+  static const surface = Colors.white;
+  static const background = Color(0xFFF5F7FB);
+  static const border = Color(0xFFE6EAF2);
+
+  // status
+  static const success = Color(0xFF16A34A);
+  static const successSoft = Color(0xFFE8F7EE);
+  static const danger = Color(0xFFE5484D);
+  static const dangerSoft = Color(0xFFFDECEC);
+  static const warning = Color(0xFFF59E0B);
+  static const warningSoft = Color(0xFFFFF5E1);
+
+  // radii
+  static const double radiusS = 12;
+  static const double radiusM = 16;
+  static const double radiusL = 24;
+
+  static const heroGradient = LinearGradient(
+    colors: [Color(0xFF4F6BFF), Color(0xFF2A3EB1)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  static List<BoxShadow> softShadow([Color color = ink]) => [
+        BoxShadow(
+          color: color.withValues(alpha: 0.06),
+          blurRadius: 24,
+          offset: const Offset(0, 8),
+        ),
+      ];
+}
+
 class AppColors {
   static const Color primary = Color(0xFF2E3B55);
   static const Color background = Color(0xFFF5F5F5);
@@ -33,19 +79,15 @@ class AppStyles {
   static const iconDarkModeColor = Color(0xffF6F6F6);
   static const iconLightModeColor = Colors.black;
   static const errorColor = Color(0xffED5B5B);
-  static const buttonColor = Color.fromRGBO(0, 122, 255, 1);
+  static const buttonColor = AppPalette.primary;
   static const fontSecondaryColor = Color.fromRGBO(82, 82, 82, 1);
 
   // Primary gradient (replaces primaryColor for backgrounds)
-  static const primaryGradient = LinearGradient(
-    colors: [Color(0xFF3B82F6), Color(0xFF2563EB)],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
+  static const primaryGradient = AppPalette.heroGradient;
 
   // Primary gradient colors for single color contexts
-  static const primaryGradientStart = Color(0xFF3B82F6);
-  static const primaryGradientEnd = Color(0xFF2563EB);
+  static const primaryGradientStart = AppPalette.primary;
+  static const primaryGradientEnd = AppPalette.primaryDeep;
 
   // font
   static const String notoSansJP = 'NotoSansJP';

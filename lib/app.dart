@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gplx/core/constants/app_styles.dart';
 import 'package:gplx/core/routes/app_routes.dart';
-import 'package:gplx/features/login/auth_layout.dart';
+import 'package:gplx/core/theme/app_theme.dart';
+import 'package:gplx/features/home/presentation/screens/home_screen.dart';
 
 class App extends ConsumerWidget {
   const App({super.key});
@@ -12,33 +12,10 @@ class App extends ConsumerWidget {
     return MaterialApp(
       title: 'Ôn thi GPLX B2',
       debugShowCheckedModeBanner: false,
-      home: const AuthLayout(),
-      theme: ThemeData(
-        actionIconTheme: ActionIconThemeData(
-          backButtonIconBuilder: (context) => const Icon(Icons.arrow_back_ios),
-        ),
-        appBarTheme: const AppBarTheme(
-            backgroundColor: AppStyles.primaryGradientStart,
-            foregroundColor: Colors.black,
-            elevation: 0,
-            iconTheme: IconThemeData(color: Colors.white),
-            centerTitle: true,
-            titleTextStyle: TextStyle(
-              fontSize: 20,
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            )),
-        tabBarTheme: const TabBarThemeData(
-          indicatorColor: AppStyles.primaryGradientStart,
-          labelColor: AppStyles.primaryGradientStart,
-          labelPadding: EdgeInsets.symmetric(horizontal: 16.0),
-          indicatorSize: TabBarIndicatorSize.tab,
-          tabAlignment: TabAlignment.start,
-        ),
-        colorScheme:
-            ColorScheme.fromSeed(seedColor: AppStyles.primaryGradientStart),
-        useMaterial3: true,
-      ),
+      // Login is disabled: everyone goes straight to the home screen.
+      // To re-enable, set `home: const AuthLayout()` again.
+      home: const HomeScreen(),
+      theme: AppTheme.light,
       onGenerateRoute: AppRoutes.onGenerateRoute,
     );
   }

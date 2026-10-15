@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gplx/core/constants/app_styles.dart';
 import 'package:gplx/core/widgets/gradient_app_bar.dart';
 import 'package:gplx/features/exercise/controllers/deadpoint_questions_provider.dart';
 import 'package:gplx/features/exercise/views/exercise_screen.dart';
@@ -128,7 +129,8 @@ class _AllChapterScreenState extends ConsumerState<AllChapterScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.error, size: 64, color: Colors.red),
+              const Icon(Icons.cloud_off_rounded,
+                  size: 64, color: AppPalette.danger),
               const SizedBox(height: 16),
               Text('Lỗi: $error'),
               const SizedBox(height: 16),
@@ -161,17 +163,9 @@ class _AllChapterScreenState extends ConsumerState<AllChapterScreen> {
                 children: [
                   Column(
                     children: [
-                      SizedBox(
-                        width: double.infinity,
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(
-                            vertical: 10.0,
-                            horizontal: 10.0,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.grey[200],
-                            borderRadius: BorderRadius.circular(16.0),
-                          ),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                        child: SizedBox(
                           child: TextField(
                             onSubmitted: (searchText) {
                               if (searchText.isEmpty) {
@@ -213,30 +207,16 @@ class _AllChapterScreenState extends ConsumerState<AllChapterScreen> {
                                 ),
                               );
                             },
-                            decoration: InputDecoration(
-                              alignLabelWithHint: true,
-                              contentPadding: const EdgeInsets.all(0),
+                            textInputAction: TextInputAction.search,
+                            decoration: const InputDecoration(
                               hintText: 'Tìm kiếm câu hỏi...',
-                              hintStyle: const TextStyle(
-                                color: Colors.grey,
-                                fontSize: 16,
-                              ),
-                              prefixIcon: const Icon(
-                                Icons.search,
-                                color: Colors.grey,
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8.0),
-                                borderSide: BorderSide.none,
+                              prefixIcon: Icon(
+                                Icons.search_rounded,
+                                color: AppPalette.inkFaint,
                               ),
                             ),
                           ),
                         ),
-                      ),
-                      Divider(
-                        height: 0.5,
-                        thickness: 1,
-                        color: Colors.grey[400],
                       ),
                     ],
                   ),
@@ -252,7 +232,7 @@ class _AllChapterScreenState extends ConsumerState<AllChapterScreen> {
                     ref: ref,
                   ),
                   ListView.builder(
-                    padding: const EdgeInsets.all(0.0),
+                    padding: EdgeInsets.zero,
                     itemCount: cleanedChapterMap.length,
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
@@ -307,7 +287,8 @@ class _AllChapterScreenState extends ConsumerState<AllChapterScreen> {
                       subtitle: Text('Đang tải...'),
                     ),
                     error: (error, stack) => ListTile(
-                      leading: const Icon(Icons.error, color: Colors.red),
+                      leading: const Icon(Icons.error_outline_rounded,
+                          color: AppPalette.danger),
                       title: const Text('Câu hỏi điểm liệt'),
                       subtitle: Text('Lỗi: $error'),
                     ),
@@ -369,85 +350,93 @@ Widget _customListTile({
     }
   }
 
-  return GestureDetector(
-    onTap: () {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ExerciseScreen(
-            questions: Future.value(questions),
-            title: titleBasedOnChapterType(title),
+  final chapterNumber = int.tryParse(title);
+  final Color accent = isDeadPoint || title == 'Câu hỏi điểm liệt'
+      ? AppPalette.danger
+      : AppPalette.primary;
+
+  return Padding(
+    padding: const EdgeInsets.fromLTRB(16, 5, 16, 5),
+    child: Material(
+      color: AppPalette.surface,
+      borderRadius: BorderRadius.circular(AppPalette.radiusM),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppPalette.radiusM),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ExerciseScreen(
+                questions: Future.value(questions),
+                title: titleBasedOnChapterType(title),
+              ),
+            ),
+          );
+        },
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppPalette.radiusM),
+            border: Border.all(color: AppPalette.border),
           ),
-        ),
-      );
-    },
-    child: Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Column(
-        children: [
-          Row(
+          child: Row(
             children: [
+              Container(
+                width: 44,
+                height: 44,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: accent.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(AppPalette.radiusS),
+                ),
+                child: chapterNumber != null
+                    ? Text(
+                        '$chapterNumber',
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
+                          color: accent,
+                        ),
+                      )
+                    : Icon(
+                        accent == AppPalette.danger
+                            ? Icons.warning_amber_rounded
+                            : Icons.library_books_rounded,
+                        color: accent,
+                      ),
+              ),
+              const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    ListTile(
-                      title: Text(titleBasedOnChapterType(title)),
-                      titleTextStyle: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        color: Colors.black,
+                    Text(
+                      titleBasedOnChapterType(title),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 15,
+                        height: 1.3,
+                        color: AppPalette.ink,
                       ),
-                      subtitle: Text(subtitle),
                     ),
-                    // Padding(
-                    //   padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 8.0),
-                    //   child: _buildProgressBar(completed, total),
-                    // ),
+                    const SizedBox(height: 3),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        fontSize: 12.5,
+                        color: AppPalette.inkMuted,
+                      ),
+                    ),
                   ],
                 ),
               ),
-              Text('Làm ngay', style: TextStyle(color: Colors.blue[700])),
-              const SizedBox(width: 16),
+              const SizedBox(width: 8),
+              const Icon(Icons.chevron_right_rounded,
+                  color: AppPalette.inkFaint),
             ],
           ),
-          Divider(
-            indent: 20,
-            endIndent: 20,
-            height: 0.5,
-            thickness: 1,
-            color: Colors.grey[300],
-          ),
-        ],
+        ),
       ),
     ),
   );
 }
-
-// Widget _buildProgressBar(int completed, int total) {
-//   final progress = total > 0 ? (completed / total).clamp(0.0, 1.0) : 0.0;
-
-//   return Row(
-//     children: [
-//       Expanded(
-//         flex: 2,
-//         child: LinearProgressIndicator(
-//           value: progress,
-//           backgroundColor: Colors.grey[300],
-//           valueColor: const AlwaysStoppedAnimation<Color>(Colors.green),
-//           minHeight: 4.0,
-//           borderRadius: BorderRadius.circular(3.0),
-//         ),
-//       ),
-//       const SizedBox(width: AppStyles.horizontalSpace / 2),
-//       Text(
-//         '$completed/$total',
-//         style: const TextStyle(
-//           color: Colors.green,
-//           fontSize: 14,
-//           fontWeight: FontWeight.w500,
-//         ),
-//       ),
-//     ],
-//   );
-// }

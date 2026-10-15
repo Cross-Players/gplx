@@ -20,48 +20,76 @@ class StartQuizDialog extends ConsumerWidget {
     final vehicle = ref.watch(selectedVehicleTypeProvider);
     final questionCount = vehicle.totalQuestionsPerQuiz;
     return AlertDialog(
+      icon: Container(
+        width: 56,
+        height: 56,
+        decoration: BoxDecoration(
+          gradient: AppPalette.heroGradient,
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: const Icon(Icons.assignment_rounded,
+            color: Colors.white, size: 28),
+      ),
       title: Text('Đề thi số $testNumber'),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Bạn sắp làm đề thi số $testNumber',
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 12),
-          _QuizInfoRow(
-            icon: Icons.quiz,
-            text: 'Số câu hỏi: $questionCount câu',
-          ),
-          _QuizInfoRow(
-            icon: Icons.timer,
-            text: 'Thời gian: ${vehicle.minutes} phút',
+          Row(
+            children: [
+              Expanded(
+                child: _QuizInfoRow(
+                  icon: Icons.quiz_rounded,
+                  text: '$questionCount câu',
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _QuizInfoRow(
+                  icon: Icons.timer_rounded,
+                  text: '${vehicle.minutes} phút',
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 16),
           const Text(
             TestSetsConstants.quizInstructions,
-            style: TextStyle(fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontWeight: FontWeight.w700,
+              color: AppPalette.ink,
+            ),
           ),
-          const SizedBox(height: 8),
-          ...TestSetsConstants.quizInstructionItems.map((item) => Text(item)),
+          const SizedBox(height: 6),
+          ...TestSetsConstants.quizInstructionItems.map(
+            (item) => Padding(
+              padding: const EdgeInsets.only(bottom: 2),
+              child: Text(item, style: const TextStyle(fontSize: 14)),
+            ),
+          ),
         ],
       ),
+      actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text(TestSetsConstants.cancelButton),
-        ),
-        ElevatedButton(
-          onPressed: () {
-            Navigator.pop(context);
-            onStart();
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppStyles.primaryGradientStart,
-            foregroundColor: Colors.white,
-          ),
-          child: const Text(TestSetsConstants.startButton),
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text(TestSetsConstants.cancelButton),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  onStart();
+                },
+                child: const Text(TestSetsConstants.startButton),
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -77,12 +105,25 @@ class _QuizInfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, size: 18, color: Colors.grey),
-        const SizedBox(width: 4),
-        Text(text, style: const TextStyle(color: Colors.grey)),
-      ],
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppPalette.primarySoft,
+        borderRadius: BorderRadius.circular(AppPalette.radiusS),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: AppPalette.primary),
+          const SizedBox(width: 6),
+          Text(
+            text,
+            style: const TextStyle(
+              color: AppPalette.primaryDeep,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

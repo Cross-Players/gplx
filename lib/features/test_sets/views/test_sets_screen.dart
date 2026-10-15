@@ -87,12 +87,17 @@ class _TestSetsScreenState extends ConsumerState<TestSetsScreen>
         title: Text("Đề thi hạng ${licenseType.name}"),
       ),
       body: GridView.builder(
-        padding: const EdgeInsets.all(TestSetsConstants.gridPadding),
+        padding: EdgeInsets.fromLTRB(
+          TestSetsConstants.gridPadding,
+          TestSetsConstants.gridPadding,
+          TestSetsConstants.gridPadding,
+          TestSetsConstants.gridPadding + MediaQuery.of(context).padding.bottom,
+        ),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: TestSetsUtils.getGridColumns(context),
-          mainAxisSpacing: TestSetsConstants.gridSpacing,
-          crossAxisSpacing: TestSetsConstants.gridSpacing,
-          childAspectRatio: TestSetsConstants.gridChildAspectRatio,
+          mainAxisSpacing: 12,
+          crossAxisSpacing: 12,
+          childAspectRatio: 1.15,
         ),
         itemCount: generateTestSetNumbers(licenseType).length,
         itemBuilder: (context, index) {
@@ -243,70 +248,126 @@ class TestSetCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final backgroundColor = isCompleted
-        ? (isPassed == false ? AppStyles.errorColor : Colors.green[700])
-        : Colors.grey[200];
+    final failed = isCompleted && isPassed == false;
+    final Color accent = !isCompleted
+        ? AppPalette.primary
+        : (failed ? AppPalette.danger : AppPalette.success);
+    final total = correct + wrong;
 
     return Material(
-      color: backgroundColor,
-      borderRadius: BorderRadius.circular(8),
+      color: AppPalette.surface,
+      borderRadius: BorderRadius.circular(AppPalette.radiusM),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
-        child: Column(
-          children: [
-            const Spacer(),
-            Text(
-              'ĐỀ THI SỐ $testNumber',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: isCompleted ? Colors.white : Colors.black87,
-              ),
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppPalette.radiusM),
+            border: Border.all(
+              color: isCompleted
+                  ? accent.withValues(alpha: 0.35)
+                  : AppPalette.border,
             ),
-            const Spacer(),
-            if (isCompleted) ...[
-              const SizedBox(height: 8),
-              Container(
-                decoration: BoxDecoration(color: Colors.grey[300]),
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.check_circle,
-                      color: Colors.green[700],
-                      size: AppStyles.iconSizeM,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 36,
+                    height: 36,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: accent.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    const SizedBox(width: 4),
-                    Text(
-                      '$correct',
+                    child: Text(
+                      '$testNumber',
                       style: TextStyle(
-                        color: Colors.green[700],
-                        fontSize: AppStyles.fontSizeL,
-                        fontWeight: FontWeight.w500,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                        color: accent,
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Icon(
-                      Icons.cancel,
-                      color: Colors.red[700],
-                      size: AppStyles.iconSizeM,
-                    ),
-                    const SizedBox(width: 4),
+                  ),
+                  const Spacer(),
+                  if (isCompleted)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: accent.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        failed ? 'Trượt' : 'Đạt',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: accent,
+                        ),
+                      ),
+                    )
+                  else
+                    const Icon(Icons.play_circle_fill_rounded,
+                        color: AppPalette.primary, size: 26),
+                ],
+              ),
+              const Spacer(),
+              Text(
+                'Đề số $testNumber',
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: AppPalette.ink,
+                ),
+              ),
+              const SizedBox(height: 6),
+              if (isCompleted) ...[
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: total == 0 ? 0 : correct / total,
+                    minHeight: 5,
+                    color: AppPalette.success,
+                    backgroundColor: AppPalette.dangerSoft,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    const Icon(Icons.check_rounded,
+                        size: 14, color: AppPalette.success),
                     Text(
-                      '$wrong',
-                      style: TextStyle(
-                        color: Colors.red[700],
-                        fontSize: AppStyles.fontSizeL,
-                        fontWeight: FontWeight.w500,
+                      ' $correct',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: AppPalette.success,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    const Icon(Icons.close_rounded,
+                        size: 14, color: AppPalette.danger),
+                    Text(
+                      ' $wrong',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: AppPalette.danger,
                       ),
                     ),
                   ],
                 ),
-              ),
+              ] else
+                const Text(
+                  'Chưa làm',
+                  style: TextStyle(fontSize: 12, color: AppPalette.inkMuted),
+                ),
             ],
-          ],
+          ),
         ),
       ),
     );

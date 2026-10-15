@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gplx/core/constants/app_styles.dart';
 import 'package:gplx/core/widgets/base64_image_widget.dart';
 import 'package:gplx/features/test/constants/quiz_constants.dart';
+import 'package:gplx/features/test/models/question.dart';
 
 /// Widget for displaying quiz question header
 class QuestionHeaderWidget extends StatelessWidget {
@@ -20,20 +21,58 @@ class QuestionHeaderWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final q = question;
+    final isDeadPoint = q is Question && q.isDeadPoint == true;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          '${QuizConstants.questionPrefix}${isQuiz ? questionIndex! + 1 : (question?.number ?? questionIndex)}:',
-          style: AppStyles.textBold.copyWith(
-            fontSize: AppStyles.fontSizeH,
-          ),
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: AppPalette.primarySoft,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                '${QuizConstants.questionPrefix}${isQuiz ? questionIndex! + 1 : (question?.number ?? questionIndex)}',
+                style: const TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.3,
+                  color: AppPalette.primary,
+                ),
+              ),
+            ),
+            if (isDeadPoint) ...[
+              const SizedBox(width: 8),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: AppPalette.dangerSoft,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Text(
+                  'Điểm liệt',
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w800,
+                    color: AppPalette.danger,
+                  ),
+                ),
+              ),
+            ],
+          ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
         Text(
           questionContent,
-          style: AppStyles.textBold.copyWith(
-            fontSize: QuizConstants.questionContentFontSize,
+          style: const TextStyle(
+            fontSize: QuizConstants.questionContentFontSize + 1,
+            fontWeight: FontWeight.w700,
+            height: 1.4,
+            color: AppPalette.ink,
           ),
         ),
       ],
@@ -74,6 +113,9 @@ class QuizNavigationWidget extends StatelessWidget {
   final VoidCallback? onNext;
   final VoidCallback? onShowQuestionIndex;
 
+  /// Checks the current answer. Null when there is nothing to check.
+  final VoidCallback? onCheck;
+
   const QuizNavigationWidget({
     super.key,
     required this.canGoPrevious,
@@ -81,50 +123,52 @@ class QuizNavigationWidget extends StatelessWidget {
     this.onPrevious,
     this.onNext,
     this.onShowQuestionIndex,
+    this.onCheck,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(QuizConstants.defaultPadding),
+      padding: EdgeInsets.fromLTRB(
+          16, 10, 16, 10 + MediaQuery.of(context).padding.bottom),
       decoration: BoxDecoration(
-        gradient: AppStyles.primaryGradient,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
-            blurRadius: 4,
-            offset: const Offset(0, -2),
-          ),
-        ],
+        color: AppPalette.surface,
+        border: const Border(top: BorderSide(color: AppPalette.border)),
+        boxShadow: AppPalette.softShadow(),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            children: [
-              IconButton(
-                onPressed: canGoPrevious ? onPrevious : null,
-                icon: const Icon(
-                  Icons.arrow_back_ios,
-                  color: Colors.white,
-                ),
-              ),
-              IconButton(
-                onPressed: onShowQuestionIndex,
-                icon: const Icon(
-                  Icons.menu_book_outlined,
-                  size: 25,
-                  color: Colors.white,
-                ),
-              ),
-            ],
+          _NavButton(
+            icon: Icons.arrow_back_ios_new_rounded,
+            onPressed: canGoPrevious ? onPrevious : null,
           ),
-          IconButton(
-            onPressed: canGoNext ? onNext : null,
-            icon: const Icon(
-              Icons.arrow_forward_ios,
-              color: Colors.white,
+          const SizedBox(width: 10),
+          _NavButton(
+            icon: Icons.grid_view_rounded,
+            onPressed: onShowQuestionIndex,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: ElevatedButton.icon(
+              onPressed: onCheck,
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size.fromHeight(48),
+                backgroundColor: AppPalette.success,
+                disabledBackgroundColor: AppPalette.background,
+                disabledForegroundColor: AppPalette.inkFaint,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppPalette.radiusS),
+                ),
+              ),
+              icon: const Icon(Icons.check_rounded, size: 20),
+              label: const Text('Kiểm tra'),
             ),
+          ),
+          const SizedBox(width: 10),
+          _NavButton(
+            icon: Icons.arrow_forward_ios_rounded,
+            onPressed: canGoNext ? onNext : null,
+            filled: true,
           ),
         ],
       ),
@@ -132,31 +176,35 @@ class QuizNavigationWidget extends StatelessWidget {
   }
 }
 
-/// Widget for check answer button
-class CheckAnswerButtonWidget extends StatelessWidget {
-  final VoidCallback onPressed;
+class _NavButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback? onPressed;
+  final bool filled;
 
-  const CheckAnswerButtonWidget({
-    super.key,
+  const _NavButton({
+    required this.icon,
     required this.onPressed,
+    this.filled = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Transform.translate(
-      offset: const Offset(0, -25),
-      child: GestureDetector(
+    final enabled = onPressed != null;
+    return Material(
+      color: filled && enabled ? AppPalette.primary : AppPalette.background,
+      borderRadius: BorderRadius.circular(AppPalette.radiusS),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppPalette.radiusS),
         onTap: onPressed,
-        child: Container(
-          padding: const EdgeInsets.all(QuizConstants.buttonPadding),
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.white, width: 3),
-            color: Colors.green,
-            borderRadius: BorderRadius.circular(100),
-          ),
-          child: const Icon(
-            Icons.check,
-            color: Colors.white,
+        child: SizedBox(
+          width: 52,
+          height: 48,
+          child: Icon(
+            icon,
+            size: 18,
+            color: !enabled
+                ? AppPalette.inkFaint
+                : (filled ? Colors.white : AppPalette.ink),
           ),
         ),
       ),
@@ -213,19 +261,28 @@ class QuestionIndexModalWidget extends StatelessWidget {
     final isChecked = checkedQuestions[index] ?? false;
     final isCorrect = isChecked ? isAnswerCorrect(index) : false;
 
-    Color backgroundColor = Colors.lightBlue[100]!;
-    Color textColor = Colors.black;
+    final isAnswered = selectedAnswers.containsKey(index);
+    Color backgroundColor = AppPalette.background;
+    Color textColor = AppPalette.ink;
+
+    if (isAnswered) {
+      backgroundColor = AppPalette.primarySoft;
+      textColor = AppPalette.primaryDeep;
+    }
 
     if (isChecked) {
-      backgroundColor = isCorrect ? Colors.green[200]! : Colors.red[200]!;
+      backgroundColor =
+          isCorrect ? AppPalette.successSoft : AppPalette.dangerSoft;
+      textColor = isCorrect ? AppPalette.success : AppPalette.danger;
     }
 
     if (isCurrentQuestion) {
-      backgroundColor = Colors.blue[300]!;
+      backgroundColor = AppPalette.primary;
       textColor = Colors.white;
     }
 
     return InkWell(
+      borderRadius: BorderRadius.circular(AppPalette.radiusS),
       onTap: () {
         Navigator.pop(context);
         onQuestionTap(index);
@@ -233,7 +290,7 @@ class QuestionIndexModalWidget extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: backgroundColor,
-          borderRadius: BorderRadius.circular(QuizConstants.borderRadius),
+          borderRadius: BorderRadius.circular(AppPalette.radiusS),
         ),
         child: Center(
           child: Text(

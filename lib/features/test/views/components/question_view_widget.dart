@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gplx/core/constants/app_styles.dart';
 import 'package:gplx/core/widgets/base64_image_widget.dart';
 import 'package:gplx/features/test/constants/quiz_constants.dart';
 import 'package:gplx/features/test/models/answer.dart';
@@ -27,71 +28,137 @@ class AnswerOptionWidget extends StatelessWidget {
   });
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: showResult
-          ? null
-          : () => onAnswerSelected(questionIndex, optionIndex),
-      child: Container(
-        padding: const EdgeInsets.all(QuizConstants.defaultPadding),
-        margin: const EdgeInsets.symmetric(vertical: 8),
-        decoration: BoxDecoration(
-          color: _getBackgroundColor(),
-          border: Border.all(
-            color: isSelected ? Colors.blue : Colors.grey[300]!,
-            width: isSelected ? 2 : 1,
-          ),
-          borderRadius: BorderRadius.circular(QuizConstants.borderRadius),
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildAnswerIcon(),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                text,
-                style: TextStyle(
-                  fontSize: QuizConstants.answerOptionFontSize,
-                  color: showResult && isCorrect ? Colors.green : null,
-                ),
+    final style = _style();
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Material(
+        color: style.background,
+        borderRadius: BorderRadius.circular(AppPalette.radiusM),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppPalette.radiusM),
+          onTap: showResult
+              ? null
+              : () => onAnswerSelected(questionIndex, optionIndex),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(AppPalette.radiusM),
+              border: Border.all(
+                color: style.border,
+                width: style.emphasized ? 1.5 : 1,
               ),
             ),
-          ],
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildAnswerBadge(style),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 3),
+                    child: Text(
+                      text,
+                      style: TextStyle(
+                        fontSize: QuizConstants.answerOptionFontSize,
+                        height: 1.4,
+                        fontWeight: style.emphasized
+                            ? FontWeight.w600
+                            : FontWeight.w500,
+                        color: style.text,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
   }
 
-  Color? _getBackgroundColor() {
-    if (showResult) {
-      if (isCorrect) return Colors.green[50];
-      if (isSelected && !isCorrect) return Colors.red[50];
-    } else if (isSelected) {
-      return Colors.blue[50];
+  _AnswerStyle _style() {
+    if (showResult && isCorrect) {
+      return const _AnswerStyle(
+        background: AppPalette.successSoft,
+        border: AppPalette.success,
+        accent: AppPalette.success,
+        text: Color(0xFF14532D),
+        emphasized: true,
+      );
     }
-    return null;
-  }
-
-  Widget _buildAnswerIcon() {
-    return Container(
-      width: QuizConstants.iconSize,
-      height: QuizConstants.iconSize,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(
-          color: isSelected ? Colors.blue : Colors.grey[400]!,
-          width: isSelected ? 2 : 1,
-        ),
-      ),
-      child: showResult
-          ? Icon(
-              isCorrect ? Icons.check : Icons.close,
-              size: QuizConstants.tabIconSize,
-              color: isCorrect ? Colors.green : Colors.red,
-            )
-          : null,
+    if (showResult && isSelected) {
+      return const _AnswerStyle(
+        background: AppPalette.dangerSoft,
+        border: AppPalette.danger,
+        accent: AppPalette.danger,
+        text: Color(0xFF7F1D1D),
+        emphasized: true,
+      );
+    }
+    if (isSelected) {
+      return const _AnswerStyle(
+        background: AppPalette.primarySoft,
+        border: AppPalette.primary,
+        accent: AppPalette.primary,
+        text: AppPalette.ink,
+        emphasized: true,
+      );
+    }
+    return const _AnswerStyle(
+      background: AppPalette.surface,
+      border: AppPalette.border,
+      accent: AppPalette.inkMuted,
+      text: AppPalette.ink,
+      emphasized: false,
     );
   }
+
+  Widget _buildAnswerBadge(_AnswerStyle style) {
+    final filled = style.emphasized;
+    final Widget child = showResult && (isCorrect || isSelected)
+        ? Icon(
+            isCorrect ? Icons.check_rounded : Icons.close_rounded,
+            size: 16,
+            color: Colors.white,
+          )
+        : Text(
+            String.fromCharCode(65 + optionIndex),
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+              color: filled ? Colors.white : AppPalette.inkMuted,
+            ),
+          );
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 180),
+      width: 28,
+      height: 28,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: filled ? style.accent : AppPalette.background,
+        borderRadius: BorderRadius.circular(9),
+      ),
+      child: child,
+    );
+  }
+}
+
+class _AnswerStyle {
+  final Color background;
+  final Color border;
+  final Color accent;
+  final Color text;
+  final bool emphasized;
+
+  const _AnswerStyle({
+    required this.background,
+    required this.border,
+    required this.accent,
+    required this.text,
+    required this.emphasized,
+  });
 }
 
 /// Widget for displaying answer feedback
@@ -106,17 +173,9 @@ class AnswerFeedbackWidget extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: feedback.isCorrect
-            ? Colors.green.withValues(
-                alpha: QuizConstants.correctAnswerOpacity,
-              )
-            : Colors.red.withValues(
-                alpha: QuizConstants.wrongAnswerOpacity,
-              ),
-        borderRadius: BorderRadius.circular(QuizConstants.borderRadius),
-        border: Border.all(
-          color: feedback.isCorrect ? Colors.green : Colors.red,
-          width: 1,
-        ),
+            ? AppPalette.successSoft
+            : AppPalette.dangerSoft,
+        borderRadius: BorderRadius.circular(AppPalette.radiusM),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -125,7 +184,9 @@ class AnswerFeedbackWidget extends StatelessWidget {
             feedback.feedbackText,
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              color: feedback.isCorrect ? Colors.green : Colors.red,
+              color: feedback.isCorrect
+                  ? AppPalette.success
+                  : AppPalette.danger,
             ),
           ),
           Text(
@@ -188,9 +249,23 @@ class QuestionViewWidget extends StatelessWidget {
                     ),
                     const SizedBox(height: QuizConstants.defaultPadding),
                     if (question.imageUrl?.isNotEmpty == true)
-                      Center(
-                        child: Base64ImageWidget(
-                          base64String: question.imageUrl!,
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppPalette.surface,
+                          borderRadius:
+                              BorderRadius.circular(AppPalette.radiusM),
+                          border: Border.all(color: AppPalette.border),
+                        ),
+                        child: ClipRRect(
+                          borderRadius:
+                              BorderRadius.circular(AppPalette.radiusS),
+                          child: Center(
+                            child: Base64ImageWidget(
+                              base64String: question.imageUrl!,
+                            ),
+                          ),
                         ),
                       ),
                     const SizedBox(height: QuizConstants.defaultPadding),

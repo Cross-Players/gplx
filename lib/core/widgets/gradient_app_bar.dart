@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:gplx/core/constants/app_styles.dart';
 
 class GradientAppBar extends StatelessWidget implements PreferredSizeWidget {
   final Widget? title;
   final List<Widget>? actions;
   final Widget? leading;
+  final double? leadingWidth;
   final bool automaticallyImplyLeading;
   final double elevation;
   final PreferredSizeWidget? bottom;
@@ -13,6 +15,7 @@ class GradientAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.title,
     this.actions,
     this.leading,
+    this.leadingWidth,
     this.automaticallyImplyLeading = true,
     this.elevation = 0,
     this.bottom,
@@ -24,17 +27,13 @@ class GradientAppBar extends StatelessWidget implements PreferredSizeWidget {
       title: title,
       actions: actions,
       leading: leading,
+      leadingWidth: leadingWidth,
       automaticallyImplyLeading: automaticallyImplyLeading,
       elevation: elevation,
       bottom: bottom,
+      backgroundColor: Colors.transparent,
       flexibleSpace: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF3B82F6), Color(0xFF2563EB)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
+        decoration: const BoxDecoration(gradient: AppPalette.heroGradient),
       ),
     );
   }
