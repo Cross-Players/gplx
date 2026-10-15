@@ -16,7 +16,8 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace = "com.crosstechedu.gplx"
-    compileSdk = flutter.compileSdkVersion
+    // Android 16 (API 36). Pinned so builds don't depend on the Flutter SDK default.
+    compileSdk = 36
     ndkVersion = "27.0.12077973"
 
     compileOptions {
@@ -33,8 +34,8 @@ android {
         applicationId = "com.crosstechedu.gplx"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = 23
-        targetSdk = flutter.targetSdkVersion
+        minSdk = flutter.minSdkVersion
+        targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
@@ -58,19 +59,23 @@ android {
         }
     }
 
-     signingConfigs {
-        create("release") {
-            keyAlias = keystoreProperties["keyAlias"] as String
-            keyPassword = keystoreProperties["keyPassword"] as String
-            storeFile = keystoreProperties["storeFile"]?.let { file(it) }
-            storePassword = keystoreProperties["storePassword"] as String
+    // Release signing needs android/key.properties. Without it (CI, new
+    // machines) the project still configures and debug builds work.
+    signingConfigs {
+        if (keystorePropertiesFile.exists()) {
+            create("release") {
+                keyAlias = keystoreProperties["keyAlias"] as String
+                keyPassword = keystoreProperties["keyPassword"] as String
+                storeFile = keystoreProperties["storeFile"]?.let { file(it) }
+                storePassword = keystoreProperties["storePassword"] as String
+            }
         }
     }
 
     buildTypes {
         release {
-            signingConfig = signingConfigs.getByName("debug")
-            signingConfig = signingConfigs.getByName("release")
+            signingConfig = signingConfigs.findByName("release")
+                ?: signingConfigs.getByName("debug")
         }
     }
 }
