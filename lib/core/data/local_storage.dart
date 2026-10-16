@@ -20,10 +20,10 @@ class LocalStorage {
   factory LocalStorage() {
     return _instance;
   }
-
   // For example
   static const _keyAccessToken = 'access_token';
   static const _keyExpiredAt = 'expired_at';
+  static const _keySelectedVehicleType = 'selected_vehicle_type';
 
   Future<int?> getExpiredAt() async {
     final prefs = await SharedPreferences.getInstance();
@@ -48,5 +48,15 @@ class LocalStorage {
   Future<void> saveAccessToken(String token) async {
     final prefs = await SharedPreferences.getInstance();
     prefs.setString(_keyAccessToken, token);
+  }
+
+  Future<String?> getSelectedVehicleType() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_keySelectedVehicleType);
+  }
+
+  Future<void> saveSelectedVehicleType(String vehicleType) async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString(_keySelectedVehicleType, vehicleType);
   }
 }

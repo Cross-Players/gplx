@@ -6,19 +6,25 @@
       "name": "Development",
       "request": "launch",
       "type": "dart",
-      "args": ["--dart-define-from-file=lib/env/development.json"]
+      "args": [
+        "--dart-define-from-file=lib/env/development.json"
+      ]
     },
     {
       "name": "Staging",
       "request": "launch",
       "type": "dart",
-      "args": ["--dart-define-from-file=lib/env/staging.json"]
+      "args": [
+        "--dart-define-from-file=lib/env/staging.json"
+      ]
     },
     {
       "name": "Production",
       "request": "launch",
       "type": "dart",
-      "args": ["--dart-define-from-file=lib/env/production.json"]
+      "args": [
+        "--dart-define-from-file=lib/env/production.json"
+      ]
     }
   ]
 }

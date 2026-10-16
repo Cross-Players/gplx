@@ -1,0 +1,313 @@
+{
+  "license_type": "A1",
+  "chapter": "chapter3",
+  "total_questions": 15,
+  "questions": [
+    {
+      "answers": [
+        {
+          "answer_content": "Giữ tay ga ở mức độ phù hợp, sử dụng phanh trước và phanh sau để giảm tốc độ.",
+          "is_correct": true
+        },
+        {
+          "answer_content": "Nhả hết tay ga, tắt động cơ, sử dụng phanh trước và phanh sau để giảm tốc độ.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Sử dụng phanh trước để giảm tốc độ kết hợp với tắt chìa khóa điện của xe.",
+          "is_correct": false
+        }
+      ],
+      "question_chapter": 3,
+      "question_content": "Khi điều khiển xe mô tô tay ga xuống đường dốc dài, độ dốc cao, người lái xe cần thực hiện các thao tác nào dưới đây để bảo đảm an toàn?",
+      "question_dead_point": true,
+      "question_number": 206
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Quan sát cẩn thận các chướng ngại vật và báo hiệu bằng coi, đèn; giảm tốc độ tới mức cần thiết, về số thấp và thực hiện quay vòng với tốc độ phù hợp với bán kính cong của đường vòng.",
+          "is_correct": true
+        },
+        {
+          "answer_content": "Quan sát cẩn thận các chướng ngại vật và báo hiệu bằng còi, đèn; tăng tốc để nhanh chóng qua đường vòng và giảm tốc độ sau khi qua đường vòng.",
+          "is_correct": false
+        }
+      ],
+      "question_chapter": 3,
+      "question_content": "Khi điều khiển xe trên đường vòng người lái xe cần phải làm gì để bảo đảm an toàn?",
+      "question_dead_point": true,
+      "question_number": 215
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Khi có chuông báo hoặc thanh chắn đã hạ xuống, người lái xe phải dừng xe tạm thời đúng khoảng cách an toàn, kéo phanh tay nếu đường dốc hoặc phải chờ lâu.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Khi không có chuông báo hoặc thanh chắn không hạ xuống, người lái xe cần phải quan sát nếu thấy đủ điều kiện an toàn thì về số thấp, tăng ga nhẹ và không thay đổi số trong quá trình vượt qua đường sắt để tránh động cơ chết máy cho xe cho vượt qua.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Cả hai ý trên.",
+          "is_correct": true
+        }
+      ],
+      "question_chapter": 3,
+      "question_content": "Khi điều khiển xe qua đường sắt, người lái xe cần phải thực hiện các thao tác nào dưới đây để bảo đảm an toàn?",
+      "question_number": 219
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Xăng và dầu diesel.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Xăng sinh học và khí sinh học.",
+          "is_correct": true
+        },
+        {
+          "answer_content": "Ý 1 và ý 2.",
+          "is_correct": false
+        }
+      ],
+      "question_chapter": 3,
+      "question_content": "Trong các loại nhiên liệu dưới đây, loại nhiên liệu nào giảm thiểu ô nhiễm môi trường?",
+      "question_number": 232
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Bảo dưỡng xe theo định kỳ và có kế hoạch lộ trình trước khi xe chạy.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Kiểm tra áp suất lốp theo quy định và chạy xe với tốc độ phù hợp với tình trạng mặt đường và mật độ giao thông trên đường.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Cả hai ý trên.",
+          "is_correct": true
+        }
+      ],
+      "question_chapter": 3,
+      "question_content": "Các biện pháp tiết kiệm nhiên liệu khi chạy xe?",
+      "question_number": 233
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Tăng tốc độ, chạy gần xe trước, nhìn đèn hậu để định hướng.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Giảm tốc độ, chạy cách xa xe trước với khoảng cách an toàn, bật đèn sương mù và đèn chiếu gần.",
+          "is_correct": true
+        },
+        {
+          "answer_content": "Tăng tốc độ, bật đèn pha vượt qua xe chạy trước.",
+          "is_correct": false
+        }
+      ],
+      "question_chapter": 3,
+      "question_content": "Khi tầm nhìn bị hạn chế bởi sương mù hoặc mưa to, người lái xe phải thực hiện các thao tác nào để bảo đảm an toàn?",
+      "question_number": 240
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Giảm tốc độ, giữ vững tay lái, nhìn chếch sang lề đường bên phải.",
+          "is_correct": true
+        },
+        {
+          "answer_content": "Bật đèn pha chiếu xa và giữ nguyên tốc độ.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Tăng tốc độ, bật đèn pha đối diện xe phía trước.",
+          "is_correct": false
+        }
+      ],
+      "question_chapter": 3,
+      "question_content": "Khi đèn pha của xe đi ngược chiều gây chói mắt, làm giảm khả năng quan sát trên đường, người lái xe xử lý như thế nào dưới đây để bảo đảm an toàn?",
+      "question_number": 241
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Sử dụng phanh trước.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Sử dụng phanh sau.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Giảm hết ga, sử dụng đồng thời cả phanh sau và phanh trước.",
+          "is_correct": true
+        }
+      ],
+      "question_chapter": 3,
+      "question_content": "Để đạt được hiệu quả phanh cao nhất, người lái xe mô tô phải sử dụng các kỹ năng như thế nào dưới đây?",
+      "question_number": 242
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Giảm tốc độ để bảo đảm an toàn với xe phía trước và sử dụng điện thoại để liên lạc.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Giảm tốc độ để dừng xe ở nơi cho phép sau đó sử dụng điện thoại để liên lạc.",
+          "is_correct": true
+        },
+        {
+          "answer_content": "Tăng tốc độ để cách xa xe phía sau và sử dụng điện thoại để liên lạc.",
+          "is_correct": false
+        }
+      ],
+      "question_chapter": 3,
+      "question_content": "Khi đang lái xe mô tô hoặc ô tô, nếu có nhu cầu sử dụng điện thoại để nhắn tin hoặc gọi điện, người lái xe phải thực hiện như thế nào trong các tình huống nêu dưới đây?",
+      "question_dead_point": true,
+      "question_number": 254
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Sử dụng còi.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Phanh đồng thời cả phanh trước và phanh sau.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Chỉ sử dụng phanh trước.",
+          "is_correct": true
+        }
+      ],
+      "question_chapter": 3,
+      "question_content": "Những thói quen nào dưới đây khi điều khiển xe mô tô tay ga tham gia giao thông dễ gây tai nạn nguy hiểm?",
+      "question_dead_point": true,
+      "question_number": 255
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Bật tín hiệu báo rẽ trước khi quay đầu, từ từ giảm tốc độ đến mức có thể dừng lại.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Chỉ quay đầu xe tại những nơi được phép quay đầu.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Quan sát an toàn các phương tiện tới từ phía trước, phía sau, hai bên đồng thời nhường đường cho xe từ bên phải và phía trước đi tới.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Cả ba ý trên.",
+          "is_correct": true
+        }
+      ],
+      "question_chapter": 3,
+      "question_content": "Khi điều khiển xe mô tô quay đầu, người lái xe cần thực hiện như thế nào để bảo đảm an toàn?",
+      "question_number": 257
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Để điều khiển xe chạy về phía trước.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Để điều tiết công suất động cơ qua đó điều khiển tốc độ của xe.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Để điều khiển xe chạy lùi.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Ý 1 và ý 2.",
+          "is_correct": true
+        }
+      ],
+      "question_chapter": 3,
+      "question_content": "Tay ga trên xe mô tô hai bánh có tác dụng gì dưới đây?",
+      "question_number": 258
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Để quan sát an toàn phía bên trái khi chuẩn bị rẽ trái.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Để quan sát an toàn phía bên phải khi chuẩn bị rẽ phải.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Để quan sát an toàn phía sau của bên trái và bên phải trước khi chuyển hướng.",
+          "is_correct": true
+        },
+        {
+          "answer_content": "Để quan sát an toàn phía trước cả bên trái và bên phải trước khi chuyển hướng.",
+          "is_correct": false
+        }
+      ],
+      "question_chapter": 3,
+      "question_content": "Gương chiếu hậu của xe mô tô hai bánh có tác dụng gì dưới đây?",
+      "question_number": 259
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Tăng ga thật mạnh, giảm ga từ từ.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Tăng ga thật mạnh, giảm ga thật nhanh.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Tăng ga từ từ, giảm ga thật nhanh.",
+          "is_correct": true
+        },
+        {
+          "answer_content": "Tăng ga từ từ, giảm ga từ từ.",
+          "is_correct": false
+        }
+      ],
+      "question_chapter": 3,
+      "question_content": "Để bảo đảm an toàn khi tham gia giao thông, người lái xe mô tô hai bánh cần điều khiển tay ga như thế nào?",
+      "question_dead_point": true,
+      "question_number": 260
+    },
+    {
+      "answers": [
+        {
+          "answer_content": "Đi ở tốc độ thấp, quan sát liên tục khoảng cách từ 05 m đến 10 m phía trước để điều chỉnh sớm hướng di chuyển.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Trong quá trình di chuyển không nên dùng phanh trước tránh làm khóa bánh dẫn hướng.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Không được lắc người sang trái hoặc phải nhiều, trọng tâm cơ thể cần trùng với trọng tâm của xe.",
+          "is_correct": false
+        },
+        {
+          "answer_content": "Cả ba ý trên.",
+          "is_correct": true
+        }
+      ],
+      "question_chapter": 3,
+      "question_content": "Để tránh đổ, ngã khi điều khiển xe mô tô hai bánh ở nơi đường xấu, nhỏ và hẹp, người lái xe cần xử lý như thế nào?",
+      "question_number": 261
+    }
+  ]
+}

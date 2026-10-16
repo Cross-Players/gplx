@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gplx/core/routes/app_routes.dart';
+import 'package:gplx/core/theme/app_theme.dart';
+import 'package:gplx/features/home/presentation/screens/home_screen.dart';
 
-/// Define routers, themes
-class App extends StatelessWidget {
+class App extends ConsumerWidget {
   const App({super.key});
 
-  // This widget is the root of your application.
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
       title: 'Ôn thi GPLX B2',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-        useMaterial3: true,
-      ),
+      debugShowCheckedModeBanner: false,
+      // Login is disabled: everyone goes straight to the home screen.
+      // To re-enable, set `home: const AuthLayout()` again.
+      home: const HomeScreen(),
+      theme: AppTheme.light,
       onGenerateRoute: AppRoutes.onGenerateRoute,
     );
   }
