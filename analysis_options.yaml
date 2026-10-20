@@ -8,3 +8,8 @@ analyzer:
     - lib/**.g.dart
     - lib/**.freezed.dart
     - lib/generated/*.dart
+    - build/**
+    - android/**
+    - ios/**
+    - macos/**
+    - linux/**
