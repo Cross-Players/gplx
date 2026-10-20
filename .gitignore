@@ -55,4 +55,4 @@ coverage/
 .fvm/
 .fvmrc
 
-**/.DS_Store
+**/.DS_Store/android/build/
