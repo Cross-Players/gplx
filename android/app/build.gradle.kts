@@ -3,7 +3,6 @@ import java.io.FileInputStream
 
 plugins {
     id("com.android.application")
-    id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
@@ -18,15 +17,16 @@ android {
     namespace = "com.crosstechedu.gplx"
     // Android 16 (API 36). Pinned so builds don't depend on the Flutter SDK default.
     compileSdk = 36
-    ndkVersion = "27.0.12077973"
+    ndkVersion = "28.2.13676358"
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11.toString()
+    // AGP 9 disables resValue by default; flavors use it for app_name.
+    buildFeatures {
+        resValues = true
     }
 
     defaultConfig {
@@ -45,17 +45,17 @@ android {
         create("dev") {
             dimension = "environment"
             applicationId = "com.crosstechedu.gplx.dev"
-            resValue("string", "app_name", "[D]Học GPLX Vạn Xuân")
+            resValue("string", "app_name", "[D]Luyện thi GPLX mới nhất")
         }
         create("stg") {
             dimension = "environment"
             applicationId = "com.crosstechedu.gplx.stg"
-            resValue("string", "app_name", "[S]Học GPLX Vạn Xuân")
+            resValue("string", "app_name", "[S]Luyện thi GPLX mới nhất")
         }
         create("prod") {
             dimension = "environment"
             applicationId = "com.crosstechedu.gplx"
-            resValue("string", "app_name", "Học GPLX Vạn Xuân")
+            resValue("string", "app_name", "Luyện thi GPLX mới nhất")
         }
     }
 
@@ -77,6 +77,12 @@ android {
             signingConfig = signingConfigs.findByName("release")
                 ?: signingConfigs.getByName("debug")
         }
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
     }
 }
 

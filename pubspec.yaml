@@ -4,7 +4,7 @@ description: "Driver License Learning Application"
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
-version: 2.0.0
+version: 2.0.0+8
 
 environment:
   sdk: ">=3.4.3 <4.0.0"
@@ -37,6 +37,8 @@ dependencies:
 
 dev_dependencies:
   flutter_test:
+    sdk: flutter
+  integration_test:
     sdk: flutter
 
   riverpod_lint: ^2.3.10
