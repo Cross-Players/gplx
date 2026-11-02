@@ -1,5 +1,5 @@
 {
-    "APP_NAME": "[S]Học GPLX Vạn Xuân",
+    "APP_NAME": "[S]Luyện thi GPLX mới nhất",
     "APP_SUFFIX": ".stg",
     "API_END_POINT": "",
     "REALTIME_API_END_POINT": "wss://warehouse-service-app.staging-app.bfast-vn.net/graphql",
