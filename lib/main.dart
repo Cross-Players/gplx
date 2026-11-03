@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gplx/app.dart';
+import 'package:gplx/core/services/ads_service.dart';
 import 'package:gplx/core/services/cache_expiry_manager.dart';
 import 'package:gplx/core/services/firebase/auth_services.dart';
 import 'package:gplx/firebase_options.dart';
@@ -26,6 +29,9 @@ Future<void> main() async {
       Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform),
       // Add other initialization here if needed
     ]);
+
+    // AdMob: fire-and-forget, không chặn frame đầu tiên.
+    unawaited(AdsService.instance.initialize());
 
     // Login is disabled; get a guest session so data loads. Bounded so a
     // slow network never blocks startup.

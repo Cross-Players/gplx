@@ -56,3 +56,11 @@ coverage/
 .fvmrc
 
 **/.DS_Store/android/build/
+.omp/
+*.pem
+.omp/memory/
+
+# Documentation / plan markdown files (root README.md stays tracked)
+docs/
+*.md
+!README.md

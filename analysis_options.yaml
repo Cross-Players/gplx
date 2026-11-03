@@ -1,6 +1,8 @@
 include: package:flutter_lints/flutter.yaml
 
 analyzer:
+  errors:
+    invalid_annotation_target: ignore
   exclude:
     - lib/l10n/messages_*.dart
     - lib/l10n/l10n.dart
