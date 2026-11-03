@@ -10,7 +10,7 @@ class App extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
-      title: 'Ôn thi GPLX B2',
+      title: 'Học GPLX Vạn Xuân',
       debugShowCheckedModeBanner: false,
       // Login is disabled: everyone goes straight to the home screen.
       // To re-enable, set `home: const AuthLayout()` again.

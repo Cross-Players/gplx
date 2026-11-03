@@ -22,11 +22,11 @@ format-analyze:
 
 .PHONY: build-runner
 build-runner:
-	dart pub run build_runner build --delete-conflicting-outputs
+	dart run build_runner build --delete-conflicting-outputs
 
 .PHONY: build-clean
 build-clean:
-	dart pub run build_runner clean
+	dart run build_runner clean
 
 .PHONY: assets-gen
 assets-gen:

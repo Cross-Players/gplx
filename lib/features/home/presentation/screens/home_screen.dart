@@ -65,8 +65,8 @@ class HomeScreen extends ConsumerWidget {
 
     final features = [
       _FeatureData(
-        title: 'Thi theo bộ đề',
-        subtitle: 'Đề chính thức',
+        title: 'Thi thử theo đề',
+        subtitle: 'Luyện theo đề',
         icon: Icons.assignment_rounded,
         color: const Color(0xFFE11D48),
         onTap: () => Navigator.push(

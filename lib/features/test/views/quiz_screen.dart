@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gplx/core/constants/app_styles.dart';
+import 'package:gplx/core/services/ads_service.dart';
 import 'package:gplx/core/widgets/countdown_timer.dart';
 import 'package:gplx/core/widgets/gradient_app_bar.dart';
 import 'package:gplx/features/exercise/controllers/deadpoint_questions_provider.dart';
@@ -65,6 +66,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
   @override
   void initState() {
     super.initState();
+    AdsService.instance.setExamActive(true);
     _tabController = TabController(length: 0, vsync: this);
     SchedulerBinding.instance.addPostFrameCallback((_) {});
   }
@@ -518,6 +520,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
 
   @override
   void dispose() {
+    AdsService.instance.setExamActive(false);
     _timerService.dispose();
     if (!_quizCompleted) {
       // Save questions to local storage on dispose

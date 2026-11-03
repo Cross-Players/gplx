@@ -4,6 +4,7 @@ import 'package:gplx/core/constants/app_styles.dart';
 import 'package:gplx/core/widgets/gradient_app_bar.dart';
 import 'package:gplx/features/test/models/license_data.dart';
 import 'package:gplx/features/test/models/vehicle.dart';
+import 'package:gplx/features/settings/presentation/screens/privacy_policy_screen.dart';
 import 'package:gplx/features/test_sets/controllers/test_controller.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -123,6 +124,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             title: 'Xóa bộ nhớ đệm',
             subtitle: 'Tải lại câu hỏi từ máy chủ',
             onTap: _showClearCacheDialog,
+          ),
+          _ActionTile(
+            icon: Icons.privacy_tip_rounded,
+            title: 'Chính sách bảo mật',
+            subtitle: 'Xem thông tin bảo mật của ứng dụng',
+            onTap: () => Navigator.push(
+              context,
+              PageRouteBuilder(
+                pageBuilder: (_, __, ___) => const PrivacyPolicyScreen(),
+                transitionsBuilder: (_, __, ___, child) => child,
+              ),
+            ),
           ),
         ],
       ),
